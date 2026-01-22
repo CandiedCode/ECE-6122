@@ -34,8 +34,7 @@ using conditional statements - The const keyword must be used appropriately to p
  * @param variance Output: calculated variance
  * @param stdDev Output: calculated standard deviation
  */
-void computeStatistics(const double data[], int size, double &mean, double &variance, double &stdDev)
-{
+void computeStatistics(const double data[], int size, double &mean, double &variance, double &stdDev) {
     double sum = 0.0;
     for (int i = 0; i < size; ++i)
     {
@@ -48,7 +47,7 @@ void computeStatistics(const double data[], int size, double &mean, double &vari
     {
         varSum += std::pow((data[i] - mean), 2);
     }
-    variance = varSum / size;
+    variance = varSum / (size - 1);  // Sample variance (Bessel's correction)
     stdDev = std::sqrt(variance);
 }
 
@@ -65,8 +64,7 @@ void computeStatistics(const double data[], int size, double &mean, double &vari
  * @param minIndex Output: array index of the minimum value
  * @param maxIndex Output: array index of the maximum value
  */
-void findExtrema(const double data[], int size, double &minVal, double &maxVal, int &minIndex, int &maxIndex)
-{
+void findExtrema(const double data[], int size, double &minVal, double &maxVal, int &minIndex, int &maxIndex) {
     minVal = data[0];
     maxVal = data[0];
     minIndex = 0;
@@ -87,8 +85,7 @@ void findExtrema(const double data[], int size, double &minVal, double &maxVal, 
     }
 }
 
-int main()
-{
+int main() {
     std::cout << "Enter number of readings (5-100): " << std::endl;
 
     // Capture and Validate input for number of readings
