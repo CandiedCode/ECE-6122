@@ -18,3 +18,10 @@ ctest --verbose
 
 
 clang-format -i Homework_0/*.cpp
+
+g++ Homework_0/Problem1.cpp -o test
+
+
+g++ -std=c++17 -Wall -Wextra -o program Problem1.cpp 
+
+python3 -m pip install --user cpplint

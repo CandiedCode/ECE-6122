@@ -12,10 +12,11 @@ void computeStatistics(const double data[], int size,
                        double& mean, double& variance, double& stdDev);
 
 void findExtrema(const double data[], int size,
-                 double& minVal, double& maxVal, int& minIndex,                   int& maxIndex); 4. Display all
-computed statistics with appropriate formatting (2 decimal places) Requirements: - Use a for loop to read input values -
-Use appropriate loops for statistical calculations - Validate that the number of readings is within the specified range
-using conditional statements - The const keyword must be used appropriately to prevent modification of input arrays
+                 double& minVal, double& maxVal, int& minIndex,                   int& maxIndex);
+4. Display all computed statistics with appropriate formatting (2 decimal places) Requirements: - Use a for loop to read
+input values - Use appropriate loops for statistical calculations - Validate that the number of readings is within the
+specified range using conditional statements - The const keyword must be used appropriately to prevent modification of
+input arrays
 
 */
 #include <cmath>
@@ -47,7 +48,7 @@ void computeStatistics(const double data[], int size, double &mean, double &vari
     {
         varSum += std::pow((data[i] - mean), 2);
     }
-    variance = varSum / (size - 1);  // Sample variance (Bessel's correction)
+    variance = varSum / (size - 1); // Sample variance (Bessel's correction)
     stdDev = std::sqrt(variance);
 }
 
