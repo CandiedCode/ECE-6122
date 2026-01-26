@@ -21,24 +21,24 @@ bool isZero(int number) {
     return number == 0;
 }
 
-/**
- * @brief Function to check if a number is even
- * @param number The integer to check
- * @return true if the number is even, false otherwise
-*/
+/// <summary>
+/// Checks if a number is even.
+/// </summary>
+/// <param name="number">The integer to check</param>
+/// <returns>true if the number is even, false otherwise</returns>
 bool isEvenNumber(int number) {
     return number % 2 == 0;
 }
 
-/**
- * @brief Function to check if a number is prime
- * @param number The integer to check
- * @return true if the number is prime, false otherwise
-*/
+/// <summary>
+/// Checks if a number is prime.
+/// </summary>
+/// <param name="number">The integer to check</param>
+/// <returns>true if the number is prime, false otherwise</returns>
 bool isPrime(int number) {
     // 0 and 1 are not prime numbers
     if (number <= 1) {
-        return false; 
+        return false;
     }
 
     for (int i = 2; i * i <= number; i++) {
@@ -95,7 +95,7 @@ bool isFibonacci(int number) {
     return a == number;
 }
 
-void classifyNumber(int n, bool& isPositive, bool& isEven,  
+void classifyNumber(int n, bool& isPositive, bool& isEven,
                     bool& prime, bool& perfectSquare, bool& fibonacci){
     isPositive = isPositiveNumber(n);
     isEven = isEvenNumber(n);
@@ -104,11 +104,9 @@ void classifyNumber(int n, bool& isPositive, bool& isEven,
     fibonacci = isFibonacci(n);
 }
 
-
 int main() {
-    
     int number;
-    
+
     do {
         std::cout << "Enter an integer number (-9999 to quit): ";
         std::cin >> number;
@@ -129,6 +127,5 @@ int main() {
         std::cout << "\tFibonacci (<=50): " << (fibonacci ? "Yes" : "No") << "\n";
         std::cout << "\tMagnitude: " << std::abs(number) << "\n";
         std::cout << std::endl;
-        
     } while (number != -9999);
 }

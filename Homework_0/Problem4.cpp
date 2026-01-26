@@ -8,77 +8,68 @@ Description:  Problem 4: Generic Programming with Function Templates
 
 #include <iostream>
 
-/**
- * Returns the larger of two values.
- *
- * Template function that compares two values of the same type and
- * returns the larger one using the > operator. Type T must support
- * the > comparison operator.
- *
- * @tparam T Type of values to compare (must support > operator)
- * @param a First value to compare
- * @param b Second value to compare
- * @return T The larger of the two values
- */
+/// <summary>
+/// Returns the larger of two values.
+/// Template function that compares two values of the same type and
+/// returns the larger one using the > operator. Type T must support
+/// the > comparison operator.
+/// </summary>
+/// <typeparam name="T">Type of values to compare (must support > operator)</typeparam>
+/// <param name="a">First value to compare</param>
+/// <param name="b">Second value to compare</param>
+/// <returns>The larger of the two values</returns>
 template <typename T> T maximum(T a, T b) {
     return (a > b) ? a : b;
 }
 
-/**
- * Returns the smaller of two values.
- *
- * Template function that compares two values of the same type and
- * returns the smaller one using the < operator. Type T must support
- * the < comparison operator.
- *
- * @tparam T Type of values to compare (must support < operator)
- * @param a First value to compare
- * @param b Second value to compare
- * @return T The smaller of the two values
- */
+/// <summary>
+/// Returns the smaller of two values.
+/// Template function that compares two values of the same type and
+/// returns the smaller one using the < operator. Type T must support
+/// the < comparison operator.
+/// </summary>
+/// <typeparam name="T">Type of values to compare (must support < operator)</typeparam>
+/// <param name="a">First value to compare</param>
+/// <param name="b">Second value to compare</param>
+/// <returns>The smaller of the two values</returns>
 template <typename T> T minimum(T a, T b) {
     return (a < b) ? a : b;
 }
 
-/**
- * Swaps the values of two variables.
- *
- * Template function that exchanges the values of two variables
- * of the same type using a temporary variable. Type T can be
- * any type that supports assignment.
- *
- * @tparam T Type of values to swap
- * @param a First variable (will be modified)
- * @param b Second variable (will be modified)
- */
+/// <summary>
+/// Swaps the values of two variables.
+/// Template function that exchanges the values of two variables
+/// of the same type using a temporary variable. Type T can be
+/// any type that supports assignment.
+/// </summary>
+/// <typeparam name="T">Type of values to swap</typeparam>
+/// <param name="a">First variable (will be modified)</param>
+/// <param name="b">Second variable (will be modified)</param>
 template <typename T> void swapValues(T &a, T &b) {
     T temp = a;
     a = b;
     b = temp;
 }
 
-/**
- * Returns the absolute value of a number.
- *
- * Template function that returns the absolute (non-negative) value
- * of the input. Type T must support comparison with 0 and unary negation.
- *
- * @tparam T Type of value (must support < operator and unary -)
- * @param value Input value
- * @return T Absolute value (always non-negative)
- */
+/// <summary>
+/// Returns the absolute value of a number.
+/// Template function that returns the absolute (non-negative) value
+/// of the input. Type T must support comparison with 0 and unary negation.
+/// </summary>
+/// <typeparam name="T">Type of value (must support < operator and unary -)</typeparam>
+/// <param name="value">Input value</param>
+/// <returns>Absolute value (always non-negative)</returns>
 template <typename T> T absoluteValue(T value) {
     return (value < 0) ? -value : value;
 }
 
-/**
- * Calculates the sum of elements in an array.
- *
- * @tparam T Type of elements in the array
- * @param arr Array of elements
- * @param size Number of elements in the array
- * @return T Sum of the elements
- */
+/// <summary>
+/// Calculates the sum of elements in an array.
+/// </summary>
+/// <typeparam name="T">Type of elements in the array</typeparam>
+/// <param name="arr">Array of elements</param>
+/// <param name="size">Number of elements in the array</param>
+/// <returns>Sum of the elements</returns>
 template <typename T> T arraySum(const T arr[], int size) {
     T sum = 0;
     for (int i = 0; i < size; i++)
@@ -88,32 +79,28 @@ template <typename T> T arraySum(const T arr[], int size) {
     return sum;
 }
 
-/**
- * Calculates the average of elements in an array.
- *
- * Computes the arithmetic mean by summing all elements and dividing
- * by the number of elements. Always returns a double for precision.
- *
- * @tparam T Type of elements in the array (must support addition and division)
- * @param arr Array of elements
- * @param size Number of elements in the array
- * @return double Average value of the elements
- */
+/// <summary>
+/// Calculates the average of elements in an array.
+/// Computes the arithmetic mean by summing all elements and dividing
+/// by the number of elements. Always returns a double for precision.
+/// </summary>
+/// <typeparam name="T">Type of elements in the array (must support addition and division)</typeparam>
+/// <param name="arr">Array of elements</param>
+/// <param name="size">Number of elements in the array</param>
+/// <returns>Average value of the elements</returns>
 template <typename T> double arrayAverage(const T arr[], int size) {
     T sum = arraySum(arr, size);
     return sum / size;
 }
 
-/**
- * Reverses the elements of an array in place.
- *
- * Swaps elements from opposite ends of the array moving towards the center,
- * effectively reversing the order of all elements. Modifies the original array.
- *
- * @tparam T Type of elements in the array
- * @param arr Array to reverse (will be modified)
- * @param size Number of elements in the array
- */
+/// <summary>
+/// Reverses the elements of an array in place.
+/// Swaps elements from opposite ends of the array moving towards the center,
+/// effectively reversing the order of all elements. Modifies the original array.
+/// </summary>
+/// <typeparam name="T">Type of elements in the array</typeparam>
+/// <param name="arr">Array to reverse (will be modified)</param>
+/// <param name="size">Number of elements in the array</param>
 template <typename T> void reverseArray(T arr[], int size) {
     for (int i = 0; i < size / 2; i++)
     {
@@ -121,41 +108,39 @@ template <typename T> void reverseArray(T arr[], int size) {
     }
 }
 
-/**
- * Performs a linear search to find a target value in an array.
- *
- * Sequentially checks each element in the array from start to end
- * until the target value is found or the end is reached. Works on
- * both sorted and unsorted arrays.
- *
- * @tparam T Type of elements in the array (must support == operator)
- * @param arr Array to search
- * @param size Number of elements in the array
- * @param target Value to search for
- * @return int Index of the target if found, -1 otherwise
- */
+/// <summary>
+/// Performs a linear search to find a target value in an array.
+/// Sequentially checks each element in the array from start to end
+/// until the target value is found or the end is reached. Works on
+/// both sorted and unsorted arrays.
+/// </summary>
+/// <typeparam name="T">Type of elements in the array (must support == operator)</typeparam>
+/// <param name="arr">Array to search</param>
+/// <param name="size">Number of elements in the array</param>
+/// <param name="target">Value to search for</param>
+/// <returns>Index of the target if found, -1 otherwise</returns>
 template <typename T> int linearSearch(const T arr[], int size, T target) {
     for (int i = 0; i < size; i++)
     {
         if (arr[i] == target)
         {
-            return i; // Found at index i
+            // Found at index i
+            return i;
         }
     }
-    return -1; // Not found
+    // Not found
+    return -1;
 }
 
-/**
- * Sorts an array in ascending order using the bubble sort algorithm.
- *
- * Repeatedly steps through the array, compares adjacent elements, and
- * swaps them if they are in the wrong order. The process repeats until
- * the array is sorted. Time complexity: O(n²).
- *
- * @tparam T Type of elements in the array (must support > operator)
- * @param arr Array to sort (will be modified in place)
- * @param size Number of elements in the array
- */
+/// <summary>
+/// Sorts an array in ascending order using the bubble sort algorithm.
+/// Repeatedly steps through the array, compares adjacent elements, and
+/// swaps them if they are in the wrong order. The process repeats until
+/// the array is sorted. Time complexity: O(n²).
+/// </summary>
+/// <typeparam name="T">Type of elements in the array (must support > operator)</typeparam>
+/// <param name="arr">Array to sort (will be modified in place)</param>
+/// <param name="size">Number of elements in the array</param>
 template <typename T> void bubbleSort(T arr[], int size) {
     for (int i = 0; i < size - 1; i++)
     {
