@@ -35,11 +35,13 @@ struct Matrix3x3 {
     double data[3][3];
 };
 
-/// <summary>
-/// Prints a 3x3 matrix to standard output.
-/// Displays the matrix in a formatted grid with tab-separated values.
-/// </summary>
-/// <param name="matrix">Input 3x3 array to display</param>
+/**
+ * Prints a 3x3 matrix to standard output.
+ *
+ * Displays the matrix in a formatted grid with tab-separated values.
+ *
+ * @param matrix Input 3x3 array to display
+ */
 void printMatrix(const double matrix[3][3]) {
     // Iterate through each row
     for (int i = 0; i < 3; i++)
@@ -54,13 +56,15 @@ void printMatrix(const double matrix[3][3]) {
     }
 }
 
-/// <summary>
-/// Resets a matrix to its original values by copying from a source matrix.
-/// Copies all elements from the original matrix to the target matrix,
-/// restoring it to a previous state.
-/// </summary>
-/// <param name="matrix">3x3 array to reset (destination, will be modified)</param>
-/// <param name="original">3x3 array containing original values (source, read-only)</param>
+/**
+ * Resets a matrix to its original values by copying from a source matrix.
+ *
+ * Copies all elements from the original matrix to the target matrix,
+ * restoring it to a previous state.
+ *
+ * @param matrix 3x3 array to reset (destination, will be modified)
+ * @param original 3x3 array containing original values (source, read-only)
+ */
 void resetMatrix(double matrix[3][3], const double original[3][3]) {
     for (int i = 0; i < 3; i++)
     {
@@ -71,13 +75,15 @@ void resetMatrix(double matrix[3][3], const double original[3][3]) {
     }
 }
 
-/// <summary>
-/// Compares two 3x3 matrices for equality.
-/// Checks if all corresponding elements in the two matrices are equal.
-/// </summary>
-/// <param name="mat1">First 3x3 array to compare</param>
-/// <param name="mat2">Second 3x3 array to compare</param>
-/// <returns>true if matrices are equal, false otherwise</returns>
+/**
+ * Compares two 3x3 matrices for equality.
+ *
+ * Checks if all corresponding elements in the two matrices are equal.
+ *
+ * @param mat1 First 3x3 array to compare
+ * @param mat2 Second 3x3 array to compare
+ * @return true if matrices are equal, false otherwise
+ */
 bool matrixEqual(const double mat1[3][3], const double mat2[3][3]) {
     for (int i = 0; i < 3; i++)
     {
@@ -92,15 +98,17 @@ bool matrixEqual(const double mat1[3][3], const double mat2[3][3]) {
     return true;
 }
 
-/// <summary>
-/// Attempts to scale a matrix by a scalar value (misleading "by value").
-/// Despite the name suggesting pass-by-value, arrays in C++ decay to pointers,
-/// so this function WILL modify the original matrix. This demonstrates that
-/// true pass-by-value is not possible for arrays in C++ without wrapping them
-/// in a struct or using explicit copying.
-/// </summary>
-/// <param name="matrix">3x3 array to scale (decays to pointer, so original IS modified)</param>
-/// <param name="scalar">Value to multiply each element by</param>
+/**
+ * Attempts to scale a matrix by a scalar value (misleading "by value").
+ *
+ * Despite the name suggesting pass-by-value, arrays in C++ decay to pointers,
+ * so this function WILL modify the original matrix. This demonstrates that
+ * true pass-by-value is not possible for arrays in C++ without wrapping them
+ * in a struct or using explicit copying.
+ *
+ * @param matrix 3x3 array to scale (decays to pointer, so original IS modified)
+ * @param scalar Value to multiply each element by
+ */
 void scaleMatrixByValue(double matrix[3][3], double scalar) {
     for (int i = 0; i < 3; i++)
     {
@@ -111,14 +119,16 @@ void scaleMatrixByValue(double matrix[3][3], double scalar) {
     }
 }
 
-/// <summary>
-/// Scales a matrix by a scalar value using pass-by-reference.
-/// This function uses explicit pass-by-reference syntax with the & operator,
-/// making it clear that the original matrix WILL be modified. This is the
-/// proper way to explicitly document intent to modify the caller's data.
-/// </summary>
-/// <param name="matrix">3x3 array to scale (passed by reference, original IS modified)</param>
-/// <param name="scalar">Value to multiply each element by</param>
+/**
+ * Scales a matrix by a scalar value using pass-by-reference.
+ *
+ * This function uses explicit pass-by-reference syntax with the & operator,
+ * making it clear that the original matrix WILL be modified. This is the
+ * proper way to explicitly document intent to modify the caller's data.
+ *
+ * @param matrix 3x3 array to scale (passed by reference, original IS modified)
+ * @param scalar Value to multiply each element by
+ */
 void scaleMatrixByReference(double (&matrix)[3][3], double scalar) {
     for (int i = 0; i < 3; i++)
     {
@@ -129,31 +139,35 @@ void scaleMatrixByReference(double (&matrix)[3][3], double scalar) {
     }
 }
 
-/// <summary>
-/// Scales a matrix struct by a scalar value using true pass-by-value.
-/// Unlike arrays, structs CAN be passed by value in C++. This creates
-/// a complete copy of the struct, so modifications to the parameter 'm'
-/// do NOT affect the original. The scaled copy is returned, leaving the
-/// original unchanged. This is the proper way to achieve pass-by-value
-/// semantics with matrix data.
-/// </summary>
-/// <param name="m">Matrix3x3 struct to scale (passed by value, copy is made)</param>
-/// <param name="scalar">Value to multiply each element by</param>
-/// <returns>New scaled matrix (original is unchanged)</returns>
+/**
+ * Scales a matrix struct by a scalar value using true pass-by-value.
+ *
+ * Unlike arrays, structs CAN be passed by value in C++. This creates
+ * a complete copy of the struct, so modifications to the parameter 'm'
+ * do NOT affect the original. The scaled copy is returned, leaving the
+ * original unchanged. This is the proper way to achieve pass-by-value
+ * semantics with matrix data.
+ *
+ * @param m Matrix3x3 struct to scale (passed by value, copy is made)
+ * @param scalar Value to multiply each element by
+ * @return New scaled matrix (original is unchanged)
+ */
 Matrix3x3 scaleMatrixCopy(Matrix3x3 m, double scalar) {
     scaleMatrixByValue(m.data, scalar);
     return m;
 }
 
-/// <summary>
-/// Scales a matrix struct in place using pass-by-reference.
-/// Takes a Matrix3x3 struct by reference (using &), which allows direct
-/// modification of the original struct. This demonstrates that structs,
-/// like other types, can be passed by reference to avoid copying and to
-/// allow in-place modification of the caller's data.
-/// </summary>
-/// <param name="m">Matrix3x3 struct to scale (passed by reference, original IS modified)</param>
-/// <param name="scalar">Value to multiply each element by</param>
+/**
+ * Scales a matrix struct in place using pass-by-reference.
+ *
+ * Takes a Matrix3x3 struct by reference (using &), which allows direct
+ * modification of the original struct. This demonstrates that structs,
+ * like other types, can be passed by reference to avoid copying and to
+ * allow in-place modification of the caller's data.
+ *
+ * @param m Matrix3x3 struct to scale (passed by reference, original IS modified)
+ * @param scalar Value to multiply each element by
+ */
 void scaleMatrixInPlace(Matrix3x3 &m, double scalar) {
     scaleMatrixByReference(m.data, scalar);
 }

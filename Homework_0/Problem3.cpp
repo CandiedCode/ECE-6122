@@ -21,20 +21,22 @@ bool isZero(int number) {
     return number == 0;
 }
 
-/// <summary>
-/// Checks if a number is even.
-/// </summary>
-/// <param name="number">The integer to check</param>
-/// <returns>true if the number is even, false otherwise</returns>
+/**
+ * Checks if a number is even.
+ *
+ * @param number The integer to check
+ * @return true if the number is even, false otherwise
+ */
 bool isEvenNumber(int number) {
     return number % 2 == 0;
 }
 
-/// <summary>
-/// Checks if a number is prime.
-/// </summary>
-/// <param name="number">The integer to check</param>
-/// <returns>true if the number is prime, false otherwise</returns>
+/**
+ * Checks if a number is prime.
+ *
+ * @param number The integer to check
+ * @return true if the number is prime, false otherwise
+ */
 bool isPrime(int number) {
     // 0 and 1 are not prime numbers
     if (number <= 1) {

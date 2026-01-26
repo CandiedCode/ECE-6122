@@ -23,16 +23,18 @@ input arrays
 #include <iomanip>
 #include <iostream>
 
-/// <summary>
-/// Computes statistical measures for sensor data.
-/// Calculates the arithmetic mean, variance, and standard deviation
-/// for an array of sensor readings.
-/// </summary>
-/// <param name="data">Input array of sensor readings (must not be modified)</param>
-/// <param name="size">Number of readings in the array</param>
-/// <param name="mean">Output: calculated arithmetic mean</param>
-/// <param name="variance">Output: calculated variance</param>
-/// <param name="stdDev">Output: calculated standard deviation</param>
+/**
+ * Computes statistical measures for sensor data.
+ *
+ * Calculates the arithmetic mean, variance, and standard deviation
+ * for an array of sensor readings.
+ *
+ * @param data Input array of sensor readings (must not be modified)
+ * @param size Number of readings in the array
+ * @param mean Output: calculated arithmetic mean
+ * @param variance Output: calculated variance
+ * @param stdDev Output: calculated standard deviation
+ */
 void computeStatistics(const double data[], int size, double &mean, double &variance, double &stdDev) {
     double sum = 0.0;
     for (int i = 0; i < size; ++i)
@@ -50,17 +52,19 @@ void computeStatistics(const double data[], int size, double &mean, double &vari
     stdDev = std::sqrt(variance);
 }
 
-/// <summary>
-/// Finds the minimum and maximum values in sensor data.
-/// Searches through the data array to identify the smallest and largest
-/// values along with their positions.
-/// </summary>
-/// <param name="data">Input array of sensor readings (must not be modified)</param>
-/// <param name="size">Number of readings in the array</param>
-/// <param name="minVal">Output: minimum value found in the array</param>
-/// <param name="maxVal">Output: maximum value found in the array</param>
-/// <param name="minIndex">Output: array index of the minimum value</param>
-/// <param name="maxIndex">Output: array index of the maximum value</param>
+/**
+ * Finds the minimum and maximum values in sensor data.
+ *
+ * Searches through the data array to identify the smallest and largest
+ * values along with their positions.
+ *
+ * @param data Input array of sensor readings (must not be modified)
+ * @param size Number of elements to process in data
+ * @param minVal Output: minimum value found in the array
+ * @param maxVal Output: maximum value found in the array
+ * @param minIndex Output: array index of the minimum value
+ * @param maxIndex Output: array index of the maximum value
+ */
 void findExtrema(const double data[], int size, double &minVal, double &maxVal, int &minIndex, int &maxIndex) {
     minVal = data[0];
     maxVal = data[0];
