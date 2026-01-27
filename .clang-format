@@ -8,4 +8,5 @@ BraceWrapping:
   AfterStruct: false
   AfterEnum: false
   AfterNamespace: false
+ColumnLimit: 120
 ---

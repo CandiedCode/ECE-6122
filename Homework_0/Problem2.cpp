@@ -29,6 +29,7 @@ doesn’t work as expected in C++.
 */
 
 #include <iostream>
+#include <limits>
 
 // Struct to represent a 3x3 matrix
 struct Matrix3x3 {
@@ -36,8 +37,6 @@ struct Matrix3x3 {
 };
 
 /**
- * Prints a 3x3 matrix to standard output.
- *
  * Displays the matrix in a formatted grid with tab-separated values.
  *
  * @param matrix Input 3x3 array to display
@@ -57,8 +56,6 @@ void printMatrix(const double matrix[3][3]) {
 }
 
 /**
- * Resets a matrix to its original values by copying from a source matrix.
- *
  * Copies all elements from the original matrix to the target matrix,
  * restoring it to a previous state.
  *
@@ -77,8 +74,6 @@ void resetMatrix(double matrix[3][3], const double original[3][3]) {
 
 /**
  * Compares two 3x3 matrices for equality.
- *
- * Checks if all corresponding elements in the two matrices are equal.
  *
  * @param mat1 First 3x3 array to compare
  * @param mat2 Second 3x3 array to compare
@@ -123,10 +118,9 @@ void scaleMatrixByValue(double matrix[3][3], double scalar) {
  * Scales a matrix by a scalar value using pass-by-reference.
  *
  * This function uses explicit pass-by-reference syntax with the & operator,
- * making it clear that the original matrix WILL be modified. This is the
- * proper way to explicitly document intent to modify the caller's data.
+ * making it clear that the original matrix WILL be modified.
  *
- * @param matrix 3x3 array to scale (passed by reference, original IS modified)
+ * @param matrix 3x3 array to scale
  * @param scalar Value to multiply each element by
  */
 void scaleMatrixByReference(double (&matrix)[3][3], double scalar) {
@@ -184,10 +178,13 @@ int main() {
         {
             std::cout << "Enter reading row " << (i + 1) << ", column " << (j + 1) << ": ";
             std::cin >> matrix[i][j];
-            if (std::cin.fail())
+            while (std::cin.fail())
             {
                 std::cerr << "Error: Invalid input. Please enter a valid floating-point number." << std::endl;
-                return 1;
+                std::cout << "Enter reading row " << (i + 1) << ", column " << (j + 1) << ": ";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                std::cin >> matrix[i][j];
             }
             matrixStruct.data[i][j] = matrix[i][j];
         }
@@ -197,45 +194,49 @@ int main() {
     printMatrix(matrix);
 
     double scalar;
-    std::cout << "\nEnter scaling factor: ";
+    std::cout << "Enter scaling factor: ";
     std::cin >> scalar;
-    if (std::cin.fail())
+    while (std::cin.fail())
     {
         std::cerr << "Error: Invalid input. Please enter a valid floating-point number." << std::endl;
-        return 1;
+        std::cout << "Enter scaling factor: ";
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin >> scalar;
     }
 
-    std::cout << "\nScale by " << scalar << "\n";
-    // Pass-by-value: Returns a scaled copy, original unchanged
+    std::cout << std::endl;
+    // Pass-by-value: The original matrix will be modified due to array decay.
     scaleMatrixByValue(matrix, scalar);
-    std::cout << "\nMatrix after scaleMatrixByValue:\n";
+    std::cout << "Matrix after scaleMatrixByValue:" << std::endl;
     printMatrix(matrix);
-    std::cout << "Matrix changed: " << (matrixEqual(matrix, matrixStruct.data) ? "No" : "Yes") << std::endl;
+    std::cout << "Input Matrix modified: " << (matrixEqual(matrix, matrixStruct.data) ? "No" : "Yes") << std::endl;
     // Reset to original for next test
     resetMatrix(matrix, matrixStruct.data);
 
+    std::cout << std::endl;
     // Pass-by-reference: Modifies the original matrix in place
     scaleMatrixByReference(matrix, scalar);
-    std::cout << "\nMatrix after scaleMatrixByReference:\n";
+    std::cout << "Matrix after scaleMatrixByReference:" << std::endl;
     printMatrix(matrix);
-    std::cout << "Matrix changed: " << (matrixEqual(matrix, matrixStruct.data) ? "No" : "Yes") << std::endl;
+    std::cout << "Input Matrix modified: " << (!matrixEqual(matrix, matrixStruct.data) ? "Yes" : "No") << std::endl;
     // Reset to original for next test
     resetMatrix(matrix, matrixStruct.data);
 
-    // By value
+    std::cout << std::endl;
+    // Pass-by-value: Modifies a copy, original unchanged
     Matrix3x3 scaledMatrixStruct = scaleMatrixCopy(matrixStruct, scalar);
-    std::cout << "\nScaled Matrix Struct (by value):\n";
+    std::cout << "Scaled Matrix Struct (by value):" << std::endl;
     printMatrix(scaledMatrixStruct.data);
-    std::cout << "Original Struct Matrix changed: " << (matrixEqual(matrixStruct.data, matrix) ? "No" : "Yes")
+    std::cout << "Original Struct Matrix modified: " << (!matrixEqual(matrixStruct.data, matrix) ? "Yes" : "No")
               << std::endl;
-    std::cout << "Scaled Struct Matrix changed: "
-              << (matrixEqual(matrixStruct.data, scaledMatrixStruct.data) ? "No" : "Yes") << std::endl;
 
-    // By reference
+    std::cout << std::endl;
+    // Pass-by-reference: Modifies the original struct in place
     scaleMatrixInPlace(matrixStruct, scalar);
-    std::cout << "\nMatrix Struct after scaleMatrixInPlace (should be changed):\n";
+    std::cout << "Matrix Struct after scaleMatrixInPlace:" << std::endl;
     printMatrix(matrixStruct.data);
-    std::cout << "Original Struct Matrix changed: " << (matrixEqual(matrixStruct.data, matrix) ? "No" : "Yes")
+    std::cout << "Original Struct Matrix modified: " << (!matrixEqual(matrixStruct.data, matrix) ? "Yes" : "No")
               << std::endl;
 
     return 0;
