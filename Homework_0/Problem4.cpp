@@ -4,6 +4,49 @@ Class: ECE6122
 Last Date Modified: 2026-01-22
 Description:  Problem 4: Generic Programming with Function Templates
 
+Implement a set of function templates that work with multiple data types. This problem
+emphasizes code reusability through generic programming.
+Part A: Basic Function Templates (10 points)
+Implement the following function templates:
+// Returns the larger of two values
+template <typename T>
+T maximum(T a, T b);
+
+// Returns the smaller of two values
+template <typename T>
+T minimum(T a, T b);
+
+// Swaps two values using references
+template <typename T>
+void swapValues(T& a, T& b);
+
+// Returns the absolute value
+template <typename T>
+T absoluteValue(T value); Demonstrate each template with at least three different data types: int, double, and float.
+Part B: Array Processing Templates (10 points)
+Implement function templates for array operations:
+// Finds and returns the sum of all elements
+template <typename T>
+T arraySum(const T arr[], int size);
+
+// Finds and returns the average (always returns double)
+template <typename T>
+double arrayAverage(const T arr[], int size);
+
+// Reverses the array in place
+template <typename T>
+void reverseArray(T arr[], int size);
+
+// Linear search - returns index or -1 if not found
+template <typename T>
+int linearSearch(const T arr[], int size, T target);
+
+// Bubble sort in ascending order
+template <typename T>
+void bubbleSort(T arr[], int size);
+You can use code from online for Bubble sort i.e.: https://www.geeksforgeeks.org/cpp/bubble-sort-in-cpp/
+Requirements for Part B: - Use for loops for array traversal - Use nested loops for bubble
+sort - Include conditional logic for search and sort comparisons
 */
 
 #include <iostream>
@@ -11,47 +54,38 @@ Description:  Problem 4: Generic Programming with Function Templates
 /**
  * Returns the larger of two values.
  *
- * Template function that compares two values of the same type and
- * returns the larger one using the > operator. Type T must support
- * the > comparison operator.
- *
  * @tparam T Type of values to compare (must support > operator)
  * @param a First value to compare
  * @param b Second value to compare
  * @return The larger of the two values
  */
-template <typename T> T maximum(T a, T b) {
+template <typename T>
+T maximum(T a, T b) {
     return (a > b) ? a : b;
 }
 
 /**
  * Returns the smaller of two values.
  *
- * Template function that compares two values of the same type and
- * returns the smaller one using the < operator. Type T must support
- * the < comparison operator.
- *
  * @tparam T Type of values to compare (must support < operator)
  * @param a First value to compare
  * @param b Second value to compare
  * @return The smaller of the two values
  */
-template <typename T> T minimum(T a, T b) {
+template <typename T>
+T minimum(T a, T b) {
     return (a < b) ? a : b;
 }
 
 /**
  * Swaps the values of two variables.
  *
- * Template function that exchanges the values of two variables
- * of the same type using a temporary variable. Type T can be
- * any type that supports assignment.
- *
  * @tparam T Type of values to swap
  * @param a First variable (will be modified)
  * @param b Second variable (will be modified)
  */
-template <typename T> void swapValues(T &a, T &b) {
+template <typename T>
+void swapValues(T &a, T &b) {
     T temp = a;
     a = b;
     b = temp;
@@ -60,14 +94,12 @@ template <typename T> void swapValues(T &a, T &b) {
 /**
  * Returns the absolute value of a number.
  *
- * Template function that returns the absolute (non-negative) value
- * of the input. Type T must support comparison with 0 and unary negation.
- *
  * @tparam T Type of value (must support < operator and unary -)
  * @param value Input value
  * @return Absolute value (always non-negative)
  */
-template <typename T> T absoluteValue(T value) {
+template <typename T>
+T absoluteValue(T value) {
     return (value < 0) ? -value : value;
 }
 
@@ -79,7 +111,8 @@ template <typename T> T absoluteValue(T value) {
  * @param size Number of elements in the array
  * @return Sum of the elements
  */
-template <typename T> T arraySum(const T arr[], int size) {
+template <typename T>
+T arraySum(const T arr[], int size) {
     T sum = 0;
     for (int i = 0; i < size; i++)
     {
@@ -91,15 +124,13 @@ template <typename T> T arraySum(const T arr[], int size) {
 /**
  * Calculates the average of elements in an array.
  *
- * Computes the arithmetic mean by summing all elements and dividing
- * by the number of elements. Always returns a double for precision.
- *
  * @tparam T Type of elements in the array (must support addition and division)
  * @param arr Array of elements
  * @param size Number of elements in the array
  * @return Average value of the elements
  */
-template <typename T> double arrayAverage(const T arr[], int size) {
+template <typename T>
+double arrayAverage(const T arr[], int size) {
     T sum = arraySum(arr, size);
     return sum / size;
 }
@@ -107,14 +138,12 @@ template <typename T> double arrayAverage(const T arr[], int size) {
 /**
  * Reverses the elements of an array in place.
  *
- * Swaps elements from opposite ends of the array moving towards the center,
- * effectively reversing the order of all elements. Modifies the original array.
- *
  * @tparam T Type of elements in the array
  * @param arr Array to reverse (will be modified)
  * @param size Number of elements in the array
  */
-template <typename T> void reverseArray(T arr[], int size) {
+template <typename T>
+void reverseArray(T arr[], int size) {
     for (int i = 0; i < size / 2; i++)
     {
         swapValues(arr[i], arr[size - 1 - i]);
@@ -124,17 +153,14 @@ template <typename T> void reverseArray(T arr[], int size) {
 /**
  * Performs a linear search to find a target value in an array.
  *
- * Sequentially checks each element in the array from start to end
- * until the target value is found or the end is reached. Works on
- * both sorted and unsorted arrays.
- *
  * @tparam T Type of elements in the array (must support == operator)
  * @param arr Array to search
  * @param size Number of elements in the array
  * @param target Value to search for
  * @return Index of the target if found, -1 otherwise
  */
-template <typename T> int linearSearch(const T arr[], int size, T target) {
+template <typename T>
+int linearSearch(const T arr[], int size, T target) {
     for (int i = 0; i < size; i++)
     {
         if (arr[i] == target)
@@ -150,15 +176,12 @@ template <typename T> int linearSearch(const T arr[], int size, T target) {
 /**
  * Sorts an array in ascending order using the bubble sort algorithm.
  *
- * Repeatedly steps through the array, compares adjacent elements, and
- * swaps them if they are in the wrong order. The process repeats until
- * the array is sorted. Time complexity: O(n²).
- *
  * @tparam T Type of elements in the array (must support > operator)
  * @param arr Array to sort (will be modified in place)
  * @param size Number of elements in the array
  */
-template <typename T> void bubbleSort(T arr[], int size) {
+template <typename T>
+void bubbleSort(T arr[], int size) {
     for (int i = 0; i < size - 1; i++)
     {
         for (int j = 0; j < size - i - 1; j++)

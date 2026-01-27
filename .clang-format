@@ -9,5 +9,6 @@ BraceWrapping:
   AfterEnum: false
   AfterNamespace: false
   BeforeElse: true
+AlwaysBreakTemplateDeclarations: Yes
 ColumnLimit: 120
 ---
