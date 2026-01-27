@@ -2,12 +2,12 @@
 Author: Jennifer Cwagenberg
 Class: ECE6122
 Last Date Modified: 2026-01-22
-Description:  Problem 3: Number Classification with Control Structures 
+Description:  Problem 3: Number Classification with Control Structures
 
 */
 
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
 bool isPositiveNumber(int number) {
     return number > 0;
@@ -39,12 +39,15 @@ bool isEvenNumber(int number) {
  */
 bool isPrime(int number) {
     // 0 and 1 are not prime numbers
-    if (number <= 1) {
+    if (number <= 1)
+    {
         return false;
     }
 
-    for (int i = 2; i * i <= number; i++) {
-        if (number % i == 0) {
+    for (int i = 2; i * i <= number; i++)
+    {
+        if (number % i == 0)
+        {
             return false;
         }
     }
@@ -53,7 +56,8 @@ bool isPrime(int number) {
 
 bool isComposite(int number) {
     // Composite numbers are greater than 1 and not prime
-    if (number <= 1) {
+    if (number <= 1)
+    {
         return false;
     }
     return !isPrime(number);
@@ -61,7 +65,8 @@ bool isComposite(int number) {
 
 bool isPerfectSquare(int number) {
     // Negative numbers cannot be perfect squares
-    if (isNegativeNumber(number)) {
+    if (isNegativeNumber(number))
+    {
         return false;
     }
 
@@ -69,7 +74,8 @@ bool isPerfectSquare(int number) {
     double int_part;
     double frac_part = std::modf(square_root, &int_part);
 
-    if (frac_part != 0.0) {
+    if (frac_part != 0.0)
+    {
         return false;
     }
     return true;
@@ -77,18 +83,21 @@ bool isPerfectSquare(int number) {
 
 bool isFibonacci(int number) {
     // Fibonacci numbers are non-negative
-    if (isNegativeNumber(number)) {
+    if (isNegativeNumber(number))
+    {
         return false;
     }
 
-    if (number > 50) {
+    if (number > 50)
+    {
         return false;
     }
 
     int a = 0;
     int b = 1;
 
-    while (a < number) {
+    while (a < number)
+    {
         int temp = a;
         a = b;
         b = temp + b;
@@ -97,8 +106,7 @@ bool isFibonacci(int number) {
     return a == number;
 }
 
-void classifyNumber(int n, bool& isPositive, bool& isEven,
-                    bool& prime, bool& perfectSquare, bool& fibonacci){
+void classifyNumber(int n, bool &isPositive, bool &isEven, bool &prime, bool &perfectSquare, bool &fibonacci) {
     isPositive = isPositiveNumber(n);
     isEven = isEvenNumber(n);
     prime = isPrime(n);
@@ -109,11 +117,13 @@ void classifyNumber(int n, bool& isPositive, bool& isEven,
 int main() {
     int number;
 
-    do {
+    do
+    {
         std::cout << "Enter an integer number (-9999 to quit): ";
         std::cin >> number;
 
-        if (std::cin.fail()) {
+        if (std::cin.fail())
+        {
             std::cout << "Exiting program." << std::endl;
             break;
         }

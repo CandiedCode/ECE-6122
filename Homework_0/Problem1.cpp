@@ -5,25 +5,25 @@ Last Date Modified: 2026-01-22
 Description:  Homework 1: Statistical Analysis with Pass-by-Reference
 
 Write a C++ program that analyzes a collection of floating-point sensor readings. Your
-program must: 
-1. Prompt the user to enter the number of readings (between 5 and 100) 
-2. Dynamically read that many double values from standard input 
+program must:
+1. Prompt the user to enter the number of readings (between 5 and 100)
+2. Dynamically read that many double values from standard input
 3. Implement the following functions that compute statistics using pass-by-reference for output parameters:
   void computeStatistics(const double data[], int size, double& mean, double& variance, double& stdDev);
   void findExtrema(const double data[], int size, double& minVal, double& maxVal, int& minIndex, int& maxIndex);
-4. Display all computed statistics with appropriate formatting (2 decimal places) 
+4. Display all computed statistics with appropriate formatting (2 decimal places)
 
-Requirements: 
-- Use a for loop to read input values 
-- Use appropriate loops for statistical calculations 
-- Validate that the number of readings is within the specified range using conditional statements 
+Requirements:
+- Use a for loop to read input values
+- Use appropriate loops for statistical calculations
+- Validate that the number of readings is within the specified range using conditional statements
 - The const keyword must be used appropriately to prevent modification of input arrays
 
 */
 #include <cmath>
 #include <iomanip>
 #include <iostream>
-#include <limits> 
+#include <limits>
 
 /**
  * Calculates the arithmetic mean, variance, and standard deviation
@@ -36,6 +36,15 @@ Requirements:
  * @param stdDev Output: calculated standard deviation
  */
 void computeStatistics(const double data[], int size, double &mean, double &variance, double &stdDev) {
+    // Add size validation
+    if (size < 2)
+    {
+        mean = (size == 1) ? data[0] : 0.0;
+        variance = 0.0;
+        stdDev = 0.0;
+        return;
+    }
+
     double sum = 0.0;
     for (int i = 0; i < size; ++i)
     {
@@ -46,7 +55,7 @@ void computeStatistics(const double data[], int size, double &mean, double &vari
     double varSum = 0.0;
     for (int i = 0; i < size; ++i)
     {
-        varSum += std::pow((data[i] - mean), 2);
+        varSum += (data[i] - mean) * (data[i] - mean);
     }
     variance = varSum / (size - 1);
     stdDev = std::sqrt(variance);
@@ -110,6 +119,7 @@ int main() {
             std::cerr << "Error: Invalid input. Please enter a valid floating-point number." << std::endl;
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Enter reading " << (i + 1) << ": ";
             std::cin >> readings[i];
         }
     }
