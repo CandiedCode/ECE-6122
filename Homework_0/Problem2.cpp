@@ -23,11 +23,11 @@ void scaleMatrixInPlace(Matrix3x3& m, double scalar);        // By reference 3. 
 user to initialize the 3x3 matrix with values – Call each function and display the matrix before and after each call –
 Use nested for loops for matrix traversal – Clearly demonstrate (with printed output) which functions modify the
 original and which do not
-Requirements: - Include comments explaining why the array version of pass-by-value
-doesn’t work as expected in C++.
+Requirements: - Include comments explaining why the array version of pass-by-value doesn’t work as expected in C++.
 
 */
 
+#include <cmath>
 #include <iostream>
 #include <limits>
 
@@ -80,11 +80,13 @@ void resetMatrix(double matrix[3][3], const double original[3][3]) {
  * @return true if matrices are equal, false otherwise
  */
 bool matrixEqual(const double mat1[3][3], const double mat2[3][3]) {
+    const double EPSILON = 1e-9;
+
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 3; j++)
         {
-            if (mat1[i][j] != mat2[i][j])
+            if (std::abs(mat1[i][j] - mat2[i][j]) > EPSILON)
             {
                 return false;
             }
@@ -207,15 +209,21 @@ int main() {
 
     std::cout << std::endl;
     // Pass-by-value: The original matrix will be modified due to array decay.
+    std::cout << "== Pass-by-Value Matrix Scaling ==" << std::endl;
+    std::cout << "Matrix before scaleMatrixByValue:" << std::endl;
+    printMatrix(matrix);
     scaleMatrixByValue(matrix, scalar);
     std::cout << "Matrix after scaleMatrixByValue:" << std::endl;
     printMatrix(matrix);
-    std::cout << "Input Matrix modified: " << (matrixEqual(matrix, matrixStruct.data) ? "No" : "Yes") << std::endl;
+    std::cout << "Input Matrix modified: " << (!matrixEqual(matrix, matrixStruct.data) ? "Yes" : "No") << std::endl;
     // Reset to original for next test
     resetMatrix(matrix, matrixStruct.data);
 
     std::cout << std::endl;
     // Pass-by-reference: Modifies the original matrix in place
+    std::cout << "== Pass-by-Reference Matrix Scaling ==" << std::endl;
+    std::cout << "Matrix before scaleMatrixByReference:" << std::endl;
+    printMatrix(matrix);
     scaleMatrixByReference(matrix, scalar);
     std::cout << "Matrix after scaleMatrixByReference:" << std::endl;
     printMatrix(matrix);
@@ -225,14 +233,22 @@ int main() {
 
     std::cout << std::endl;
     // Pass-by-value: Modifies a copy, original unchanged
+    std::cout << "== Pass-by-Value Struct Matrix Scaling(scaleMatrixCopy): ==" << std::endl;
+    std::cout << "Matrix before scaleMatrixCopy:" << std::endl;
+    printMatrix(matrixStruct.data);
     Matrix3x3 scaledMatrixStruct = scaleMatrixCopy(matrixStruct, scalar);
-    std::cout << "Scaled Matrix Struct (by value):" << std::endl;
+    std::cout << "Matrix after scaleMatrixCopy:" << std::endl;
+    printMatrix(matrixStruct.data);
+    std::cout << "Scaled Matrix Struct Copy (by value):" << std::endl;
     printMatrix(scaledMatrixStruct.data);
     std::cout << "Original Struct Matrix modified: " << (!matrixEqual(matrixStruct.data, matrix) ? "Yes" : "No")
               << std::endl;
 
     std::cout << std::endl;
     // Pass-by-reference: Modifies the original struct in place
+    std::cout << "== Pass-by-reference Struct Matrix Scaling(scaleMatrixInPlace): ==" << std::endl;
+    std::cout << "Matrix before scaleMatrixInPlace:" << std::endl;
+    printMatrix(matrixStruct.data);
     scaleMatrixInPlace(matrixStruct, scalar);
     std::cout << "Matrix Struct after scaleMatrixInPlace:" << std::endl;
     printMatrix(matrixStruct.data);
