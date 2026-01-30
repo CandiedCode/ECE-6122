@@ -32,7 +32,8 @@ Requirements: - Include comments explaining why the array version of pass-by-val
 #include <limits>
 
 // Struct to represent a 3x3 matrix
-struct Matrix3x3 {
+struct Matrix3x3
+{
     double data[3][3];
 };
 
@@ -41,7 +42,8 @@ struct Matrix3x3 {
  *
  * @param matrix Input 3x3 array to display
  */
-void printMatrix(const double matrix[3][3]) {
+void printMatrix(const double matrix[3][3])
+{
     // Iterate through each row
     for (int i = 0; i < 3; i++)
     {
@@ -62,7 +64,8 @@ void printMatrix(const double matrix[3][3]) {
  * @param matrix 3x3 array to reset (destination, will be modified)
  * @param original 3x3 array containing original values (source, read-only)
  */
-void resetMatrix(double matrix[3][3], const double original[3][3]) {
+void resetMatrix(double matrix[3][3], const double original[3][3])
+{
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 3; j++)
@@ -79,7 +82,8 @@ void resetMatrix(double matrix[3][3], const double original[3][3]) {
  * @param mat2 Second 3x3 array to compare
  * @return true if matrices are equal, false otherwise
  */
-bool matrixEqual(const double mat1[3][3], const double mat2[3][3]) {
+bool matrixEqual(const double mat1[3][3], const double mat2[3][3])
+{
     const double EPSILON = 1e-9;
 
     for (int i = 0; i < 3; i++)
@@ -106,7 +110,8 @@ bool matrixEqual(const double mat1[3][3], const double mat2[3][3]) {
  * @param matrix 3x3 array to scale (decays to pointer, so original IS modified)
  * @param scalar Value to multiply each element by
  */
-void scaleMatrixByValue(double matrix[3][3], double scalar) {
+void scaleMatrixByValue(double matrix[3][3], double scalar)
+{
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 3; j++)
@@ -125,7 +130,8 @@ void scaleMatrixByValue(double matrix[3][3], double scalar) {
  * @param matrix 3x3 array to scale
  * @param scalar Value to multiply each element by
  */
-void scaleMatrixByReference(double (&matrix)[3][3], double scalar) {
+void scaleMatrixByReference(double (&matrix)[3][3], double scalar)
+{
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 3; j++)
@@ -148,7 +154,8 @@ void scaleMatrixByReference(double (&matrix)[3][3], double scalar) {
  * @param scalar Value to multiply each element by
  * @return New scaled matrix (original is unchanged)
  */
-Matrix3x3 scaleMatrixCopy(Matrix3x3 m, double scalar) {
+Matrix3x3 scaleMatrixCopy(Matrix3x3 m, double scalar)
+{
     scaleMatrixByValue(m.data, scalar);
     return m;
 }
@@ -164,11 +171,13 @@ Matrix3x3 scaleMatrixCopy(Matrix3x3 m, double scalar) {
  * @param m Matrix3x3 struct to scale (passed by reference, original IS modified)
  * @param scalar Value to multiply each element by
  */
-void scaleMatrixInPlace(Matrix3x3 &m, double scalar) {
+void scaleMatrixInPlace(Matrix3x3 &m, double scalar)
+{
     scaleMatrixByReference(m.data, scalar);
 }
 
-int main() {
+int main()
+{
     double matrix[3][3];
     Matrix3x3 matrixStruct;
 
@@ -254,6 +263,77 @@ int main() {
     printMatrix(matrixStruct.data);
     std::cout << "Original Struct Matrix modified: " << (!matrixEqual(matrixStruct.data, matrix) ? "Yes" : "No")
               << std::endl;
-
     return 0;
 }
+
+/*
+Sample Output:
+
+Populate a 3x3 matrix:
+Enter reading row 1, column 1: g
+Error: Invalid input. Please enter a valid floating-point number.
+Enter reading row 1, column 1: 1
+Enter reading row 1, column 2: 2
+Enter reading row 1, column 3: 3
+Enter reading row 2, column 1: 1.1
+Enter reading row 2, column 2: 2.2
+Enter reading row 2, column 3: 3.3
+Enter reading row 3, column 1: 1.11
+Enter reading row 3, column 2: 2.22
+Enter reading row 3, column 3: 3.33
+
+Original Matrix:
+  1       2       3
+  1.1     2.2     3.3
+  1.11    2.22    3.33
+Enter scaling factor: 5
+
+== Pass-by-Value Matrix Scaling ==
+Matrix before scaleMatrixByValue:
+  1       2       3
+  1.1     2.2     3.3
+  1.11    2.22    3.33
+Matrix after scaleMatrixByValue:
+  5       10      15
+  5.5     11      16.5
+  5.55    11.1    16.65
+Input Matrix modified: Yes
+
+== Pass-by-Reference Matrix Scaling ==
+Matrix before scaleMatrixByReference:
+  1       2       3
+  1.1     2.2     3.3
+  1.11    2.22    3.33
+Matrix after scaleMatrixByReference:
+  5       10      15
+  5.5     11      16.5
+  5.55    11.1    16.65
+Input Matrix modified: Yes
+
+== Pass-by-Value Struct Matrix Scaling(scaleMatrixCopy): ==
+Matrix before scaleMatrixCopy:
+  1       2       3
+  1.1     2.2     3.3
+  1.11    2.22    3.33
+Matrix after scaleMatrixCopy:
+  1       2       3
+  1.1     2.2     3.3
+  1.11    2.22    3.33
+Scaled Matrix Struct Copy (by value):
+  5       10      15
+  5.5     11      16.5
+  5.55    11.1    16.65
+Original Struct Matrix modified: No
+
+== Pass-by-reference Struct Matrix Scaling(scaleMatrixInPlace): ==
+Matrix before scaleMatrixInPlace:
+  1       2       3
+  1.1     2.2     3.3
+  1.11    2.22    3.33
+Matrix Struct after scaleMatrixInPlace:
+  5       10      15
+  5.5     11      16.5
+  5.55    11.1    16.65
+Original Struct Matrix modified: Yes
+
+*/

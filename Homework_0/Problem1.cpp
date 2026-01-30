@@ -35,7 +35,8 @@ Requirements:
  * @param variance Output: calculated sample variance
  * @param stdDev Output: calculated standard deviation
  */
-void computeStatistics(const double data[], int size, double &mean, double &variance, double &stdDev) {
+void computeStatistics(const double data[], int size, double &mean, double &variance, double &stdDev)
+{
     // Add size validation
     if (size < 2)
     {
@@ -71,7 +72,8 @@ void computeStatistics(const double data[], int size, double &mean, double &vari
  * @param minIndex Output: array index of the minimum value
  * @param maxIndex Output: array index of the maximum value
  */
-void findExtrema(const double data[], int size, double &minVal, double &maxVal, int &minIndex, int &maxIndex) {
+void findExtrema(const double data[], int size, double &minVal, double &maxVal, int &minIndex, int &maxIndex)
+{
     minVal = data[0];
     maxVal = data[0];
     minIndex = 0;
@@ -92,7 +94,8 @@ void findExtrema(const double data[], int size, double &minVal, double &maxVal, 
     }
 }
 
-int main() {
+int main()
+{
     const int MIN_READINGS = 5;
     const int MAX_READINGS = 100;
     std::cout << "Enter number of readings (" << MIN_READINGS << "-" << MAX_READINGS << "): " << std::endl;
@@ -144,3 +147,31 @@ int main() {
     delete[] readings;
     return 0;
 }
+
+/*
+Sample Output:
+
+Enter number of readings (5-100):
+blag
+Error: Input is invalid.
+Enter number of readings (5-100):
+4
+Error: Input is invalid.
+Enter number of readings (5-100):
+6
+Enter reading 1: 23.5
+Enter reading 2: 18.2
+Enter reading 3: 31.7
+Enter reading 4: 25.0
+Enter reading 5: 19.8
+Enter reading 6: 27.3
+
+Statistical Analysis Results:
+---------------------------
+Mean:              24.25
+Variance:          24.47
+Standard Deviation: 4.95
+Minimum Value:     18.20 (at index 1)
+Maximum Value:     31.70 (at index 2)
+
+ */

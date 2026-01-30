@@ -35,7 +35,8 @@ Analysis of 13:
 ///
 /// @param number The integer to check.
 /// @return true if the number is greater than zero, false otherwise.
-bool isPositiveNumber(int number) {
+bool isPositiveNumber(int number)
+{
     return number > 0;
 }
 
@@ -43,7 +44,8 @@ bool isPositiveNumber(int number) {
 ///
 /// @param number The integer to check.
 /// @return true if the number is less than zero, false otherwise.
-bool isNegativeNumber(int number) {
+bool isNegativeNumber(int number)
+{
     return number < 0;
 }
 
@@ -51,7 +53,8 @@ bool isNegativeNumber(int number) {
 ///
 /// @param number The integer to check.
 /// @return true if the number equals zero, false otherwise.
-bool isZero(int number) {
+bool isZero(int number)
+{
     return number == 0;
 }
 
@@ -59,7 +62,8 @@ bool isZero(int number) {
 ///
 /// @param number The integer to check.
 /// @return true if the number is even, false otherwise.
-bool isEvenNumber(int number) {
+bool isEvenNumber(int number)
+{
     return number % 2 == 0;
 }
 
@@ -70,7 +74,8 @@ bool isEvenNumber(int number) {
 ///
 /// @param number The integer to check.
 /// @return true if the number is prime, false otherwise.
-bool isPrime(int number) {
+bool isPrime(int number)
+{
     // 0 and 1 are not prime numbers
     if (number <= 1)
     {
@@ -93,7 +98,8 @@ bool isPrime(int number) {
 ///
 /// @param number The integer to check.
 /// @return true if the number is composite, false otherwise.
-bool isComposite(int number) {
+bool isComposite(int number)
+{
     // Composite numbers are greater than 1 and not prime
     if (number <= 1)
     {
@@ -108,7 +114,8 @@ bool isComposite(int number) {
 ///
 /// @param number The integer to check.
 /// @return true if the number is a perfect square, false otherwise.
-bool isPerfectSquare(int number) {
+bool isPerfectSquare(int number)
+{
     // Negative numbers cannot be perfect squares
     if (isNegativeNumber(number))
     {
@@ -137,7 +144,8 @@ int fib_cache[50] = {0, 1};
 ///
 /// @param number The integer to check.
 /// @return true if the number is a Fibonacci number (<=50), false otherwise.
-bool isFibonacci(int number) {
+bool isFibonacci(int number)
+{
     // Fibonacci numbers are non-negative
     if (isNegativeNumber(number))
     {
@@ -188,7 +196,8 @@ bool isFibonacci(int number) {
 /// @param[out] prime Set to true if n is prime, false otherwise.
 /// @param[out] perfectSquare Set to true if n is a perfect square, false otherwise.
 /// @param[out] fibonacci Set to true if n is a Fibonacci number (<=50), false otherwise.
-void classifyNumber(int n, bool &isPositive, bool &isEven, bool &prime, bool &perfectSquare, bool &fibonacci) {
+void classifyNumber(int n, bool &isPositive, bool &isEven, bool &prime, bool &perfectSquare, bool &fibonacci)
+{
     isPositive = isPositiveNumber(n);
     isEven = isEvenNumber(n);
     prime = isPrime(n);
@@ -204,7 +213,8 @@ void classifyNumber(int n, bool &isPositive, bool &isEven, bool &prime, bool &pe
 ///
 /// @param n The integer to categorize.
 /// @return A string representing the magnitude category.
-std::string magnitude(int n) {
+std::string magnitude(int n)
+{
     std::string category;
     switch (n)
     {
@@ -235,7 +245,8 @@ std::string magnitude(int n) {
     return category;
 }
 
-int main() {
+int main()
+{
     int number;
 
     do
@@ -251,18 +262,100 @@ int main() {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cin >> number;
         }
+        if (number != -9999)
+        {
+            bool isPositive, isEven, prime, perfectSquare, fibonacci;
+            classifyNumber(number, isPositive, isEven, prime, perfectSquare, fibonacci);
 
-        bool isPositive, isEven, prime, perfectSquare, fibonacci;
-        classifyNumber(number, isPositive, isEven, prime, perfectSquare, fibonacci);
-
-        std::cout << "Analysis of " << number << ":\n";
-        std::cout << "\tSign: " << (number == 0 ? "Zero" : (isPositive ? "Positive" : "Negative")) << std::endl;
-        std::cout << "\tParity: " << (isEven ? "Even" : "Odd") << std::endl;
-        std::cout << "\tPrimality: " << (number <= 1 ? "Neither Prime nor Composite" : (prime ? "Prime" : "Composite"))
-                  << std::endl;
-        std::cout << "\tPerfect Square: " << (perfectSquare ? "Yes" : "No") << std::endl;
-        std::cout << "\tFibonacci: " << (fibonacci ? "Yes" : "No") << std::endl;
-        std::cout << "\tMagnitude: " << magnitude(number) << std::endl;
-        std::cout << std::endl;
+            std::cout << "Analysis of " << number << ":\n";
+            std::cout << "  Sign: \t\t" << (number == 0 ? "Zero" : (isPositive ? "Positive" : "Negative")) << std::endl;
+            std::cout << "  Parity: \t\t" << (isEven ? "Even" : "Odd") << std::endl;
+            std::cout << "  Primality: \t\t"
+                      << (number <= 1 ? "Neither Prime nor Composite" : (prime ? "Prime" : "Composite")) << std::endl;
+            std::cout << "  Perfect Square: \t" << (perfectSquare ? "Yes" : "No") << std::endl;
+            std::cout << "  Fibonacci: \t\t" << (fibonacci ? "Yes" : "No") << std::endl;
+            std::cout << "  Magnitude: \t\t" << magnitude(number) << std::endl;
+            std::cout << std::endl;
+        }
     } while (number != -9999);
 }
+
+/*
+Sample Output:
+
+Enter an integer number (-9999 to quit): blarg
+Error: Invalid input. Please enter a valid integer.
+Enter an integer number (-9999 to quit): 28
+Analysis of 28:
+  Sign:                 Positive
+  Parity:               Even
+  Primality:            Composite
+  Perfect Square:       No
+  Fibonacci:            No
+  Magnitude:            Small
+
+Enter an integer number (-9999 to quit): 13
+Analysis of 13:
+  Sign:                 Positive
+  Parity:               Odd
+  Primality:            Prime
+  Perfect Square:       No
+  Fibonacci:            Yes
+  Magnitude:            Small
+
+Enter an integer number (-9999 to quit): 0
+Analysis of 0:
+  Sign:                 Zero
+  Parity:               Even
+  Primality:            Neither Prime nor Composite
+  Perfect Square:       Yes
+  Fibonacci:            Yes
+  Magnitude:            Zero
+
+Enter an integer number (-9999 to quit): 200 
+Analysis of 200:
+  Sign:                 Positive
+  Parity:               Even
+  Primality:            Composite
+  Perfect Square:       No
+  Fibonacci:            No
+  Magnitude:            Medium
+
+Enter an integer number (-9999 to quit): 10001
+Analysis of 10001:
+  Sign:                 Positive
+  Parity:               Odd
+  Primality:            Composite
+  Perfect Square:       No
+  Fibonacci:            No
+  Magnitude:            Large
+
+Enter an integer number (-9999 to quit): 1000000
+Analysis of 1000000:
+  Sign:                 Positive
+  Parity:               Even
+  Primality:            Composite
+  Perfect Square:       Yes
+  Fibonacci:            No
+  Magnitude:            Large
+
+Enter an integer number (-9999 to quit): 1000001
+Analysis of 1000001:
+  Sign:                 Positive
+  Parity:               Odd
+  Primality:            Composite
+  Perfect Square:       No
+  Fibonacci:            No
+  Magnitude:            Very Large
+
+Enter an integer number (-9999 to quit): -55
+Analysis of -55:
+  Sign:                 Negative
+  Parity:               Odd
+  Primality:            Neither Prime nor Composite
+  Perfect Square:       No
+  Fibonacci:            No
+  Magnitude:            Negative
+
+Enter an integer number (-9999 to quit): -9999
+*/

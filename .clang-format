@@ -1,14 +1,14 @@
 ---
 BasedOnStyle: Microsoft
 BreakBeforeBraces: Custom
-BraceWrapping:
-  AfterControlStatement: Always
-  AfterFunction: false
-  AfterClass: false
-  AfterStruct: false
-  AfterEnum: false
-  AfterNamespace: false
-  BeforeElse: true
+# BraceWrapping:
+#   AfterControlStatement: Always
+#   AfterFunction: false
+#   AfterClass: false
+#   AfterStruct: false
+#   AfterEnum: false
+#   AfterNamespace: false
+#   BeforeElse: true
 AlwaysBreakTemplateDeclarations: Yes
 ColumnLimit: 120
 ---
