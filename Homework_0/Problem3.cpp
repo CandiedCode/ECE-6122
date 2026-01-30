@@ -312,7 +312,7 @@ Analysis of 0:
   Fibonacci:            Yes
   Magnitude:            Zero
 
-Enter an integer number (-9999 to quit): 200 
+Enter an integer number (-9999 to quit): 200
 Analysis of 200:
   Sign:                 Positive
   Parity:               Even

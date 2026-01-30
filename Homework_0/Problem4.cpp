@@ -49,7 +49,28 @@ Requirements for Part B: - Use for loops for array traversal - Use nested loops 
 sort - Include conditional logic for search and sort comparisons
 */
 
+#include <iomanip>
 #include <iostream>
+#include <string>
+
+/**
+ * Displays the elements of an array with a descriptive label.
+ *
+ * @tparam T Type of elements in the array
+ * @param array Array to display
+ * @param size Number of elements in the array
+ * @param label Descriptive label to print before the array elements
+ */
+template <typename T>
+void printArray(const T array[], int size, const std::string &label)
+{
+    std::cout << label << ": ";
+    for (int i = 0; i < size; i++)
+    {
+        std::cout << array[i] << " ";
+    }
+    std::cout << std::endl;
+}
 
 /**
  * Returns the larger of two values.
@@ -60,7 +81,8 @@ sort - Include conditional logic for search and sort comparisons
  * @return The larger of the two values
  */
 template <typename T>
-T maximum(T a, T b) {
+T maximum(T a, T b)
+{
     return (a > b) ? a : b;
 }
 
@@ -73,7 +95,8 @@ T maximum(T a, T b) {
  * @return The smaller of the two values
  */
 template <typename T>
-T minimum(T a, T b) {
+T minimum(T a, T b)
+{
     return (a < b) ? a : b;
 }
 
@@ -85,7 +108,8 @@ T minimum(T a, T b) {
  * @param b Second variable (will be modified)
  */
 template <typename T>
-void swapValues(T &a, T &b) {
+void swapValues(T &a, T &b)
+{
     T temp = a;
     a = b;
     b = temp;
@@ -99,7 +123,8 @@ void swapValues(T &a, T &b) {
  * @return Absolute value (always non-negative)
  */
 template <typename T>
-T absoluteValue(T value) {
+T absoluteValue(T value)
+{
     return (value < 0) ? -value : value;
 }
 
@@ -112,7 +137,8 @@ T absoluteValue(T value) {
  * @return Sum of the elements
  */
 template <typename T>
-T arraySum(const T arr[], int size) {
+T arraySum(const T arr[], int size)
+{
     T sum = 0;
     for (int i = 0; i < size; i++)
     {
@@ -130,7 +156,8 @@ T arraySum(const T arr[], int size) {
  * @return Average value of the elements
  */
 template <typename T>
-double arrayAverage(const T arr[], int size) {
+double arrayAverage(const T arr[], int size)
+{
     T sum = arraySum(arr, size);
     return sum / size;
 }
@@ -143,7 +170,8 @@ double arrayAverage(const T arr[], int size) {
  * @param size Number of elements in the array
  */
 template <typename T>
-void reverseArray(T arr[], int size) {
+void reverseArray(T arr[], int size)
+{
     for (int i = 0; i < size / 2; i++)
     {
         swapValues(arr[i], arr[size - 1 - i]);
@@ -160,7 +188,8 @@ void reverseArray(T arr[], int size) {
  * @return Index of the target if found, -1 otherwise
  */
 template <typename T>
-int linearSearch(const T arr[], int size, T target) {
+int linearSearch(const T arr[], int size, T target)
+{
     for (int i = 0; i < size; i++)
     {
         if (arr[i] == target)
@@ -181,7 +210,8 @@ int linearSearch(const T arr[], int size, T target) {
  * @param size Number of elements in the array
  */
 template <typename T>
-void bubbleSort(T arr[], int size) {
+void bubbleSort(T arr[], int size)
+{
     for (int i = 0; i < size - 1; i++)
     {
         for (int j = 0; j < size - i - 1; j++)
@@ -194,93 +224,119 @@ void bubbleSort(T arr[], int size) {
     }
 }
 
-int main() {
-    int a = -10, b = 5;
-    std::cout << "Using a: " << a << ", b: " << b << std::endl;
-    std::cout << "  Max(a,b):\t" << maximum(a, b) << std::endl;
-    std::cout << "  Min(a,b):\t" << minimum(a, b) << std::endl;
-    std::cout << "  Absolute value (a): " << absoluteValue(a) << std::endl;
+int main()
+{
+    std::cout << "========================================" << std::endl;
+    std::cout << "Part A: Basic Function Templates" << std::endl;
+    std::cout << "========================================" << std::endl;
+
+    // Test with int
+    std::cout << "\n--- Testing with int ---" << std::endl;
+    int a = 10, b = 25;
+    std::cout << "a = " << a << ", b = " << b << std::endl;
+    std::cout << "maximum(a, b) = " << maximum(a, b) << std::endl;
+    std::cout << "minimum(a, b) = " << minimum(a, b) << std::endl;
+    std::cout << "absoluteValue(-15) = " << absoluteValue(-15) << std::endl;
     swapValues(a, b);
-    std::cout << "  After swap (a,b), a: " << a << ", b: " << b << std::endl;
-    std::cout << std::endl;
+    std::cout << "After swapValues: a = " << a << ", b = " << b << std::endl;
 
-    double x = -3.14, y = 2.71;
-    std::cout << "Using x: " << x << ", y: " << y << std::endl;
-    std::cout << "  Max (x,y):\t" << maximum(x, y) << std::endl;
-    std::cout << "  Min (x,y):\t" << minimum(x, y) << std::endl;
-    std::cout << "  Absolute value (x): " << absoluteValue(x) << std::endl;
+    // Test with double
+    std::cout << "\n--- Testing with double ---" << std::endl;
+    double x = 3.14, y = 2.71;
+    std::cout << "x = " << x << ", y = " << y << std::endl;
+    std::cout << "maximum(x, y) = " << maximum(x, y) << std::endl;
+    std::cout << "minimum(x, y) = " << minimum(x, y) << std::endl;
+    std::cout << "absoluteValue(-9.8) = " << absoluteValue(-9.8) << std::endl;
     swapValues(x, y);
-    std::cout << "  After swap (x,y), x: " << x << ", y: " << y << std::endl;
-    std::cout << std::endl;
+    std::cout << "After swapValues: x = " << x << ", y = " << y << std::endl;
 
-    float p = -1.5f, q = 4.5f;
-    std::cout << "Using p: " << p << ", q: " << q << std::endl;
-    std::cout << "  Max (p,q):\t" << maximum(p, q) << std::endl;
-    std::cout << "  Min (p,q):\t" << minimum(p, q) << std::endl;
-    std::cout << "  Absolute value (p): " << absoluteValue(p) << std::endl;
-    swapValues(p, q);
-    std::cout << "  After swap (p,q), p: " << p << ", q: " << q << std::endl;
-    std::cout << std::endl;
+    // Test with char
+    std::cout << "\n--- Testing with char ---" << std::endl;
+    char c1 = 'A', c2 = 'Z';
+    std::cout << "c1 = '" << c1 << "', c2 = '" << c2 << "'" << std::endl;
+    std::cout << "maximum(c1, c2) = '" << maximum(c1, c2) << "'" << std::endl;
+    std::cout << "minimum(c1, c2) = '" << minimum(c1, c2) << "'" << std::endl;
+    swapValues(c1, c2);
+    std::cout << "After swapValues: c1 = '" << c1 << "', c2 = '" << c2 << "'" << std::endl;
 
-    int intArr[] = {5, 2, 9, 1, 5, 6};
-    float floatArray[] = {3.5f, 2.1f, 4.7f, 1.9f};
-    double doubleArray[] = {2.2, 3.3, 1.1, 4.4, 5.5};
+    std::cout << "\n========================================" << std::endl;
+    std::cout << "Part B: Array Processing Templates" << std::endl;
+    std::cout << "========================================" << std::endl;
 
-    std::cout << "Integer array operations:" << std::endl;
-    std::cout << "  Sum: " << arraySum(intArr, 6) << std::endl;
-    std::cout << "  Average: " << arrayAverage(intArr, 6) << std::endl;
-    reverseArray(intArr, 6);
-    std::cout << "  Reversed array: ";
-    for (int val : intArr)
-        std::cout << val << " ";
-    std::cout << std::endl;
-    int searchTarget = 9;
-    int searchIndex = linearSearch(intArr, 6, searchTarget);
-    std::cout << "  Linear search for " << searchTarget << ": "
-              << ((searchIndex != -1) ? "Found at index " + std::to_string(searchIndex) : "Not found") << std::endl;
-    bubbleSort(intArr, 6);
-    std::cout << "  Sorted array: ";
-    for (int val : intArr)
-        std::cout << val << " ";
-    std::cout << std::endl << std::endl;
+    // Test with int array
+    std::cout << "\n--- Testing with int array ---" << std::endl;
+    int intArr[] = {64, 34, 25, 12, 22, 11, 90};
+    int intSize = sizeof(intArr) / sizeof(intArr[0]);
 
-    std::cout << "Float array operations:" << std::endl;
-    std::cout << "  Sum: " << arraySum(floatArray, 4) << std::endl;
-    std::cout << "  Average: " << arrayAverage(floatArray, 4) << std::endl;
-    reverseArray(floatArray, 4);
-    std::cout << "  Reversed array: ";
-    for (float val : floatArray)
-        std::cout << val << " ";
-    std::cout << std::endl;
-    float floatSearchTarget = 4.7f;
-    int floatSearchIndex = linearSearch(floatArray, 4, floatSearchTarget);
-    std::cout << "  Linear search for " << floatSearchTarget << ": "
-              << ((floatSearchIndex != -1) ? "Found at index " + std::to_string(floatSearchIndex) : "Not found")
-              << std::endl;
-    bubbleSort(floatArray, 4);
-    std::cout << "  Sorted array: ";
-    for (float val : floatArray)
-        std::cout << val << " ";
-    std::cout << std::endl << std::endl;
+    printArray(intArr, intSize, "Original array");
+    std::cout << "Sum: " << arraySum(intArr, intSize) << std::endl;
+    std::cout << "Average: " << std::fixed << std::setprecision(2) << arrayAverage(intArr, intSize) << std::endl;
+    std::cout << "Search for 25: index " << linearSearch(intArr, intSize, 25) << std::endl;
+    std::cout << "Search for 99: index " << linearSearch(intArr, intSize, 99) << std::endl;
 
-    std::cout << "Double array operations:" << std::endl;
-    std::cout << "  Sum: " << arraySum(doubleArray, 5) << std::endl;
-    std::cout << "  Average: " << arrayAverage(doubleArray, 5) << std::endl;
-    reverseArray(doubleArray, 5);
-    std::cout << "  Reversed array: ";
-    for (double val : doubleArray)
-        std::cout << val << " ";
-    std::cout << std::endl;
-    double doubleSearchTarget = 3.3;
-    int doubleSearchIndex = linearSearch(doubleArray, 5, doubleSearchTarget);
-    std::cout << "  Linear search for " << doubleSearchTarget << ": "
-              << ((doubleSearchIndex != -1) ? "Found at index " + std::to_string(doubleSearchIndex) : "Not found")
-              << std::endl;
-    bubbleSort(doubleArray, 5);
-    std::cout << "  Sorted array: ";
-    for (double val : doubleArray)
-        std::cout << val << " ";
-    std::cout << std::endl;
+    bubbleSort(intArr, intSize);
+    printArray(intArr, intSize, "After bubbleSort");
 
-    return 0;
+    reverseArray(intArr, intSize);
+    printArray(intArr, intSize, "After reverseArray");
+
+    // Test with double array
+    std::cout << "\n--- Testing with double array ---" << std::endl;
+    double dblArr[] = {3.14, 1.41, 2.71, 1.73, 1.62};
+    int dblSize = sizeof(dblArr) / sizeof(dblArr[0]);
+
+    printArray(dblArr, dblSize, "Original array");
+    std::cout << "Sum: " << arraySum(dblArr, dblSize) << std::endl;
+    std::cout << "Average: " << arrayAverage(dblArr, dblSize) << std::endl;
+
+    bubbleSort(dblArr, dblSize);
+    printArray(dblArr, dblSize, "After bubbleSort");
 }
+
+/*
+Sample Output:
+
+========================================
+Part A: Basic Function Templates
+========================================
+
+--- Testing with int ---
+a = 10, b = 25
+maximum(a, b) = 25
+minimum(a, b) = 10
+absoluteValue(-15) = 15
+After swapValues: a = 25, b = 10
+
+--- Testing with double ---
+x = 3.14, y = 2.71
+maximum(x, y) = 3.14
+minimum(x, y) = 2.71
+absoluteValue(-9.8) = 9.8
+After swapValues: x = 2.71, y = 3.14
+
+--- Testing with char ---
+c1 = 'A', c2 = 'Z'
+maximum(c1, c2) = 'Z'
+minimum(c1, c2) = 'A'
+After swapValues: c1 = 'Z', c2 = 'A'
+
+========================================
+Part B: Array Processing Templates
+========================================
+
+--- Testing with int array ---
+Original array: 64 34 25 12 22 11 90
+Sum: 258
+Average: 36.00
+Search for 25: index 2
+Search for 99: index -1
+After bubbleSort: 11 12 22 25 34 64 90
+After reverseArray: 90 64 34 25 22 12 11
+
+--- Testing with double array ---
+Original array: 3.14 1.41 2.71 1.73 1.62
+Sum: 10.61
+Average: 2.12
+After bubbleSort: 1.41 1.62 1.73 2.71 3.14
+
+*/
