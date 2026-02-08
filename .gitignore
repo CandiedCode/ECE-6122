@@ -56,4 +56,3 @@ deactivate_conanbuild.*
 activate_conanbuild.*
 deactivate_conanrun.*
 activate_conanrun.*
-CMakePresets.json

@@ -1,4 +1,6 @@
 #include <iostream>
+#include <MazeGenerator.h>
+#include <SFML/Graphics.hpp>
 
 struct MazeConfig
     {
@@ -18,11 +20,12 @@ struct MazeConfig
 
 int main()
 {
-    MazeConfig config;
-    int mHeight, mWidth;
+    // MazeConfig config;
+    // int mHeight, mWidth;
+    // CellType cellType = CellType::Wall;
 
     std::cout << "Enter maze height: ";
-    std::cin >> config.height;
+    // std::cin >> config.height;
     
     // while (std::cin.fail() || !config.heightValid())
     // {        
