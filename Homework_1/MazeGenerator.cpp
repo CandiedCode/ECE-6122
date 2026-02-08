@@ -2,7 +2,7 @@
  * @file MazeGenerator.cpp
  * @brief Implementation of maze generation using recursive backtracking
  * @course ECE 4122/6122 - Homework 21
- * 
+ *
  * The recursive backtracking algorithm works as follows:
  * 1. Start with a grid full of walls
  * 2. Pick a starting cell and mark it as visited
@@ -33,23 +33,28 @@ Maze::Maze(int width, int height, unsigned int seed)
     m_height = std::max(11, std::min(m_height, 101));
 
     // Seed random number generator
-    if (seed == 0) {
+    if (seed == 0)
+    {
         // Use time-based seed if not provided
         auto time_seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
         m_rng.seed(static_cast<unsigned int>(time_seed));
-    } else {
+    }
+    else
+    {
         m_rng.seed(seed);
     }
 
     initializeGrid();
 }
 
-void Maze::initializeGrid() 
+void Maze::initializeGrid()
 {
     m_grid.resize(m_height);
-    for (int row = 0; row < m_height; ++row) {
+    for (int row = 0; row < m_height; ++row)
+    {
         m_grid[row].resize(m_width);
-        for (int col = 0; col < m_width; ++col) {
+        for (int col = 0; col < m_width; ++col)
+        {
             m_grid[row][col].type = CellType::Wall;
             m_grid[row][col].visited = false;
             m_grid[row][col].row = row;
@@ -58,180 +63,180 @@ void Maze::initializeGrid()
     }
 }
 
-void Maze::generate() 
+void Maze::generate()
 {
     // Reset the grid
     initializeGrid();
-    
+
     // Start carving from position (1,1)
     // We use odd coordinates for paths, even for walls
     carvePassages(1, 1);
-    
+
     // Place start and end positions
     placeStartAndEnd();
 }
 
-void Maze::carvePassages(int row, int col) 
+void Maze::carvePassages(int row, int col)
 {
     // Mark current cell as visited and carve it out
     m_grid[row][col].visited = true;
     m_grid[row][col].type = CellType::Path;
-    
+
     // Get all unvisited neighbors (2 cells away to maintain wall structure)
     std::vector<std::pair<int, int>> neighbors = getUnvisitedNeighbors(row, col);
-    
+
     // Shuffle neighbors for randomness
     std::shuffle(neighbors.begin(), neighbors.end(), m_rng);
-    
+
     // Visit each neighbor
-    for (const auto& neighbor : neighbors) 
+    for (const auto &neighbor : neighbors)
     {
         int nRow = neighbor.first;
         int nCol = neighbor.second;
-        
+
         // Check if still unvisited (may have been visited via different path)
-        if (!m_grid[nRow][nCol].visited) 
+        if (!m_grid[nRow][nCol].visited)
         {
             // Carve through the wall between current and neighbor
             int wallRow = row + (nRow - row) / 2;
             int wallCol = col + (nCol - col) / 2;
             m_grid[wallRow][wallCol].type = CellType::Path;
-            
+
             // Recursively carve from neighbor
             carvePassages(nRow, nCol);
         }
     }
 }
 
-std::vector<std::pair<int, int>> Maze::getUnvisitedNeighbors(int row, int col) 
+std::vector<std::pair<int, int>> Maze::getUnvisitedNeighbors(int row, int col)
 {
     std::vector<std::pair<int, int>> neighbors;
-    
+
     // Check all four directions (2 cells away for wall structure)
     // Direction: {row_delta, col_delta}
     const int directions[4][2] = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}};
-    
-    for (const auto& dir : directions) 
+
+    for (const auto &dir : directions)
     {
         int newRow = row + dir[0];
         int newCol = col + dir[1];
-        
+
         // Check bounds (staying within the border walls)
-        if (newRow > 0 && newRow < m_height - 1 &&
-            newCol > 0 && newCol < m_width - 1) 
-            {
-            if (!m_grid[newRow][newCol].visited) 
+        if (newRow > 0 && newRow < m_height - 1 && newCol > 0 && newCol < m_width - 1)
+        {
+            if (!m_grid[newRow][newCol].visited)
             {
                 // Valid unvisited neighbor
                 neighbors.push_back({newRow, newCol});
             }
         }
     }
-    
+
     return neighbors;
 }
 
-void Maze::placeStartAndEnd() 
+void Maze::placeStartAndEnd()
 {
     // Place start in top-left area
     m_start = {1, 1};
     m_grid[m_start.first][m_start.second].type = CellType::Start;
-    
+
     // Place end in bottom-right area
     m_end = {m_height - 2, m_width - 2};
     m_grid[m_end.first][m_end.second].type = CellType::End;
 }
 
-void Maze::resetVisualization() 
+void Maze::resetVisualization()
 {
-    for (int row = 0; row < m_height; ++row) 
+    for (int row = 0; row < m_height; ++row)
     {
-        for (int col = 0; col < m_width; ++col) 
+        for (int col = 0; col < m_width; ++col)
         {
             CellType type = m_grid[row][col].type;
-            if (type == CellType::Visited || type == CellType::Solution) 
+            if (type == CellType::Visited || type == CellType::Solution)
             {
                 m_grid[row][col].type = CellType::Path;
             }
         }
     }
-    
+
     // Restore start and end markers
     m_grid[m_start.first][m_start.second].type = CellType::Start;
     m_grid[m_end.first][m_end.second].type = CellType::End;
 }
 
-Cell& Maze::getCell(int row, int col) 
+Cell &Maze::getCell(int row, int col)
 {
     return m_grid[row][col];
 }
 
-const Cell& Maze::getCell(int row, int col) const 
+const Cell &Maze::getCell(int row, int col) const
 {
     return m_grid[row][col];
 }
 
-void Maze::setCellType(int row, int col, CellType type) 
+void Maze::setCellType(int row, int col, CellType type)
 {
-    if (isInBounds(row, col)) {
+    if (isInBounds(row, col))
+    {
         m_grid[row][col].type = type;
     }
 }
 
-bool Maze::isInBounds(int row, int col) const 
+bool Maze::isInBounds(int row, int col) const
 {
     return row >= 0 && row < m_height && col >= 0 && col < m_width;
 }
 
-bool Maze::isValidPath(int row, int col) const 
+bool Maze::isValidPath(int row, int col) const
 {
-    if (!isInBounds(row, col)) {
+    if (!isInBounds(row, col))
+    {
         return false;
     }
-    
+
     CellType type = m_grid[row][col].type;
     return type != CellType::Wall;
 }
 
-
 // ============================================================================
 // ITERATIVE VERSION (Alternative implementation using explicit stack)
 // ============================================================================
-// 
+//
 // For very large mazes, the recursive version may cause stack overflow.
 // Here's an iterative alternative that you can use instead:
 //
-// void Maze::generateIterative() 
+// void Maze::generateIterative()
 //{
 //     initializeGrid();
-//     
+//
 //     std::stack<std::pair<int, int>> cellStack;
-//     
+//
 //     // Start at (1, 1)
 //     int currentRow = 1;
 //     int currentCol = 1;
 //     m_grid[currentRow][currentCol].visited = true;
 //     m_grid[currentRow][currentCol].type = CellType::Path;
-//     
+//
 //     int visitedCount = 1;
 //     int totalCells = ((m_height - 1) / 2) * ((m_width - 1) / 2);
-//     
+//
 //     while (visitedCount < totalCells) {
 //         auto neighbors = getUnvisitedNeighbors(currentRow, currentCol);
-//         
+//
 //         if (!neighbors.empty()) {
 //             // Choose random neighbor
 //             std::uniform_int_distribution<int> dist(0, neighbors.size() - 1);
 //             auto chosen = neighbors[dist(m_rng)];
-//             
+//
 //             // Push current cell to stack
 //             cellStack.push({currentRow, currentCol});
-//             
+//
 //             // Remove wall between current and chosen
 //             int wallRow = currentRow + (chosen.first - currentRow) / 2;
 //             int wallCol = currentCol + (chosen.second - currentCol) / 2;
 //             m_grid[wallRow][wallCol].type = CellType::Path;
-//             
+//
 //             // Move to chosen cell
 //             currentRow = chosen.first;
 //             currentCol = chosen.second;
@@ -247,6 +252,6 @@ bool Maze::isValidPath(int row, int col) const
 //             currentCol = cell.second;
 //         }
 //     }
-//     
+//
 //     placeStartAndEnd();
 // }

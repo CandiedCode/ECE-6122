@@ -157,6 +157,7 @@ bool isFibonacci(int number)
     {
         return true;
     }
+    
 
     for (int i = 2; i < 50; i++)
     {

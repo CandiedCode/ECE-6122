@@ -40,5 +40,20 @@
 # debug information files
 *.dwo
 
-# Build directories
-**/build/
+# Build directories (but keep .gitkeep to preserve folder structure)
+/build/*
+!/build/.gitkeep
+/out/
+
+# Conan generated files
+conanbuildinfo.cmake
+conanbuildinfo.txt
+conaninfo.txt
+conan_toolchain.cmake
+conanfile.py.lock
+graph_info.json
+deactivate_conanbuild.*
+activate_conanbuild.*
+deactivate_conanrun.*
+activate_conanrun.*
+CMakePresets.json
