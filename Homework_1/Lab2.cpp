@@ -25,6 +25,25 @@ struct MazeConfig
         }
     };
 
+sf::Font loadFont(const std::string& fontPath) {
+    sf::Font font;
+    if (!font.loadFromFile(fontPath)) {
+        std::cerr << "Failed to load font from " << fontPath << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    return font;
+}
+
+sf::Text getText(sf::Font& font, const std::string& str, unsigned int size, sf::Color color, float x, float y) {
+    sf::Text text;
+    text.setFont(font);
+    text.setString(str);
+    text.setCharacterSize(size);
+    text.setFillColor(color);
+    text.setPosition(x, y);
+    return text;
+}
+    
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Lab2: Maze Generator");
@@ -32,41 +51,21 @@ int main()
     Maze maze(50, 50);
     maze.generate();
 
-    // Panel title
+    // Panel
     sf::RectangleShape panel({PANEL, static_cast<float>(HEIGHT)});
     panel.setPosition(WIDTH - PANEL, 0);
     panel.setFillColor(sf::Color::Red);
     panel.setOutlineThickness(1.f);
     panel.setOutlineColor(sf::Color::Black);
 
-    sf::Text input;
-    sf::Font font;
-    if (!font.loadFromFile("/Users/jennifercwagenberg/Code/gaTech_v2/ECE-6122/Homework_1/KOMIKAP_.ttf"))
-    {        
-        std::cerr << "Failed to load font!" << std::endl;
-        return EXIT_FAILURE;
-    }
-    input.setFont(font);
-    input.setString("Maze Generator");
-    input.setCharacterSize(24);
-    input.setFillColor(sf::Color::Black);
-    input.setPosition(WIDTH - PANEL + 10.f, 10.f);
 
-    sf::Text mazWidth;
-    mazWidth.setFont(font);
-    mazWidth.setString("Maze Width:");
-    mazWidth.setCharacterSize(18);
-    mazWidth.setFillColor(sf::Color::Black);
-    mazWidth.setPosition(WIDTH - PANEL + 10.f, 50.f);
+    sf::Font font = loadFont("/Users/jennifercwagenberg/Code/gaTech_v2/ECE-6122/Homework_1/KOMIKAP_.ttf");
+    sf::Text pTitle = getText(font, "Maze Generator", 24, sf::Color::Black, WIDTH - PANEL + 10.f, 10.f);
 
-    sf::Text mazHeight;
-    mazHeight.setFont(font);
-    mazHeight.setString("Maze Height:");
-    mazHeight.setCharacterSize(18);
-    mazHeight.setFillColor(sf::Color::Black);
-    mazHeight.setPosition(WIDTH - PANEL + 10.f, 90.f);
-
+    sf::Text mazWidth = getText(font, "Maze Width:", 18, sf::Color::Black, WIDTH - PANEL + 10.f, 50.f);
+    sf::Text mazHeight = getText(font, "Maze Height:", 18, sf::Color::Black, WIDTH - PANEL + 10.f, 90.f);
     sf::Clock clock;
+    
     // Start the game loop
     while (window.isOpen())
     {
@@ -79,7 +78,7 @@ int main()
 
         // Draw the maze
         window.draw(panel);
-        window.draw(input);
+        window.draw(pTitle);
         window.draw(mazWidth);
         window.draw(mazHeight);
         maze.draw(window);
@@ -99,30 +98,6 @@ int main()
         }
     }
 
-    // MazeConfig config;
-    // int mHeight, mWidth;
-    // CellType cellType = CellType::Wall;
-
-    // std::cout << "Enter maze height: ";
-    // std::cin >> config.height;
-    
-    // while (std::cin.fail() || !config.heightValid())
-    // {        
-    //     std::cin.clear(); // clear the error flag
-    //     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // discard invalid input
-    //     std::cout << "Invalid input. Please enter a positive integer for maze height: ";
-    //     std::cin >> config.height;
-    // }
-
-    // std::cout << "Enter maze width: ";
-    // std::cin >> config.width;
-    // while (std::cin.fail() || !config.widthValid())
-    // {        
-    //     std::cin.clear(); // clear the error flag
-    //     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // discard invalid input
-    //     std::cout << "Invalid input. Please enter a positive integer for maze width: ";
-    //     std::cin >> config.width;
-    // }
 
     std::cout << "Hello, ECE-6122!" << std::endl;
     return EXIT_SUCCESS;
