@@ -14,6 +14,7 @@
 #include <random>
 #include <stack>
 #include <utility>
+#include <SFML/Graphics.hpp>
 
 /**
  * @enum CellType
@@ -117,6 +118,8 @@ public:
      * @brief Check if a position is within maze bounds
      */
     bool isInBounds(int row, int col) const;
+
+    void draw(sf::RenderWindow& window);
 
 private:
     int m_width;

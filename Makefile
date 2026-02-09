@@ -51,6 +51,13 @@ cmake-configure: conan-install
 	@cd build && cmake .. --preset conan-release
 	@echo "✓ CMake configured"
 
+.PHONY: cmake-default
+cmake-default: conan-install
+	@echo "Configuring CMake with default settings..."
+	@cmake --preset default
+	@echo "✓ CMake configured with default settings"
+	@cd build && make
+
 .PHONY: build
 build: cmake-configure
 	@echo "Building all targets..."
