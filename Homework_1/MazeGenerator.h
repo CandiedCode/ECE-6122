@@ -61,8 +61,8 @@ public:
      * @param seed Optional seed for random number generator (0 = time-based)
      */
     Maze(int width, int height, unsigned int seed = 0);
-    Maze(const Maze&) = default;  // copy constructor
-    Maze(Maze&&) = default;      // move constructor
+    Maze& operator=(const Maze&) = default;  // copy assignment
+    Maze& operator=(Maze&&) = default;      // move assignment
     
     /**
      * @brief Generate a new random maze
