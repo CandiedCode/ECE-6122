@@ -87,3 +87,8 @@ clean:
 	@echo "Cleaning build directory..."
 	@find build -mindepth 1 ! -name ".gitkeep" -delete
 	@echo "✓ Build directory cleaned"
+
+.PHONY: list-presets
+list-presets:
+	@echo "Available CMake presets:"
+	@cmake --list-presets

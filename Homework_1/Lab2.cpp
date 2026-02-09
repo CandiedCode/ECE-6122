@@ -2,8 +2,9 @@
 #include <MazeGenerator.h>
 #include <SFML/Graphics.hpp>
 
-#define WIDTH 800
+#define WIDTH 1000
 #define HEIGHT 600
+#define PANEL 300.f
 
 struct MazeConfig
     {
@@ -26,20 +27,61 @@ struct MazeConfig
 
 int main()
 {
-
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Maze Generator");
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Lab2: Maze Generator");
+    window.setFramerateLimit(60);
     Maze maze(50, 50);
     maze.generate();
-    std::cout << "Start position: (" << maze.getStart().first << ", " << maze.getStart().second << ")" << std::endl;
-    std::cout << "End position: (" << maze.getEnd().first << ", " << maze.getEnd().second << ")" << std::endl;
 
+    // Panel title
+    sf::RectangleShape panel({PANEL, static_cast<float>(HEIGHT)});
+    panel.setPosition(WIDTH - PANEL, 0);
+    panel.setFillColor(sf::Color::Red);
+    panel.setOutlineThickness(1.f);
+    panel.setOutlineColor(sf::Color::Black);
+
+    sf::Text input;
+    sf::Font font;
+    if (!font.loadFromFile("/Users/jennifercwagenberg/Code/gaTech_v2/ECE-6122/Homework_1/KOMIKAP_.ttf"))
+    {        
+        std::cerr << "Failed to load font!" << std::endl;
+        return EXIT_FAILURE;
+    }
+    input.setFont(font);
+    input.setString("Maze Generator");
+    input.setCharacterSize(24);
+    input.setFillColor(sf::Color::Black);
+    input.setPosition(WIDTH - PANEL + 10.f, 10.f);
+
+    sf::Text mazWidth;
+    mazWidth.setFont(font);
+    mazWidth.setString("Maze Width:");
+    mazWidth.setCharacterSize(18);
+    mazWidth.setFillColor(sf::Color::Black);
+    mazWidth.setPosition(WIDTH - PANEL + 10.f, 50.f);
+
+    sf::Text mazHeight;
+    mazHeight.setFont(font);
+    mazHeight.setString("Maze Height:");
+    mazHeight.setCharacterSize(18);
+    mazHeight.setFillColor(sf::Color::Black);
+    mazHeight.setPosition(WIDTH - PANEL + 10.f, 90.f);
+
+    sf::Clock clock;
     // Start the game loop
     while (window.isOpen())
     {
+        sf::Time elapsed = clock.restart();
+        // sf::Vector2u windowSize = window.getSize();
+        // std::cout << "Window size: " << windowSize.x << "x" << windowSize.y << std::endl;
+
         // Clear the window
         window.clear(sf::Color::White);
 
         // Draw the maze
+        window.draw(panel);
+        window.draw(input);
+        window.draw(mazWidth);
+        window.draw(mazHeight);
         maze.draw(window);
 
         // Display the rendered content
