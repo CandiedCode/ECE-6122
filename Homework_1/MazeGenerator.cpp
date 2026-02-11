@@ -105,7 +105,6 @@ void Maze::getWindowSize(int &window_width, int &window_height, int desktopWidth
         {
             window_height = desktopHeight;
         }
-        
 
         float heightRatio = (desktopHeight / m_height);
         float widthRatio = (desktopWidth / m_width);

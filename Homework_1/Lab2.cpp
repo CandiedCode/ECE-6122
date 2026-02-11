@@ -124,32 +124,49 @@ int main(int argc, char *argv[])
 
     int panel_start = windowWidth - PANEL + 10.f; // Start of text in panel with some padding
     sf::Font font = loadFont("/Users/jennifercwagenberg/Code/gaTech_v2/ECE-6122/Homework_1/KOMIKAP_.ttf");
-    
+
     // General information
     sf::Text pTitle = getText(font, "Maze Generator", 20, sf::Color::Yellow, panel_start, 10.f);
-    sf::Text maxDimensions = getText(font, "Maze: " + std::to_string(maze.getHeight()) + "x" + std::to_string(maze.getWidth()), 16, sf::Color::White, panel_start, pTitle.getGlobalBounds().height + pTitle.getGlobalBounds().top + 10.f);
-    sf::Text algorithm = getText(font, "Algorithm: DFS", 16, sf::Color::Blue, panel_start, maxDimensions.getGlobalBounds().height + maxDimensions.getGlobalBounds().top + 10.f);
-    sf::Text diagonal = getText(font, "Diagonal: No", 16, sf::Color::White, panel_start, algorithm.getGlobalBounds().height + algorithm.getGlobalBounds().top + 10.f);
-    sf::Text animationSpeed = getText(font, "Speed: 100 STEPS/S", 16, sf::Color::White, panel_start, diagonal.getGlobalBounds().height + diagonal.getGlobalBounds().top + 10.f);
+    sf::Text maxDimensions =
+        getText(font, "Maze: " + std::to_string(maze.getHeight()) + "x" + std::to_string(maze.getWidth()), 16,
+                sf::Color::White, panel_start, pTitle.getGlobalBounds().height + pTitle.getGlobalBounds().top + 10.f);
+    sf::Text algorithm = getText(font, "Algorithm: DFS", 16, sf::Color::Blue, panel_start,
+                                 maxDimensions.getGlobalBounds().height + maxDimensions.getGlobalBounds().top + 10.f);
+    sf::Text diagonal = getText(font, "Diagonal: No", 16, sf::Color::White, panel_start,
+                                algorithm.getGlobalBounds().height + algorithm.getGlobalBounds().top + 10.f);
+    sf::Text animationSpeed = getText(font, "Speed: 100 STEPS/S", 16, sf::Color::White, panel_start,
+                                      diagonal.getGlobalBounds().height + diagonal.getGlobalBounds().top + 10.f);
 
     // Statistics
-    sf::Text statisticsTitle = getText(font, "-- Statistics --", 16, sf::Color::Green, panel_start, animationSpeed.getGlobalBounds().height + animationSpeed.getGlobalBounds().top + 20.f);
-    sf::Text nodesExplored = getText(font, "Nodes Explored: 0", 16, sf::Color::White, panel_start, statisticsTitle.getGlobalBounds().height + statisticsTitle.getGlobalBounds().top + 10.f);
-    sf::Text pathLength = getText(font, "Path Length: 0", 16, sf::Color::White, panel_start, nodesExplored.getGlobalBounds().height + nodesExplored.getGlobalBounds().top + 10.f);
-    sf::Text timeTaken = getText(font, "Time: 0s", 16, sf::Color::White, panel_start, pathLength.getGlobalBounds().height + pathLength.getGlobalBounds().top + 10.f);
-    sf::Text pathFound = getText(font, "Path Found: No", 16, sf::Color::Green, panel_start, timeTaken.getGlobalBounds().height + timeTaken.getGlobalBounds().top + 10.f);
+    sf::Text statisticsTitle =
+        getText(font, "-- Statistics --", 16, sf::Color::Green, panel_start,
+                animationSpeed.getGlobalBounds().height + animationSpeed.getGlobalBounds().top + 20.f);
+    sf::Text nodesExplored =
+        getText(font, "Nodes Explored: 0", 16, sf::Color::White, panel_start,
+                statisticsTitle.getGlobalBounds().height + statisticsTitle.getGlobalBounds().top + 10.f);
+    sf::Text pathLength = getText(font, "Path Length: 0", 16, sf::Color::White, panel_start,
+                                  nodesExplored.getGlobalBounds().height + nodesExplored.getGlobalBounds().top + 10.f);
+    sf::Text timeTaken = getText(font, "Time: 0s", 16, sf::Color::White, panel_start,
+                                 pathLength.getGlobalBounds().height + pathLength.getGlobalBounds().top + 10.f);
+    sf::Text pathFound = getText(font, "Path Found: No", 16, sf::Color::Green, panel_start,
+                                 timeTaken.getGlobalBounds().height + timeTaken.getGlobalBounds().top + 10.f);
 
     // Controls
-    sf::Text controlsTitle = getText(font, "-- Controls --", 16, sf::Color::Green, panel_start, pathFound.getGlobalBounds().height + pathFound.getGlobalBounds().top + 20.f);
-    sf::Text generate = getText(font, "G: Generate", 16, sf::Color::White, panel_start, controlsTitle.getGlobalBounds().height + controlsTitle.getGlobalBounds().top + 10.f);
-    sf::Text solve = getText(font, "S: Solve", 16, sf::Color::White, panel_start, generate.getGlobalBounds().height + generate.getGlobalBounds().top + 10.f);
-    sf::Text reset = getText(font, "R: Reset", 16, sf::Color::White, panel_start, solve.getGlobalBounds().height + solve.getGlobalBounds().top + 10.f);
-    sf::Text toggleAlgorithm = getText(font, "A: Toggle Algorithm", 16, sf::Color::White, panel_start, reset.getGlobalBounds().height + reset.getGlobalBounds().top + 10.f);
-    sf::Text adjustSpeed = getText(font, "+/-: Adjust Speed", 16, sf::Color::White, panel_start, toggleAlgorithm.getGlobalBounds().height + toggleAlgorithm.getGlobalBounds().top + 10.f);
-    sf::Text escape = getText(font, "ESC: Exit", 16, sf::Color::White, panel_start, adjustSpeed.getGlobalBounds().height + adjustSpeed.getGlobalBounds().top + 10.f);
-
-
-
+    sf::Text controlsTitle = getText(font, "-- Controls --", 16, sf::Color::Green, panel_start,
+                                     pathFound.getGlobalBounds().height + pathFound.getGlobalBounds().top + 20.f);
+    sf::Text generate = getText(font, "G: Generate", 16, sf::Color::White, panel_start,
+                                controlsTitle.getGlobalBounds().height + controlsTitle.getGlobalBounds().top + 10.f);
+    sf::Text solve = getText(font, "S: Solve", 16, sf::Color::White, panel_start,
+                             generate.getGlobalBounds().height + generate.getGlobalBounds().top + 10.f);
+    sf::Text reset = getText(font, "R: Reset", 16, sf::Color::White, panel_start,
+                             solve.getGlobalBounds().height + solve.getGlobalBounds().top + 10.f);
+    sf::Text toggleAlgorithm = getText(font, "A: Toggle Algorithm", 16, sf::Color::White, panel_start,
+                                       reset.getGlobalBounds().height + reset.getGlobalBounds().top + 10.f);
+    sf::Text adjustSpeed =
+        getText(font, "+/-: Adjust Speed", 16, sf::Color::White, panel_start,
+                toggleAlgorithm.getGlobalBounds().height + toggleAlgorithm.getGlobalBounds().top + 10.f);
+    sf::Text escape = getText(font, "ESC: Exit", 16, sf::Color::White, panel_start,
+                              adjustSpeed.getGlobalBounds().height + adjustSpeed.getGlobalBounds().top + 10.f);
 
     // sf::Text mazWidth = getText(font, "Maze Width:", 18, sf::Color::Black, windowWidth - PANEL + 10.f, 50.f);
     // sf::Text mazHeight = getText(font, "Maze Height:", 18, sf::Color::Black, windowWidth - PANEL + 10.f, 90.f);
@@ -161,7 +178,7 @@ int main(int argc, char *argv[])
         sf::Time elapsed = clock.restart();
 
         // Clear the window
-        window.clear(sf::Color::Black); // Dark background for contrast  
+        window.clear(sf::Color::Black); // Dark background for contrast
 
         // Draw the maze
         maze.draw(window);
