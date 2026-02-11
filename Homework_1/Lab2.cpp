@@ -230,9 +230,10 @@ int main(int argc, char *argv[])
                     maze.resetVisualization();
                     maze.draw(window);
                     break;
-                case sf::Keyboard::Up:
+                case sf::Keyboard::Up: {
                     std::cout << "Increasing maze height..." << std::endl;
                     break;
+                }
                 case sf::Keyboard::Down:
                     std::cout << "Decreasing maze height..." << std::endl;
                     break;

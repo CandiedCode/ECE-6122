@@ -25,6 +25,8 @@
 #include <vector>
 
 #define MAZE_OFFSET 10
+#define MIN_WINDOW_WIDTH 1000
+#define MIN_WINDOW_HEIGHT 600
 
 Maze::Maze(int width, int height, unsigned int seed)
 {
@@ -89,10 +91,17 @@ void Maze::getWindowSize(int &window_width, int &window_height, int desktopWidth
     window_height = (m_height * m_cell_size) + (2 * MAZE_OFFSET);
     window_width = (m_width * m_cell_size) + (2 * MAZE_OFFSET);
 
-    // std::cout << "Calculated maze window size: " << window_width << "x" << window_height << std::endl;
-    // std::cout << "Desktop resolution: " << desktopWidth << "x" << desktopHeight << std::endl;
+    if (window_width < MIN_WINDOW_WIDTH || window_height < MIN_WINDOW_HEIGHT)
+    {
+        window_width = MIN_WINDOW_WIDTH;
+        window_height = MIN_WINDOW_HEIGHT;
 
-    if (window_width >= desktopWidth || window_height >= desktopHeight)
+        float heightRatio = ((window_height - (2 * MAZE_OFFSET)) / m_height);
+        float widthRatio = ((window_width - (2 * MAZE_OFFSET)) / m_width);
+        float cell_size = std::min(widthRatio, heightRatio);
+        m_cell_size = static_cast<int>(cell_size);
+    }
+    else if (window_width >= desktopWidth || window_height >= desktopHeight)
     {
         desktopHeight -= (2 * MAZE_OFFSET);
         desktopWidth -= (2 * MAZE_OFFSET);
@@ -110,10 +119,6 @@ void Maze::getWindowSize(int &window_width, int &window_height, int desktopWidth
         float widthRatio = (desktopWidth / m_width);
         float cell_size = std::min(widthRatio, heightRatio);
         m_cell_size = static_cast<int>(cell_size);
-
-        // std::cout << "Adjusted cell size: " << m_cell_size << " pixels" << std::endl;
-        // std::cout << "Adjusted maze window size: " << window_width << "x" << window_height << std::endl;
-        // std::cout << "Note: Maze may be scaled down to fit within desktop resolution." << std::endl;
     }
 }
 
