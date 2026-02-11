@@ -10,6 +10,12 @@
 #include "MazeGenerator.h"
 #include <list>
 
+namespace {
+      constexpr int DR[] = {-1, 1, 0, 0};
+      constexpr int DC[] = {0, 0, -1, 1};
+      constexpr int NUM_DIRECTIONS = 4;
+}
+
 // Position in the maze
 struct Position {
     int row, col;
@@ -39,12 +45,12 @@ struct Node {
     }
 };
 
-class AbstractMazeSolver {
+class MazeSolver {
 public:
     virtual std::vector<Position> solveMaze() = 0;
 };
 
-class BreadthFirstSearch : public AbstractMazeSolver {
+class BreadthFirstSearch : public MazeSolver {
 public:
     BreadthFirstSearch(Maze& maze);
     // BreadthFirstSearch& operator=(const BreadthFirstSearch&) = delete;
@@ -65,7 +71,7 @@ private:
 
 };
 
-class AStarSearch: public AbstractMazeSolver {
+class AStarSearch: public MazeSolver {
 public:
     AStarSearch(Maze& maze);
     
