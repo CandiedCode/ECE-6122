@@ -1,4 +1,5 @@
-#include <MazeGenerator.h>
+#include "MazeGenerator.h"
+#include "MazeSolver.h"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
@@ -114,6 +115,7 @@ int main(int argc, char *argv[])
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Lab2: Maze Generator");
     window.setFramerateLimit(60);
     maze.generate();
+    BreadthFirstSearch bfs(maze);
 
     // Panel
     sf::RectangleShape panel({PANEL, static_cast<float>(windowHeight)});
@@ -221,9 +223,12 @@ int main(int argc, char *argv[])
                     break;
                 case sf::Keyboard::S:
                     std::cout << "Solving the maze..." << std::endl;
+                    bfs.solveMaze(maze);
                     break;
                 case sf::Keyboard::R:
                     std::cout << "Resetting the maze..." << std::endl;
+                    maze.resetVisualization();
+                    maze.draw(window);
                     break;
                 case sf::Keyboard::Up:
                     std::cout << "Increasing maze height..." << std::endl;
