@@ -3,9 +3,7 @@
 #include <iostream>
 #include <string>
 
-#define WIDTH 1000
-#define HEIGHT 1000
-#define PANEL 300.f
+#define PANEL 250
 
 struct MazeConfig
 {
@@ -111,40 +109,80 @@ int main(int argc, char *argv[])
     int windowWidth, windowHeight;
     maze.getWindowSize(windowWidth, windowHeight, desktopWidth, desktopHeight);
 
+    windowWidth += PANEL; // Add space for the panel
+
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Lab2: Maze Generator");
     window.setFramerateLimit(60);
     maze.generate();
 
     // Panel
-    // sf::RectangleShape panel({PANEL, static_cast<float>(HEIGHT)});
-    // panel.setPosition(WIDTH - PANEL, 0);
-    // panel.setFillColor(sf::Color::Red);
-    // panel.setOutlineThickness(1.f);
-    // panel.setOutlineColor(sf::Color::Black);
+    sf::RectangleShape panel({PANEL, static_cast<float>(windowHeight)});
+    panel.setPosition(windowWidth - PANEL, 0);
+    panel.setFillColor(sf::Color::Black);
+    panel.setOutlineThickness(1.f);
+    panel.setOutlineColor(sf::Color::Black);
 
+    int panel_start = windowWidth - PANEL + 10.f; // Start of text in panel with some padding
     sf::Font font = loadFont("/Users/jennifercwagenberg/Code/gaTech_v2/ECE-6122/Homework_1/KOMIKAP_.ttf");
-    sf::Text pTitle = getText(font, "Maze Generator", 24, sf::Color::Black, WIDTH - PANEL + 10.f, 10.f);
+    
+    // General information
+    sf::Text pTitle = getText(font, "Maze Generator", 20, sf::Color::Yellow, panel_start, 10.f);
+    sf::Text maxDimensions = getText(font, "Maze: " + std::to_string(maze.getHeight()) + "x" + std::to_string(maze.getWidth()), 16, sf::Color::White, panel_start, pTitle.getGlobalBounds().height + pTitle.getGlobalBounds().top + 10.f);
+    sf::Text algorithm = getText(font, "Algorithm: DFS", 16, sf::Color::Blue, panel_start, maxDimensions.getGlobalBounds().height + maxDimensions.getGlobalBounds().top + 10.f);
+    sf::Text diagonal = getText(font, "Diagonal: No", 16, sf::Color::White, panel_start, algorithm.getGlobalBounds().height + algorithm.getGlobalBounds().top + 10.f);
+    sf::Text animationSpeed = getText(font, "Speed: 100 STEPS/S", 16, sf::Color::White, panel_start, diagonal.getGlobalBounds().height + diagonal.getGlobalBounds().top + 10.f);
 
-    sf::Text mazWidth = getText(font, "Maze Width:", 18, sf::Color::Black, WIDTH - PANEL + 10.f, 50.f);
-    sf::Text mazHeight = getText(font, "Maze Height:", 18, sf::Color::Black, WIDTH - PANEL + 10.f, 90.f);
+    // Statistics
+    sf::Text statisticsTitle = getText(font, "-- Statistics --", 16, sf::Color::Green, panel_start, animationSpeed.getGlobalBounds().height + animationSpeed.getGlobalBounds().top + 20.f);
+    sf::Text nodesExplored = getText(font, "Nodes Explored: 0", 16, sf::Color::White, panel_start, statisticsTitle.getGlobalBounds().height + statisticsTitle.getGlobalBounds().top + 10.f);
+    sf::Text pathLength = getText(font, "Path Length: 0", 16, sf::Color::White, panel_start, nodesExplored.getGlobalBounds().height + nodesExplored.getGlobalBounds().top + 10.f);
+    sf::Text timeTaken = getText(font, "Time: 0s", 16, sf::Color::White, panel_start, pathLength.getGlobalBounds().height + pathLength.getGlobalBounds().top + 10.f);
+    sf::Text pathFound = getText(font, "Path Found: No", 16, sf::Color::Green, panel_start, timeTaken.getGlobalBounds().height + timeTaken.getGlobalBounds().top + 10.f);
+
+    // Controls
+    sf::Text controlsTitle = getText(font, "-- Controls --", 16, sf::Color::Green, panel_start, pathFound.getGlobalBounds().height + pathFound.getGlobalBounds().top + 20.f);
+    sf::Text generate = getText(font, "G: Generate", 16, sf::Color::White, panel_start, controlsTitle.getGlobalBounds().height + controlsTitle.getGlobalBounds().top + 10.f);
+    sf::Text solve = getText(font, "S: Solve", 16, sf::Color::White, panel_start, generate.getGlobalBounds().height + generate.getGlobalBounds().top + 10.f);
+    sf::Text reset = getText(font, "R: Reset", 16, sf::Color::White, panel_start, solve.getGlobalBounds().height + solve.getGlobalBounds().top + 10.f);
+    sf::Text toggleAlgorithm = getText(font, "A: Toggle Algorithm", 16, sf::Color::White, panel_start, reset.getGlobalBounds().height + reset.getGlobalBounds().top + 10.f);
+    sf::Text adjustSpeed = getText(font, "+/-: Adjust Speed", 16, sf::Color::White, panel_start, toggleAlgorithm.getGlobalBounds().height + toggleAlgorithm.getGlobalBounds().top + 10.f);
+    sf::Text escape = getText(font, "ESC: Exit", 16, sf::Color::White, panel_start, adjustSpeed.getGlobalBounds().height + adjustSpeed.getGlobalBounds().top + 10.f);
+
+
+
+
+    // sf::Text mazWidth = getText(font, "Maze Width:", 18, sf::Color::Black, windowWidth - PANEL + 10.f, 50.f);
+    // sf::Text mazHeight = getText(font, "Maze Height:", 18, sf::Color::Black, windowWidth - PANEL + 10.f, 90.f);
     sf::Clock clock;
 
     // Start the game loop
     while (window.isOpen())
     {
         sf::Time elapsed = clock.restart();
-        // sf::Vector2u windowSize = window.getSize();
-        // std::cout << "Window size: " << windowSize.x << "x" << windowSize.y << std::endl;
 
         // Clear the window
-        window.clear(sf::Color::White);
+        window.clear(sf::Color::Black); // Dark background for contrast  
 
         // Draw the maze
-        // window.draw(panel);
-        window.draw(pTitle);
-        window.draw(mazWidth);
-        window.draw(mazHeight);
         maze.draw(window);
+        window.draw(panel);
+        window.draw(pTitle);
+        window.draw(maxDimensions);
+        window.draw(algorithm);
+        window.draw(diagonal);
+        window.draw(animationSpeed);
+        window.draw(statisticsTitle);
+        window.draw(nodesExplored);
+        window.draw(pathLength);
+        window.draw(timeTaken);
+        window.draw(pathFound);
+        window.draw(controlsTitle);
+        window.draw(generate);
+        window.draw(solve);
+        window.draw(reset);
+        window.draw(toggleAlgorithm);
+        window.draw(adjustSpeed);
+        window.draw(escape);
 
         // Display the rendered content
         window.display();
