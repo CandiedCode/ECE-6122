@@ -18,9 +18,9 @@
  */
 
 #include "MazeGenerator.h"
+#include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <chrono>
-#include <SFML/Graphics.hpp>
 #include <iostream>
 
 Maze::Maze(int width, int height, unsigned int seed)
@@ -80,15 +80,17 @@ void Maze::generate()
     placeStartAndEnd();
 }
 
-void Maze::draw(sf::RenderWindow& window)
+void Maze::draw(sf::RenderWindow &window)
 {
-    int offsetX = 10; // offset values 
+    int offsetX = 10; // offset values
     int offsetY = 10;
-    int cellSize = 10; 
+    int cellSize = 10;
 
-    for (int y = 0; y < m_height; ++y) {
-        for (int x = 0; x < m_width; ++x) {
-            Cell& cell = m_grid[y][x];
+    for (int y = 0; y < m_height; ++y)
+    {
+        for (int x = 0; x < m_width; ++x)
+        {
+            Cell &cell = m_grid[y][x];
 
             // Draw rectangles for walls based on cell.walls booleans
             float left = offsetX + x * cellSize;
@@ -96,13 +98,15 @@ void Maze::draw(sf::RenderWindow& window)
             float right = left + cellSize;
             float bottom = top + cellSize;
 
-            if (cell.type == CellType::Wall) {
+            if (cell.type == CellType::Wall)
+            {
                 sf::RectangleShape wall(sf::Vector2f(cellSize, cellSize));
                 wall.setPosition(left, top);
                 wall.setFillColor(sf::Color(50, 50, 50)); // DarkGray
                 window.draw(wall);
             }
-            else if (cell.type == CellType::Path) {
+            else if (cell.type == CellType::Path)
+            {
                 sf::RectangleShape visited(sf::Vector2f(cellSize, cellSize));
                 visited.setPosition(left, top);
                 visited.setFillColor(sf::Color(255, 255, 255)); // White
@@ -110,13 +114,15 @@ void Maze::draw(sf::RenderWindow& window)
                 visited.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
                 window.draw(visited);
             }
-            else if (cell.type == CellType::Start) {
+            else if (cell.type == CellType::Start)
+            {
                 sf::RectangleShape startMarker(sf::Vector2f(cellSize, cellSize));
                 startMarker.setPosition(left, top);
                 startMarker.setFillColor(sf::Color(0, 200, 0)); // Green
                 window.draw(startMarker);
             }
-            else if (cell.type == CellType::End) {
+            else if (cell.type == CellType::End)
+            {
                 sf::RectangleShape endMarker(sf::Vector2f(cellSize, cellSize));
                 endMarker.setPosition(left, top);
                 endMarker.setFillColor(sf::Color(200, 0, 0)); // Red
