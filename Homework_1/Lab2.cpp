@@ -3,14 +3,32 @@
 #include <SFML/Graphics.hpp>
 
 #define WIDTH 1000
-#define HEIGHT 600
+#define HEIGHT 1000
 #define PANEL 300.f
 
 struct MazeConfig
+{
+    MazeConfig() {
+        // The maze must be at least 25x25 cells 
+        height = defaultSize;
+        width = defaultSize;
+    }
+    MazeConfig(int h, int w) : height(h), width(w) 
     {
-        MazeConfig() : height(defaultSize), width(defaultSize) {}
-        MazeConfig(int h, int w) : height(h), width(w) {}
+        if (!heightValid() || !widthValid())
+        {
+            std::cerr << "Invalid maze dimensions. Height and width must be between 10 and 100." << std::endl;
+            height = defaultSize;
+            width = defaultSize;
+            throw std::invalid_argument("Invalid maze dimensions. Height and width must be between 10 and 100.");
+        }   
+    }
 
+    public:
+        int getHeight() const { return height; }
+        int getWidth() const { return width; }
+
+    private:
         int height;
         int width;
         int defaultSize = 25;
@@ -23,7 +41,30 @@ struct MazeConfig
         {
             return width >= 10 && width <= 100;
         }
-    };
+};
+
+MazeConfig processArgs(int argc, char* argv[])
+{
+    MazeConfig config;
+
+    std::cout << "Processing command line arguments..." << std::endl;
+    std::cout << "Argument count: " << argc << std::endl;
+    std::cout << "Arguments: ";
+    for (int i = 0; i < argc; ++i) {
+        std::cout << argv[i] << " ";
+    }
+    std::cout << std::endl;
+
+    if (argc != 3)
+    {
+        std::cout << "Defaulting to maze size 25x25. To specify size, provide two arguments for height and width (e.g. ./maze 30 40)." << std::endl;
+        return MazeConfig();
+    }
+
+    int height = std::stoi(argv[1]);
+    int width = std::stoi(argv[2]);
+    return MazeConfig(height, width);
+}
 
 sf::Font loadFont(const std::string& fontPath) {
     sf::Font font;
@@ -44,11 +85,13 @@ sf::Text getText(sf::Font& font, const std::string& str, unsigned int size, sf::
     return text;
 }
     
-int main()
+int main(int argc, char* argv[])
 {
+    MazeConfig config = processArgs(argc, argv);
+
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Lab2: Maze Generator");
     window.setFramerateLimit(60);
-    Maze maze(50, 50);
+    Maze maze(config.getHeight(), config.getWidth());
     maze.generate();
 
     // Panel
@@ -90,11 +133,58 @@ int main()
         sf::Event event;
         while (window.pollEvent(event))
         {
+
+            if (event.type == sf::Event::KeyPressed)
+            {
+                switch (event.key.code)
+                {
+                    case sf::Keyboard::Escape:
+                        window.close();
+                        break;
+                    case sf::Keyboard::G:
+                        std::cout << "Generating new maze..." << std::endl;
+                        maze.generate();
+                        break;
+                    case sf::Keyboard::S:
+                        std::cout << "Solving the maze..." << std::endl;
+                        break;
+                    case sf::Keyboard::R:
+                        std::cout << "Resetting the maze..." << std::endl;
+                        break;
+                    case sf::Keyboard::Up:
+                        std::cout << "Increasing maze height..." << std::endl;
+                        break;
+                    case sf::Keyboard::Down:
+                        std::cout << "Decreasing maze height..." << std::endl;
+                        break;
+                    case sf::Keyboard::Right:
+                        std::cout << "Increasing maze width..." << std::endl;
+                        break;
+                    case sf::Keyboard::Left:
+                        std::cout << "Decreasing maze width..." << std::endl;
+                        break;
+                    // Add key didn't trigger on my mac thus added equal as plus is on the same key
+                    case sf::Keyboard::Equal:
+                    case sf::Keyboard::Add:
+                        std::cout << "Increasing animation speed..." << std::endl;
+                        break;
+                    // Added hyphen as minus is on the same key
+                    case sf::Keyboard::Hyphen:
+                    case sf::Keyboard::Subtract:
+                        std::cout << "Decreasing animation speed..." << std::endl;
+                        break;
+                    default:
+                        std::cout << "Unhandled key press: " << event.key.code << std::endl;
+                        break;
+            }
+
+            }
+
             // Close window: exit
             if (event.type == sf::Event::Closed)
                 window.close();
 
-            std::cout << "Event type: " << event.type << std::endl;
+            // std::cout << "Event type: " << event.type << std::endl;
         }
     }
 

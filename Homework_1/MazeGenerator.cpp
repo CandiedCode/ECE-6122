@@ -46,6 +46,8 @@ Maze::Maze(int width, int height, unsigned int seed)
         m_rng.seed(seed);
     }
 
+    std::cout << "Initialized maze with dimensions: " << m_width << "x" << m_height << std::endl;
+
     initializeGrid();
 }
 
@@ -97,19 +99,27 @@ void Maze::draw(sf::RenderWindow& window)
             if (cell.type == CellType::Wall) {
                 sf::RectangleShape wall(sf::Vector2f(cellSize, cellSize));
                 wall.setPosition(left, top);
-                wall.setFillColor(sf::Color::Black);
+                wall.setFillColor(sf::Color(50, 50, 50)); // DarkGray
                 window.draw(wall);
+            }
+            else if (cell.type == CellType::Path) {
+                sf::RectangleShape visited(sf::Vector2f(cellSize, cellSize));
+                visited.setPosition(left, top);
+                visited.setFillColor(sf::Color(255, 255, 255)); // White
+                visited.setOutlineThickness(1.f);
+                visited.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
+                window.draw(visited);
             }
             else if (cell.type == CellType::Start) {
                 sf::RectangleShape startMarker(sf::Vector2f(cellSize, cellSize));
                 startMarker.setPosition(left, top);
-                startMarker.setFillColor(sf::Color::Green);
+                startMarker.setFillColor(sf::Color(0, 200, 0)); // Green
                 window.draw(startMarker);
             }
             else if (cell.type == CellType::End) {
                 sf::RectangleShape endMarker(sf::Vector2f(cellSize, cellSize));
                 endMarker.setPosition(left, top);
-                endMarker.setFillColor(sf::Color::Red);
+                endMarker.setFillColor(sf::Color(200, 0, 0)); // Red
                 window.draw(endMarker);
             }
         }
