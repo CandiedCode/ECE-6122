@@ -71,7 +71,10 @@ public:
      * (one with no loops and exactly one path between any two points)
      */
     void generate();
-    
+
+    // get the minimum window size needed to display the maze based on its dimensions
+    void getWindowSize(int &width, int &height, int maxWidth, int maxHeight);
+
     /**
      * @brief Reset visualization markers (visited and solution cells)
      */
@@ -124,6 +127,7 @@ public:
 private:
     int m_width;
     int m_height;
+    int m_cell_size; // Size of each cell in pixels
     std::vector<std::vector<Cell>> m_grid;
     std::pair<int, int> m_start;
     std::pair<int, int> m_end;

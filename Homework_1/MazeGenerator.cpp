@@ -24,12 +24,15 @@
 #include <iostream>
 #include <vector>
 
+#define MAZE_OFFSET 10
+
 Maze::Maze(int width, int height, unsigned int seed)
 {
     // Ensure dimensions are odd for proper maze structure
     // (walls on even indices, paths on odd indices)
     m_width = (width % 2 == 0) ? width + 1 : width;
     m_height = (height % 2 == 0) ? height + 1 : height;
+    m_cell_size = 12;
 
     // Enforce minimum and maximum sizes
     m_width = std::max(11, std::min(m_width, 101));
@@ -81,12 +84,46 @@ void Maze::generate()
     placeStartAndEnd();
 }
 
+void Maze::getWindowSize(int &window_width, int &window_height, int desktopWidth, int desktopHeight)
+{
+    window_height = (m_height * m_cell_size) + (2 * MAZE_OFFSET);
+    window_width = (m_width * m_cell_size) + (2 * MAZE_OFFSET);
+
+    // std::cout << "Calculated maze window size: " << window_width << "x" << window_height << std::endl;
+    // std::cout << "Desktop resolution: " << desktopWidth << "x" << desktopHeight << std::endl;
+
+    if (window_width >= desktopWidth || window_height >= desktopHeight)
+    {
+        desktopHeight -= (2 * MAZE_OFFSET);
+        desktopWidth -= (2 * MAZE_OFFSET);
+
+        if (window_width >= desktopWidth)
+        {
+            window_width = desktopWidth;
+        }
+        if (window_height >= desktopHeight)
+        {
+            window_height = desktopHeight;
+        }
+        
+
+        float heightRatio = (desktopHeight / m_height);
+        float widthRatio = (desktopWidth / m_width);
+        float cell_size = std::min(widthRatio, heightRatio);
+        m_cell_size = static_cast<int>(cell_size);
+
+        // std::cout << "Adjusted cell size: " << m_cell_size << " pixels" << std::endl;
+        // std::cout << "Adjusted maze window size: " << window_width << "x" << window_height << std::endl;
+        // std::cout << "Note: Maze may be scaled down to fit within desktop resolution." << std::endl;
+    }
+}
+
 void Maze::draw(sf::RenderWindow &window)
 {
     // offset values
-    int offsetX = 10;
-    int offsetY = 10;
-    int cellSize = 10;
+    int offsetX = MAZE_OFFSET;
+    int offsetY = MAZE_OFFSET;
+    int cellSize = m_cell_size;
 
     for (int y = 0; y < m_height; ++y)
     {

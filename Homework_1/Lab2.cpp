@@ -101,19 +101,26 @@ sf::Text getText(sf::Font &font, const std::string &str, unsigned int size, sf::
 
 int main(int argc, char *argv[])
 {
-    MazeConfig config = processArgs(argc, argv);
+    // Get desktop resolution
+    sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
+    int desktopWidth = desktopMode.width;
+    int desktopHeight = desktopMode.height;
 
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Lab2: Maze Generator");
-    window.setFramerateLimit(60);
+    MazeConfig config = processArgs(argc, argv);
     Maze maze(config.getHeight(), config.getWidth());
+    int windowWidth, windowHeight;
+    maze.getWindowSize(windowWidth, windowHeight, desktopWidth, desktopHeight);
+
+    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Lab2: Maze Generator");
+    window.setFramerateLimit(60);
     maze.generate();
 
     // Panel
-    sf::RectangleShape panel({PANEL, static_cast<float>(HEIGHT)});
-    panel.setPosition(WIDTH - PANEL, 0);
-    panel.setFillColor(sf::Color::Red);
-    panel.setOutlineThickness(1.f);
-    panel.setOutlineColor(sf::Color::Black);
+    // sf::RectangleShape panel({PANEL, static_cast<float>(HEIGHT)});
+    // panel.setPosition(WIDTH - PANEL, 0);
+    // panel.setFillColor(sf::Color::Red);
+    // panel.setOutlineThickness(1.f);
+    // panel.setOutlineColor(sf::Color::Black);
 
     sf::Font font = loadFont("/Users/jennifercwagenberg/Code/gaTech_v2/ECE-6122/Homework_1/KOMIKAP_.ttf");
     sf::Text pTitle = getText(font, "Maze Generator", 24, sf::Color::Black, WIDTH - PANEL + 10.f, 10.f);
@@ -133,7 +140,7 @@ int main(int argc, char *argv[])
         window.clear(sf::Color::White);
 
         // Draw the maze
-        window.draw(panel);
+        // window.draw(panel);
         window.draw(pTitle);
         window.draw(mazWidth);
         window.draw(mazHeight);
