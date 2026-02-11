@@ -1,6 +1,7 @@
 #include <MazeGenerator.h>
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <string>
 
 #define WIDTH 1000
 #define HEIGHT 1000
@@ -145,7 +146,6 @@ int main(int argc, char *argv[])
         sf::Event event;
         while (window.pollEvent(event))
         {
-
             if (event.type == sf::Event::KeyPressed)
             {
                 switch (event.key.code)

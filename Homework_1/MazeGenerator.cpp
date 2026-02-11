@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <chrono>
 #include <iostream>
+#include <vector>
 
 Maze::Maze(int width, int height, unsigned int seed)
 {
@@ -82,7 +83,8 @@ void Maze::generate()
 
 void Maze::draw(sf::RenderWindow &window)
 {
-    int offsetX = 10; // offset values
+    // offset values
+    int offsetX = 10;
     int offsetY = 10;
     int cellSize = 10;
 
