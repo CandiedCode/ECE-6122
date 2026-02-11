@@ -39,18 +39,23 @@ struct Node {
     }
 };
 
+class AbstractMazeSolver {
+public:
+    virtual std::vector<Position> solveMaze() = 0;
+};
 
-class BreadthFirstSearch {
+class BreadthFirstSearch : public AbstractMazeSolver {
 public:
     BreadthFirstSearch(Maze& maze);
-    BreadthFirstSearch& operator=(const BreadthFirstSearch&) = default;
-    BreadthFirstSearch& operator=(BreadthFirstSearch&&) = default; 
+    // BreadthFirstSearch& operator=(const BreadthFirstSearch&) = delete;
+    // BreadthFirstSearch& operator=(BreadthFirstSearch&&) = delete; 
 
     std::list<Position> reconstructPath(std::unordered_map<Position, Position, PositionHash>& parent, Position end);
-    std::vector<Position> solveMaze(Maze &maze);
+    std::vector<Position> solveMaze() override;
 
 
 private:
+    Maze& m_maze;
     Position start;
     Position end;
     Position terminator;
@@ -60,12 +65,20 @@ private:
 
 };
 
-// class AStarSearch  {
-// public:
-//     int manhattanDistance(Position a, Position b);
-//     int euclideanDistance(Position a, Position b);
-//     int chebyshevDistance(Position a, Position b);
-//     void solveMaze(int maze[5][5], int startX, int startY, int endX, int endY) override;
-// };
+class AStarSearch: public AbstractMazeSolver {
+public:
+    AStarSearch(Maze& maze);
+    
+    int manhattanDistance(Position a, Position b);
+    int euclideanDistance(Position a, Position b);
+    int chebyshevDistance(Position a, Position b);
+    std::vector<Position> solveMaze() override;
+
+private:
+    Maze& m_maze;
+    Position start;
+    Position end;
+    Position terminator;
+};
 
 #endif // MAZE_SOLVER_H

@@ -2,9 +2,6 @@
 # Inherits C++ standard and compiler options from parent
 
 # Create library for Maze components
-# add_library(MazeLib STATIC MazeGenerator.cpp)
-# target_include_directories(MazeLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 # Create Lab2 executable

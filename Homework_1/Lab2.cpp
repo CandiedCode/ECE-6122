@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
                     break;
                 case sf::Keyboard::S:
                     std::cout << "Solving the maze..." << std::endl;
-                    bfs.solveMaze(maze);
+                    bfs.solveMaze();
                     break;
                 case sf::Keyboard::R:
                     std::cout << "Resetting the maze..." << std::endl;
