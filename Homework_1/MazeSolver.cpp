@@ -10,20 +10,16 @@
 
 BreadthFirstSearch::BreadthFirstSearch(Maze &maze) : m_maze(maze)
 {
-    queue = new std::queue<Position>();
-    visited = new std::unordered_set<Position, PositionHash>();
-    parent = new std::unordered_map<Position, Position, PositionHash>();
-
     std::pair<int, int> startPos = maze.getStart();
     std::pair<int, int> endPos = maze.getEnd();
     terminator = Position{-1, -1}; // Sentinel value for path reconstruction
     start = Position{startPos.first, startPos.second};
     end = Position{endPos.first, endPos.second};
 
-    (*parent)[start] = terminator;
+    parent[start] = terminator;
 
-    queue->push(start);
-    visited->insert(start);
+    queue.push(start);
+    visited.insert(start);
 }
 
 std::list<Position> BreadthFirstSearch::reconstructPath(std::unordered_map<Position, Position, PositionHash> &parent,

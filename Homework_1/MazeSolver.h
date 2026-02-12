@@ -53,8 +53,6 @@ public:
 class BreadthFirstSearch : public MazeSolver {
 public:
     BreadthFirstSearch(Maze& maze);
-    // BreadthFirstSearch& operator=(const BreadthFirstSearch&) = delete;
-    // BreadthFirstSearch& operator=(BreadthFirstSearch&&) = delete; 
 
     std::list<Position> reconstructPath(std::unordered_map<Position, Position, PositionHash>& parent, Position end);
     std::vector<Position> solveMaze() override;
@@ -65,9 +63,9 @@ private:
     Position start;
     Position end;
     Position terminator;
-    std::queue<Position>* queue;
-    std::unordered_set<Position, PositionHash>* visited;
-    std::unordered_map<Position, Position, PositionHash>* parent; // For path reconstruction
+    std::queue<Position> queue;
+    std::unordered_set<Position, PositionHash> visited;
+    std::unordered_map<Position, Position, PositionHash> parent; // For path reconstruction
 
 };
 

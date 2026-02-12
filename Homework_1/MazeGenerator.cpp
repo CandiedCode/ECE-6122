@@ -95,36 +95,36 @@ void Maze::calculateWindowSize(int &window_width, int &window_height)
 
 void Maze::calculateAdjustedWindowAndCellSize(int &window_width, int &window_height)
 {
+    // Calculate the maximum cell size that fits within the given window dimensions
     float heightRatio = ((window_height - (2 * MAZE_OFFSET)) / m_height);
     float widthRatio = ((window_width - (2 * MAZE_OFFSET)) / m_width);
     float cell_size = std::min(widthRatio, heightRatio);
     m_cell_size = static_cast<int>(cell_size);
+
+    // Recalculate window size based on new cell size
     calculateWindowSize(window_width, window_height);
 }
 
 void Maze::getWindowSize(int &window_width, int &window_height, int desktopWidth, int desktopHeight)
 {
     calculateWindowSize(window_width, window_height);
+
     // Adjust desktop dimensions to account for taskbar/dock and window borders
     desktopHeight = desktopHeight - 100;
     desktopWidth = desktopWidth - 100;
 
-    std::cout << "Calculating window size for maze dimensions: " << desktopWidth << "x" << desktopHeight << std::endl;
-    std::cout << "Suggested window size for maze dimensions: " << window_width << "x" << window_height << std::endl;
-
+    // If the calculated window size is smaller than minimum, adjust to minimum and recalculate cell size
     if (window_width < MIN_WINDOW_WIDTH || window_height < MIN_WINDOW_HEIGHT)
     {
         window_width = std::min(window_width, MIN_WINDOW_WIDTH);
         window_height = std::max(window_height, MIN_WINDOW_HEIGHT);
-        std::cout << "Window size is smaller than minimum. Adjusting to minimum size: " << window_width << "x"
-                  << window_height << std::endl;
 
+        // Recalculate cell size based on new window dimensions
         calculateAdjustedWindowAndCellSize(window_width, window_height);
-        std::cout << "Adjusted cell size: " << m_cell_size << std::endl;
-        std::cout << "Final window size after adjustment: " << window_width << "x" << window_height << std::endl;
     }
     else if (window_width >= desktopWidth || window_height >= desktopHeight)
     {
+        // If the calculated window size exceeds desktop dimensions, adjust to fit and recalculate cell size
         desktopHeight -= (2 * MAZE_OFFSET);
         desktopWidth -= (2 * MAZE_OFFSET);
 
@@ -136,10 +136,8 @@ void Maze::getWindowSize(int &window_width, int &window_height, int desktopWidth
         {
             window_height = desktopHeight;
         }
-
+        // Recalculate cell size based on new window dimensions
         calculateAdjustedWindowAndCellSize(window_width, window_height);
-        std::cout << "Adjusted cell size: " << m_cell_size << std::endl;
-        std::cout << "Final window size after adjustment: " << window_width << "x" << window_height << std::endl;
     }
 }
 
@@ -318,60 +316,3 @@ bool Maze::isValidPath(int row, int col) const
     CellType type = m_grid[row][col].type;
     return type != CellType::Wall;
 }
-
-// ============================================================================
-// ITERATIVE VERSION (Alternative implementation using explicit stack)
-// ============================================================================
-//
-// For very large mazes, the recursive version may cause stack overflow.
-// Here's an iterative alternative that you can use instead:
-//
-// void Maze::generateIterative()
-//{
-//     initializeGrid();
-//
-//     std::stack<std::pair<int, int>> cellStack;
-//
-//     // Start at (1, 1)
-//     int currentRow = 1;
-//     int currentCol = 1;
-//     m_grid[currentRow][currentCol].visited = true;
-//     m_grid[currentRow][currentCol].type = CellType::Path;
-//
-//     int visitedCount = 1;
-//     int totalCells = ((m_height - 1) / 2) * ((m_width - 1) / 2);
-//
-//     while (visitedCount < totalCells) {
-//         auto neighbors = getUnvisitedNeighbors(currentRow, currentCol);
-//
-//         if (!neighbors.empty()) {
-//             // Choose random neighbor
-//             std::uniform_int_distribution<int> dist(0, neighbors.size() - 1);
-//             auto chosen = neighbors[dist(m_rng)];
-//
-//             // Push current cell to stack
-//             cellStack.push({currentRow, currentCol});
-//
-//             // Remove wall between current and chosen
-//             int wallRow = currentRow + (chosen.first - currentRow) / 2;
-//             int wallCol = currentCol + (chosen.second - currentCol) / 2;
-//             m_grid[wallRow][wallCol].type = CellType::Path;
-//
-//             // Move to chosen cell
-//             currentRow = chosen.first;
-//             currentCol = chosen.second;
-//             m_grid[currentRow][currentCol].visited = true;
-//             m_grid[currentRow][currentCol].type = CellType::Path;
-//             visitedCount++;
-//         }
-//         else if (!cellStack.empty()) {
-//             // Backtrack
-//             auto cell = cellStack.top();
-//             cellStack.pop();
-//             currentRow = cell.first;
-//             currentCol = cell.second;
-//         }
-//     }
-//
-//     placeStartAndEnd();
-// }
