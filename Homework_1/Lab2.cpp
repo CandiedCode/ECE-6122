@@ -131,8 +131,8 @@ int main(int argc, char *argv[])
     sf::Text pTitle = getText(font, "Maze Generator", 20, sf::Color::Yellow, panel_start, 10.f);
     sf::Text maxDimensions =
         getText(font, "Maze: " + std::to_string(maze.getHeight()) + "x" + std::to_string(maze.getWidth()), 16,
-                sf::Color::White, panel_start, pTitle.getGlobalBounds().height + pTitle.getGlobalBounds().top + 10.f);
-    sf::Text algorithm = getText(font, "Algorithm: DFS", 16, sf::Color::Blue, panel_start,
+                sf::Color::White, panel_start, pTitle.getGlobalBounds().height + pTitle.getGlobalBounds().top + 20.f);
+    sf::Text algorithm = getText(font, "Algorithm: DFS", 16, sf::Color(173, 216, 230), panel_start,
                                  maxDimensions.getGlobalBounds().height + maxDimensions.getGlobalBounds().top + 10.f);
     sf::Text diagonal = getText(font, "Diagonal: No", 16, sf::Color::White, panel_start,
                                 algorithm.getGlobalBounds().height + algorithm.getGlobalBounds().top + 10.f);

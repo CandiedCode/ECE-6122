@@ -34,7 +34,7 @@ Maze::Maze(int width, int height, unsigned int seed)
     // (walls on even indices, paths on odd indices)
     m_width = (width % 2 == 0) ? width + 1 : width;
     m_height = (height % 2 == 0) ? height + 1 : height;
-    m_cell_size = 12;
+    m_cell_size = 20;
 
     // Enforce minimum and maximum sizes
     m_width = std::max(11, std::min(m_width, 101));
@@ -86,20 +86,42 @@ void Maze::generate()
     placeStartAndEnd();
 }
 
+void Maze::calculateWindowSize(int &window_width, int &window_height)
+{
+    // Calculate required window size based on maze dimensions and cell size
+    window_width = (m_width * m_cell_size) + (2 * MAZE_OFFSET);
+    window_height = (m_height * m_cell_size) + (2 * MAZE_OFFSET);
+}
+
+void Maze::calculateAdjustedWindowAndCellSize(int &window_width, int &window_height)
+{
+    float heightRatio = ((window_height - (2 * MAZE_OFFSET)) / m_height);
+    float widthRatio = ((window_width - (2 * MAZE_OFFSET)) / m_width);
+    float cell_size = std::min(widthRatio, heightRatio);
+    m_cell_size = static_cast<int>(cell_size);
+    calculateWindowSize(window_width, window_height);
+}
+
 void Maze::getWindowSize(int &window_width, int &window_height, int desktopWidth, int desktopHeight)
 {
-    window_height = (m_height * m_cell_size) + (2 * MAZE_OFFSET);
-    window_width = (m_width * m_cell_size) + (2 * MAZE_OFFSET);
+    calculateWindowSize(window_width, window_height);
+    // Adjust desktop dimensions to account for taskbar/dock and window borders
+    desktopHeight = desktopHeight - 100;
+    desktopWidth = desktopWidth - 100;
+
+    std::cout << "Calculating window size for maze dimensions: " << desktopWidth << "x" << desktopHeight << std::endl;
+    std::cout << "Suggested window size for maze dimensions: " << window_width << "x" << window_height << std::endl;
 
     if (window_width < MIN_WINDOW_WIDTH || window_height < MIN_WINDOW_HEIGHT)
     {
-        window_width = MIN_WINDOW_WIDTH;
-        window_height = MIN_WINDOW_HEIGHT;
+        window_width = std::min(window_width, MIN_WINDOW_WIDTH);
+        window_height = std::max(window_height, MIN_WINDOW_HEIGHT);
+        std::cout << "Window size is smaller than minimum. Adjusting to minimum size: " << window_width << "x"
+                  << window_height << std::endl;
 
-        float heightRatio = ((window_height - (2 * MAZE_OFFSET)) / m_height);
-        float widthRatio = ((window_width - (2 * MAZE_OFFSET)) / m_width);
-        float cell_size = std::min(widthRatio, heightRatio);
-        m_cell_size = static_cast<int>(cell_size);
+        calculateAdjustedWindowAndCellSize(window_width, window_height);
+        std::cout << "Adjusted cell size: " << m_cell_size << std::endl;
+        std::cout << "Final window size after adjustment: " << window_width << "x" << window_height << std::endl;
     }
     else if (window_width >= desktopWidth || window_height >= desktopHeight)
     {
@@ -115,10 +137,9 @@ void Maze::getWindowSize(int &window_width, int &window_height, int desktopWidth
             window_height = desktopHeight;
         }
 
-        float heightRatio = (desktopHeight / m_height);
-        float widthRatio = (desktopWidth / m_width);
-        float cell_size = std::min(widthRatio, heightRatio);
-        m_cell_size = static_cast<int>(cell_size);
+        calculateAdjustedWindowAndCellSize(window_width, window_height);
+        std::cout << "Adjusted cell size: " << m_cell_size << std::endl;
+        std::cout << "Final window size after adjustment: " << window_width << "x" << window_height << std::endl;
     }
 }
 

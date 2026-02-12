@@ -151,6 +151,9 @@ private:
      */
     std::vector<std::pair<int, int>> getUnvisitedNeighbors(int row, int col);
     
+    void calculateWindowSize(int &window_width, int &window_height);
+    void calculateAdjustedWindowAndCellSize(int &window_width, int &window_height);
+
     /**
      * @brief Place start and end positions
      */
