@@ -28,12 +28,10 @@
 #define MIN_WINDOW_WIDTH 1000
 #define MIN_WINDOW_HEIGHT 600
 
-sf::Color lerpColor(const sf::Color& a, const sf::Color& b, float t) {
-    return sf::Color(
-        static_cast<sf::Uint8>(a.r + t * (b.r - a.r)),
-        static_cast<sf::Uint8>(a.g + t * (b.g - a.g)),
-        static_cast<sf::Uint8>(a.b + t * (b.b - a.b))
-    );
+sf::Color lerpColor(const sf::Color &a, const sf::Color &b, float t)
+{
+    return sf::Color(static_cast<sf::Uint8>(a.r + t * (b.r - a.r)), static_cast<sf::Uint8>(a.g + t * (b.g - a.g)),
+                     static_cast<sf::Uint8>(a.b + t * (b.b - a.b)));
 }
 
 Maze::Maze(int width, int height, unsigned int seed)
@@ -168,63 +166,49 @@ void Maze::draw(sf::RenderWindow &window)
             float right = left + cellSize;
             float bottom = top + cellSize;
 
+            sf::RectangleShape cellShape(sf::Vector2f(cellSize, cellSize));
+            cellShape.setPosition(left, top);
+
             switch (cell.type)
             {
-                case CellType::Wall :
-                {
-                    sf::RectangleShape wall(sf::Vector2f(cellSize, cellSize));
-                    wall.setPosition(left, top);
-                    wall.setFillColor(sf::Color(50, 50, 50)); // DarkGray
-                    window.draw(wall);
-                    break;
-                }
-                case CellType::Path:
-                {
-                    sf::RectangleShape path(sf::Vector2f(cellSize, cellSize));
-                    path.setPosition(left, top);
-                    path.setOutlineThickness(1.f);
-                    path.setFillColor(sf::Color(255, 255, 255));
-                    path.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
-                    window.draw(path);
-                    break;
-                }
-                case CellType::Visited:
-                {
-                    sf::RectangleShape visited(sf::Vector2f(cellSize, cellSize));
-                    visited.setPosition(left, top);
-                    visited.setOutlineThickness(1.f);
-                    visited.setFillColor(lerpColor(sf::Color(255, 255, 255), sf::Color(173, 216, 230), 0.5f)); // White to LightBlue for visited
-                    visited.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
-                    window.draw(visited);
-                    
-                    break;
-                }
-                case CellType::Start:
-                {
-                    sf::RectangleShape startMarker(sf::Vector2f(cellSize, cellSize));
-                    startMarker.setPosition(left, top);
-                    startMarker.setFillColor(sf::Color(0, 200, 0)); // Green
-                    window.draw(startMarker);
-                    break;
-                }
-                case CellType::End:
-                {
-                    sf::RectangleShape endMarker(sf::Vector2f(cellSize, cellSize));
-                    endMarker.setPosition(left, top);
-                    endMarker.setFillColor(sf::Color(200, 0, 0)); // Red
-                    window.draw(endMarker);
-                    break;
-                }
-                case CellType::Solution:
-                {
-                    sf::RectangleShape solution(sf::Vector2f(cellSize, cellSize));
-                    solution.setPosition(left, top);
-                    solution.setFillColor(lerpColor(sf::Color(173, 216, 230), sf::Color(255, 255, 0), 0.5f)); // LightBlue to Yellow for solution
-                    solution.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
-                    window.draw(solution);
-                    break;
-                }
+            case CellType::Wall: {
+                cellShape.setFillColor(sf::Color(50, 50, 50)); // DarkGray
+                break;
             }
+            case CellType::Path: {
+                cellShape.setOutlineThickness(1.f);
+                cellShape.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
+                cellShape.setFillColor(sf::Color(255, 255, 255));
+                break;
+            }
+            case CellType::Visited: {
+                cellShape.setOutlineThickness(1.f);
+                cellShape.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
+                cellShape.setFillColor(lerpColor(sf::Color(255, 255, 255), sf::Color(173, 216, 230),
+                                                 0.5f)); // White to LightBlue for visited
+                break;
+            }
+            case CellType::Start: {
+                cellShape.setOutlineThickness(1.f);
+                cellShape.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
+                cellShape.setFillColor(sf::Color(0, 200, 0));     // Green
+                break;
+            }
+            case CellType::End: {
+                cellShape.setOutlineThickness(1.f);
+                cellShape.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
+                cellShape.setFillColor(sf::Color(200, 0, 0));     // Red
+                break;
+            }
+            case CellType::Solution: {
+                cellShape.setOutlineThickness(1.f);
+                cellShape.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
+                cellShape.setFillColor(lerpColor(sf::Color(173, 216, 230), sf::Color(255, 255, 0),
+                                                 0.5f)); // LightBlue to Yellow for solution
+                break;
+            }
+            }
+            window.draw(cellShape);
         }
     }
 }

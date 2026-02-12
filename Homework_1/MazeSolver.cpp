@@ -21,9 +21,11 @@ BreadthFirstSearch::BreadthFirstSearch(Maze &maze) : m_maze(maze)
     cameFrom[start] = terminator; // Sentinel value for start
 }
 
-void BreadthFirstSearch::reset() {
+void BreadthFirstSearch::reset()
+{
     // Clear all data structures
-    while (!frontier.empty()) frontier.pop();
+    while (!frontier.empty())
+        frontier.pop();
     visited.clear();
     cameFrom.clear();
 
@@ -42,6 +44,12 @@ std::list<Position> BreadthFirstSearch::reconstructPath()
     {
         path.push_back(current);
         current = cameFrom[current];
+
+        // Mark solution path for visualization
+        if (current != start) // Avoid overwriting start cell
+        {
+            m_maze.setCellType(current.row, current.col, CellType::Solution);
+        }
     }
 
     return path;
@@ -51,7 +59,8 @@ std::vector<Position> BreadthFirstSearch::solveMaze()
 {
     while (!frontier.empty())
     {
-        if (step()) {
+        if (step())
+        {
             // Path found, reconstruct it
             std::vector<Position> path;
             Position current = end;
@@ -70,7 +79,8 @@ std::vector<Position> BreadthFirstSearch::solveMaze()
 
 bool BreadthFirstSearch::step()
 {
-    if (frontier.empty()) {
+    if (frontier.empty())
+    {
         return true; // No more steps possible
     }
 
@@ -86,16 +96,18 @@ bool BreadthFirstSearch::step()
     }
 
     // Explore neighbors
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; ++i)
+    {
         Position next = {current.row + DR[i], current.col + DC[i]};
-        
-        if (m_maze.isValidPath(next.row, next.col) && !visited[next]) {
+
+        if (m_maze.isValidPath(next.row, next.col) && !visited[next])
+        {
             visited[next] = true;
             cameFrom[next] = current;
             frontier.push(next);
-            
+
             // Mark for visualization (optional)
-            if (m_maze.getCell(next.row, next.col).type == CellType::Path) 
+            if (m_maze.getCell(next.row, next.col).type == CellType::Path)
             {
                 m_maze.setCellType(next.row, next.col, CellType::Visited);
             }
@@ -111,7 +123,8 @@ AStarSearch::AStarSearch(Maze &maze) : m_maze(maze)
     end = Position{maze.getEnd().first, maze.getEnd().second};
 }
 
-void AStarSearch::reset() {
+void AStarSearch::reset()
+{
     // Clear any existing data structures if needed
 }
 

@@ -98,13 +98,16 @@ sf::Text getText(sf::Font &font, const std::string &str, unsigned int size, sf::
     return text;
 }
 
-void update(sf::Time deltaTime, bool &solving, BreadthFirstSearch &solver) {
+void update(sf::Time deltaTime, bool &solving, BreadthFirstSearch &solver)
+{
     static sf::Time accumulated;
     accumulated += deltaTime;
-    
-    if (accumulated >= sf::milliseconds(50) && solving) {
+
+    if (accumulated >= sf::milliseconds(50) && solving)
+    {
         accumulated = sf::Time::Zero;
-        if (solver.step()) {
+        if (solver.step())
+        {
             solving = false;
         }
     }
@@ -149,12 +152,11 @@ int main(int argc, char *argv[])
     sf::Text diagonal = getText(font, "Diagonal: No", 16, sf::Color::White, panel_start,
                                 algorithm.getGlobalBounds().height + algorithm.getGlobalBounds().top + 10.f);
     sf::Text speed = getText(font, "Speed: 100 STEPS/S", 16, sf::Color::White, panel_start,
-                                      diagonal.getGlobalBounds().height + diagonal.getGlobalBounds().top + 10.f);
+                             diagonal.getGlobalBounds().height + diagonal.getGlobalBounds().top + 10.f);
 
     // Statistics
-    sf::Text statisticsTitle =
-        getText(font, "-- Statistics --", 16, sf::Color::Green, panel_start,
-                speed.getGlobalBounds().height + speed.getGlobalBounds().top + 20.f);
+    sf::Text statisticsTitle = getText(font, "-- Statistics --", 16, sf::Color::Green, panel_start,
+                                       speed.getGlobalBounds().height + speed.getGlobalBounds().top + 20.f);
     sf::Text nodesExplored =
         getText(font, "Nodes Explored: 0", 16, sf::Color::White, panel_start,
                 statisticsTitle.getGlobalBounds().height + statisticsTitle.getGlobalBounds().top + 10.f);
@@ -218,10 +220,19 @@ int main(int argc, char *argv[])
         // Display the rendered content
         window.display();
 
-        if (solving) {
+        if (solving)
+        {
             sf::Time deltaTime = clock.restart();
             update(deltaTime, solving, bfs);
-        } else {
+
+            if (!solving)
+            {
+                std::cout << "Path found! Reconstructing path..." << std::endl;
+                bfs.reconstructPath();
+            }
+        }
+        else
+        {
             clock.restart(); // Reset clock when not solving to avoid large delta on next update
         }
 
