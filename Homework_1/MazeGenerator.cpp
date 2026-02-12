@@ -28,6 +28,14 @@
 #define MIN_WINDOW_WIDTH 1000
 #define MIN_WINDOW_HEIGHT 600
 
+sf::Color lerpColor(const sf::Color& a, const sf::Color& b, float t) {
+    return sf::Color(
+        static_cast<sf::Uint8>(a.r + t * (b.r - a.r)),
+        static_cast<sf::Uint8>(a.g + t * (b.g - a.g)),
+        static_cast<sf::Uint8>(a.b + t * (b.b - a.b))
+    );
+}
+
 Maze::Maze(int width, int height, unsigned int seed)
 {
     // Ensure dimensions are odd for proper maze structure
@@ -160,35 +168,62 @@ void Maze::draw(sf::RenderWindow &window)
             float right = left + cellSize;
             float bottom = top + cellSize;
 
-            if (cell.type == CellType::Wall)
+            switch (cell.type)
             {
-                sf::RectangleShape wall(sf::Vector2f(cellSize, cellSize));
-                wall.setPosition(left, top);
-                wall.setFillColor(sf::Color(50, 50, 50)); // DarkGray
-                window.draw(wall);
-            }
-            else if (cell.type == CellType::Path)
-            {
-                sf::RectangleShape visited(sf::Vector2f(cellSize, cellSize));
-                visited.setPosition(left, top);
-                visited.setFillColor(sf::Color(255, 255, 255)); // White
-                visited.setOutlineThickness(1.f);
-                visited.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
-                window.draw(visited);
-            }
-            else if (cell.type == CellType::Start)
-            {
-                sf::RectangleShape startMarker(sf::Vector2f(cellSize, cellSize));
-                startMarker.setPosition(left, top);
-                startMarker.setFillColor(sf::Color(0, 200, 0)); // Green
-                window.draw(startMarker);
-            }
-            else if (cell.type == CellType::End)
-            {
-                sf::RectangleShape endMarker(sf::Vector2f(cellSize, cellSize));
-                endMarker.setPosition(left, top);
-                endMarker.setFillColor(sf::Color(200, 0, 0)); // Red
-                window.draw(endMarker);
+                case CellType::Wall :
+                {
+                    sf::RectangleShape wall(sf::Vector2f(cellSize, cellSize));
+                    wall.setPosition(left, top);
+                    wall.setFillColor(sf::Color(50, 50, 50)); // DarkGray
+                    window.draw(wall);
+                    break;
+                }
+                case CellType::Path:
+                {
+                    sf::RectangleShape path(sf::Vector2f(cellSize, cellSize));
+                    path.setPosition(left, top);
+                    path.setOutlineThickness(1.f);
+                    path.setFillColor(sf::Color(255, 255, 255));
+                    path.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
+                    window.draw(path);
+                    break;
+                }
+                case CellType::Visited:
+                {
+                    sf::RectangleShape visited(sf::Vector2f(cellSize, cellSize));
+                    visited.setPosition(left, top);
+                    visited.setOutlineThickness(1.f);
+                    visited.setFillColor(lerpColor(sf::Color(255, 255, 255), sf::Color(173, 216, 230), 0.5f)); // White to LightBlue for visited
+                    visited.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
+                    window.draw(visited);
+                    
+                    break;
+                }
+                case CellType::Start:
+                {
+                    sf::RectangleShape startMarker(sf::Vector2f(cellSize, cellSize));
+                    startMarker.setPosition(left, top);
+                    startMarker.setFillColor(sf::Color(0, 200, 0)); // Green
+                    window.draw(startMarker);
+                    break;
+                }
+                case CellType::End:
+                {
+                    sf::RectangleShape endMarker(sf::Vector2f(cellSize, cellSize));
+                    endMarker.setPosition(left, top);
+                    endMarker.setFillColor(sf::Color(200, 0, 0)); // Red
+                    window.draw(endMarker);
+                    break;
+                }
+                case CellType::Solution:
+                {
+                    sf::RectangleShape solution(sf::Vector2f(cellSize, cellSize));
+                    solution.setPosition(left, top);
+                    solution.setFillColor(lerpColor(sf::Color(173, 216, 230), sf::Color(255, 255, 0), 0.5f)); // LightBlue to Yellow for solution
+                    solution.setOutlineColor(sf::Color(50, 50, 50)); // DarkGray border
+                    window.draw(solution);
+                    break;
+                }
             }
         }
     }

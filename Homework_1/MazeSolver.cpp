@@ -16,14 +16,24 @@ BreadthFirstSearch::BreadthFirstSearch(Maze &maze) : m_maze(maze)
     start = Position{startPos.first, startPos.second};
     end = Position{endPos.first, endPos.second};
 
-    parent[start] = terminator;
-
-    queue.push(start);
-    visited.insert(start);
+    frontier.push(start);
+    visited[start] = true;
+    cameFrom[start] = terminator; // Sentinel value for start
 }
 
-std::list<Position> BreadthFirstSearch::reconstructPath(std::unordered_map<Position, Position, PositionHash> &parent,
-                                                        Position end)
+void BreadthFirstSearch::reset() {
+    // Clear all data structures
+    while (!frontier.empty()) frontier.pop();
+    visited.clear();
+    cameFrom.clear();
+
+    // Reinitialize with start position
+    frontier.push(start);
+    visited[start] = true;
+    cameFrom[start] = terminator;
+}
+
+std::list<Position> BreadthFirstSearch::reconstructPath()
 {
     std::list<Position> path;
     Position current = end;
@@ -31,7 +41,7 @@ std::list<Position> BreadthFirstSearch::reconstructPath(std::unordered_map<Posit
     while (current != terminator)
     {
         path.push_back(current);
-        current = parent[current];
+        current = cameFrom[current];
     }
 
     return path;
@@ -39,65 +49,70 @@ std::list<Position> BreadthFirstSearch::reconstructPath(std::unordered_map<Posit
 
 std::vector<Position> BreadthFirstSearch::solveMaze()
 {
-    std::queue<Position> frontier;
-    std::unordered_map<Position, Position, PositionHash> cameFrom;
-    std::unordered_map<Position, bool, PositionHash> visited;
-
-    frontier.push(start);
-    visited[start] = true;
-    cameFrom[start] = terminator; // Sentinel value for start
-
     while (!frontier.empty())
     {
-        Position current = frontier.front();
-        frontier.pop();
-
-        // Are we at the end?
-        if (current == end)
-        {
-            // Reconstruct path
+        if (step()) {
+            // Path found, reconstruct it
             std::vector<Position> path;
-            Position pos = end;
-            while (pos != terminator)
+            Position current = end;
+            while (current != terminator)
             {
-                path.push_back(pos);
-                pos = cameFrom[pos];
+                path.push_back(current);
+                current = cameFrom[current];
             }
             std::reverse(path.begin(), path.end());
             return path;
-        }
-
-        // Explore neighbors
-        for (int i = 0; i < NUM_DIRECTIONS; ++i)
-        {
-            // {-1, 0} = up
-            // {1, 0} = down
-            // {0, -1} = left
-            // {0, 1} = right
-            Position next = {current.row + DR[i], current.col + DC[i]};
-
-            if (m_maze.isValidPath(next.row, next.col) && !visited[next])
-            {
-                visited[next] = true;
-                cameFrom[next] = current;
-                frontier.push(next);
-
-                // Mark for visualization (optional)
-                if (m_maze.getCell(next.row, next.col).type == CellType::Path)
-                {
-                    m_maze.setCellType(next.row, next.col, CellType::Visited);
-                }
-            }
         }
     }
 
     return {}; // No path found
 }
 
+bool BreadthFirstSearch::step()
+{
+    if (frontier.empty()) {
+        return true; // No more steps possible
+    }
+
+    Position current = frontier.front();
+    frontier.pop();
+
+    // Are we at the end?
+    if (current == end)
+    {
+        // Reconstruct path
+        reconstructPath();
+        return true;
+    }
+
+    // Explore neighbors
+    for (int i = 0; i < 4; ++i) {
+        Position next = {current.row + DR[i], current.col + DC[i]};
+        
+        if (m_maze.isValidPath(next.row, next.col) && !visited[next]) {
+            visited[next] = true;
+            cameFrom[next] = current;
+            frontier.push(next);
+            
+            // Mark for visualization (optional)
+            if (m_maze.getCell(next.row, next.col).type == CellType::Path) 
+            {
+                m_maze.setCellType(next.row, next.col, CellType::Visited);
+            }
+        }
+    }
+
+    return false; // Path not found yet
+}
+
 AStarSearch::AStarSearch(Maze &maze) : m_maze(maze)
 {
     start = Position{maze.getStart().first, maze.getStart().second};
     end = Position{maze.getEnd().first, maze.getEnd().second};
+}
+
+void AStarSearch::reset() {
+    // Clear any existing data structures if needed
 }
 
 std::vector<Position> AStarSearch::solveMaze()
@@ -170,4 +185,10 @@ std::vector<Position> AStarSearch::solveMaze()
     }
 
     return {}; // No path found
+}
+
+bool AStarSearch::step()
+{
+    // Not implemented for stepwise execution in this example
+    return true;
 }

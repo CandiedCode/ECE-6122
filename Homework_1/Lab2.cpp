@@ -98,6 +98,18 @@ sf::Text getText(sf::Font &font, const std::string &str, unsigned int size, sf::
     return text;
 }
 
+void update(sf::Time deltaTime, bool &solving, BreadthFirstSearch &solver) {
+    static sf::Time accumulated;
+    accumulated += deltaTime;
+    
+    if (accumulated >= sf::milliseconds(50) && solving) {
+        accumulated = sf::Time::Zero;
+        if (solver.step()) {
+            solving = false;
+        }
+    }
+}
+
 int main(int argc, char *argv[])
 {
     // Get desktop resolution
@@ -136,13 +148,13 @@ int main(int argc, char *argv[])
                                  maxDimensions.getGlobalBounds().height + maxDimensions.getGlobalBounds().top + 10.f);
     sf::Text diagonal = getText(font, "Diagonal: No", 16, sf::Color::White, panel_start,
                                 algorithm.getGlobalBounds().height + algorithm.getGlobalBounds().top + 10.f);
-    sf::Text animationSpeed = getText(font, "Speed: 100 STEPS/S", 16, sf::Color::White, panel_start,
+    sf::Text speed = getText(font, "Speed: 100 STEPS/S", 16, sf::Color::White, panel_start,
                                       diagonal.getGlobalBounds().height + diagonal.getGlobalBounds().top + 10.f);
 
     // Statistics
     sf::Text statisticsTitle =
         getText(font, "-- Statistics --", 16, sf::Color::Green, panel_start,
-                animationSpeed.getGlobalBounds().height + animationSpeed.getGlobalBounds().top + 20.f);
+                speed.getGlobalBounds().height + speed.getGlobalBounds().top + 20.f);
     sf::Text nodesExplored =
         getText(font, "Nodes Explored: 0", 16, sf::Color::White, panel_start,
                 statisticsTitle.getGlobalBounds().height + statisticsTitle.getGlobalBounds().top + 10.f);
@@ -173,12 +185,12 @@ int main(int argc, char *argv[])
     // sf::Text mazWidth = getText(font, "Maze Width:", 18, sf::Color::Black, windowWidth - PANEL + 10.f, 50.f);
     // sf::Text mazHeight = getText(font, "Maze Height:", 18, sf::Color::Black, windowWidth - PANEL + 10.f, 90.f);
     sf::Clock clock;
+    sf::Time animationSpeed = sf::milliseconds(50);
+    bool solving = false;
 
     // Start the game loop
     while (window.isOpen())
     {
-        sf::Time elapsed = clock.restart();
-
         // Clear the window
         window.clear(sf::Color::Black); // Dark background for contrast
 
@@ -189,7 +201,7 @@ int main(int argc, char *argv[])
         window.draw(maxDimensions);
         window.draw(algorithm);
         window.draw(diagonal);
-        window.draw(animationSpeed);
+        window.draw(speed);
         window.draw(statisticsTitle);
         window.draw(nodesExplored);
         window.draw(pathLength);
@@ -206,6 +218,13 @@ int main(int argc, char *argv[])
         // Display the rendered content
         window.display();
 
+        if (solving) {
+            sf::Time deltaTime = clock.restart();
+            update(deltaTime, solving, bfs);
+        } else {
+            clock.restart(); // Reset clock when not solving to avoid large delta on next update
+        }
+
         // Process events
         sf::Event event;
         while (window.pollEvent(event))
@@ -220,28 +239,19 @@ int main(int argc, char *argv[])
                 case sf::Keyboard::G:
                     std::cout << "Generating new maze..." << std::endl;
                     maze.generate();
+                    solving = false;
                     break;
                 case sf::Keyboard::S:
                     std::cout << "Solving the maze..." << std::endl;
-                    bfs.solveMaze();
+                    solving = true;
+                    bfs.reset();
                     break;
                 case sf::Keyboard::R:
                     std::cout << "Resetting the maze..." << std::endl;
                     maze.resetVisualization();
                     maze.draw(window);
-                    break;
-                case sf::Keyboard::Up: {
-                    std::cout << "Increasing maze height..." << std::endl;
-                    break;
-                }
-                case sf::Keyboard::Down:
-                    std::cout << "Decreasing maze height..." << std::endl;
-                    break;
-                case sf::Keyboard::Right:
-                    std::cout << "Increasing maze width..." << std::endl;
-                    break;
-                case sf::Keyboard::Left:
-                    std::cout << "Decreasing maze width..." << std::endl;
+                    solving = false;
+                    bfs.reset();
                     break;
                 // Add key didn't trigger on my mac thus added equal as plus is on the same key
                 case sf::Keyboard::Equal:
@@ -267,6 +277,5 @@ int main(int argc, char *argv[])
         }
     }
 
-    std::cout << "Hello, ECE-6122!" << std::endl;
     return EXIT_SUCCESS;
 }

@@ -48,25 +48,27 @@ struct Node {
 class MazeSolver {
 public:
     virtual std::vector<Position> solveMaze() = 0;
+    virtual bool step() = 0;
+    virtual void reset() = 0;
 };
 
 class BreadthFirstSearch : public MazeSolver {
 public:
     BreadthFirstSearch(Maze& maze);
 
-    std::list<Position> reconstructPath(std::unordered_map<Position, Position, PositionHash>& parent, Position end);
+    std::list<Position> reconstructPath();
     std::vector<Position> solveMaze() override;
-
+    bool step() override;
+    void reset() override;
 
 private:
     Maze& m_maze;
     Position start;
     Position end;
     Position terminator;
-    std::queue<Position> queue;
-    std::unordered_set<Position, PositionHash> visited;
-    std::unordered_map<Position, Position, PositionHash> parent; // For path reconstruction
-
+    std::queue<Position> frontier;
+    std::unordered_map<Position, Position, PositionHash> cameFrom;
+    std::unordered_map<Position, bool, PositionHash> visited;
 };
 
 class AStarSearch: public MazeSolver {
@@ -77,6 +79,8 @@ public:
     int euclideanDistance(Position a, Position b);
     int chebyshevDistance(Position a, Position b);
     std::vector<Position> solveMaze() override;
+    bool step() override;
+    void reset() override;
 
 private:
     Maze& m_maze;
