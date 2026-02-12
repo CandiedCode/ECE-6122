@@ -2,10 +2,12 @@
 #include "MazeGenerator.h"
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <limits>
 #include <list>
 #include <queue>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 BreadthFirstSearch::BreadthFirstSearch(Maze &maze) : m_maze(maze)
@@ -57,9 +59,10 @@ std::list<Position> BreadthFirstSearch::reconstructPath()
 
 std::vector<Position> BreadthFirstSearch::solveMaze()
 {
+    int nodesExploredCount = 0;
     while (!frontier.empty())
     {
-        if (step())
+        if (step(nodesExploredCount))
         {
             // Path found, reconstruct it
             std::vector<Position> path;
@@ -77,7 +80,7 @@ std::vector<Position> BreadthFirstSearch::solveMaze()
     return {}; // No path found
 }
 
-bool BreadthFirstSearch::step()
+bool BreadthFirstSearch::step(int &nodesExploredCount)
 {
     if (frontier.empty())
     {
@@ -105,6 +108,7 @@ bool BreadthFirstSearch::step()
             visited[next] = true;
             cameFrom[next] = current;
             frontier.push(next);
+            nodesExploredCount++;
 
             // Mark for visualization (optional)
             if (m_maze.getCell(next.row, next.col).type == CellType::Path)
@@ -200,7 +204,7 @@ std::vector<Position> AStarSearch::solveMaze()
     return {}; // No path found
 }
 
-bool AStarSearch::step()
+bool AStarSearch::step(int &nodesExploredCount)
 {
     // Not implemented for stepwise execution in this example
     return true;

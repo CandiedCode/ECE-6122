@@ -48,7 +48,7 @@ struct Node {
 class MazeSolver {
 public:
     virtual std::vector<Position> solveMaze() = 0;
-    virtual bool step() = 0;
+    virtual bool step(int &nodesExploredCount) = 0;
     virtual void reset() = 0;
 };
 
@@ -58,7 +58,7 @@ public:
 
     std::list<Position> reconstructPath();
     std::vector<Position> solveMaze() override;
-    bool step() override;
+    bool step(int &nodesExploredCount) override;
     void reset() override;
 
 private:
@@ -79,7 +79,7 @@ public:
     int euclideanDistance(Position a, Position b);
     int chebyshevDistance(Position a, Position b);
     std::vector<Position> solveMaze() override;
-    bool step() override;
+    bool step(int &nodesExploredCount) override;
     void reset() override;
 
 private:

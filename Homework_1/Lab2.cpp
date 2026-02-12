@@ -5,31 +5,43 @@
 #include <string>
 
 #define PANEL 250
+#define DEFAULT_MAZE_SIZE 25
+#define MIN_MAZE_SIZE 10
+#define MAX_MAZE_SIZE 100
+#define DEFAULT_PADDING 10.f
+#define DEFAULT_FONT_SIZE 16
 
+// @brief Maze configuration and validate dimensions
 struct MazeConfig
 {
-    MazeConfig()
+    // @brief Default constructor initializes maze size to 25x25
+    MazeConfig() : height(DEFAULT_MAZE_SIZE), width(DEFAULT_MAZE_SIZE)
     {
-        // The maze must be at least 25x25 cells
-        height = defaultSize;
-        width = defaultSize;
     }
+    // @brief Parameterized constructor with validation
+    // @param h Maze height
+    // @param w Maze width
+    // @throws std::invalid_argument if dimensions are out of valid range
     MazeConfig(int h, int w) : height(h), width(w)
     {
-        if (!heightValid() || !widthValid())
+        if (!isDimensionValid())
         {
-            std::cerr << "Invalid maze dimensions. Height and width must be between 10 and 100." << std::endl;
-            height = defaultSize;
-            width = defaultSize;
-            throw std::invalid_argument("Invalid maze dimensions. Height and width must be between 10 and 100.");
+            std::cerr << "Invalid maze dimensions. Height and width must be between " << MIN_MAZE_SIZE << " and "
+                      << MAX_MAZE_SIZE << "." << std::endl;
+            throw std::invalid_argument("Invalid maze dimensions. Height and width must be between " +
+                                        std::to_string(MIN_MAZE_SIZE) + " and " + std::to_string(MAX_MAZE_SIZE) + ".");
         }
     }
 
   public:
+    // @brief Get maze height
+    // @return Maze height
     int getHeight() const
     {
         return height;
     }
+    // @brief Get maze width
+    // @return Maze width
     int getWidth() const
     {
         return width;
@@ -38,18 +50,19 @@ struct MazeConfig
   private:
     int height;
     int width;
-    int defaultSize = 25;
 
-    bool heightValid()
+    // @brief Validate maze dimensions
+    // @return True if dimensions are valid, false otherwise
+    bool isDimensionValid()
     {
-        return height >= 10 && height <= 100;
-    }
-    bool widthValid()
-    {
-        return width >= 10 && width <= 100;
+        return height >= MIN_MAZE_SIZE && height <= MAX_MAZE_SIZE && width >= MIN_MAZE_SIZE && width <= MAX_MAZE_SIZE;
     }
 };
 
+// @brief Process command line arguments to configure maze dimensions
+// @param argc Argument count
+// @param argv Argument vector
+// @return MazeConfig object with specified or default dimensions
 MazeConfig processArgs(int argc, char *argv[])
 {
     MazeConfig config;
@@ -57,12 +70,8 @@ MazeConfig processArgs(int argc, char *argv[])
     std::cout << "Processing command line arguments..." << std::endl;
     std::cout << "Argument count: " << argc << std::endl;
     std::cout << "Arguments: ";
-    for (int i = 0; i < argc; ++i)
-    {
-        std::cout << argv[i] << " ";
-    }
-    std::cout << std::endl;
 
+    // To process arguments, we expect two integers for height and width. If not provided, we use defaults.
     if (argc != 3)
     {
         std::cout << "Defaulting to maze size 25x25. To specify size, provide two arguments for height and width (e.g. "
@@ -71,11 +80,27 @@ MazeConfig processArgs(int argc, char *argv[])
         return MazeConfig();
     }
 
-    int height = std::stoi(argv[1]);
-    int width = std::stoi(argv[2]);
-    return MazeConfig(height, width);
+    char *height = argv[1];
+    char *width = argv[2];
+    int parsedHeight, parsedWidth;
+    try
+    {
+        parsedHeight = std::stoi(height);
+        parsedWidth = std::stoi(width);
+    }
+    catch (const std::exception &e)
+    {
+        // throw error with details about the failure and the received arguments
+        throw std::invalid_argument("Error parsing Maze dimensions: " + std::string(e.what()) +
+                                    ".  Received height: " + std::string(height) + ", width: " + std::string(width));
+    }
+
+    return MazeConfig(parsedHeight, parsedWidth);
 }
 
+// @brief Load a font from the specified file path
+// @param fontPath Path to the font file
+// @return Loaded sf::Font object
 sf::Font loadFont(const std::string &fontPath)
 {
     sf::Font font;
@@ -87,6 +112,14 @@ sf::Font loadFont(const std::string &fontPath)
     return font;
 }
 
+// @brief Create an sf::Text object with specified properties
+// @param font Font to use for the text
+// @param str String content of the text
+// @param size Character size of the text
+// @param color Color of the text
+// @param x X position of the text
+// @param y Y position of the text
+// @return Configured sf::Text object
 sf::Text getText(sf::Font &font, const std::string &str, unsigned int size, sf::Color color, float x, float y)
 {
     sf::Text text;
@@ -98,19 +131,48 @@ sf::Text getText(sf::Font &font, const std::string &str, unsigned int size, sf::
     return text;
 }
 
-void update(sf::Time deltaTime, bool &solving, BreadthFirstSearch &solver)
+// @brief Update the maze solver animation based on elapsed time
+// @param deltaTime Time elapsed since last update
+// @param solving Reference to the boolean indicating if the solver is currently animating
+// @param solver Reference to the MazeSolver object to perform the next step
+void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, sf::Time &animationSpeed, int &nodesExploredCount)
 {
     static sf::Time accumulated;
     accumulated += deltaTime;
 
-    if (accumulated >= sf::milliseconds(50) && solving)
+    if (accumulated >= animationSpeed && solving)
     {
         accumulated = sf::Time::Zero;
-        if (solver.step())
+        if (solver.step(nodesExploredCount))
         {
             solving = false;
         }
     }
+}
+
+void calculateStepsPerSecond(sf::Time &animationSpeed, int &stepsPerSecond, bool increase)
+{
+    if (increase)
+    {
+        stepsPerSecond += 10;
+    }
+    else
+    {
+        stepsPerSecond -= 10;
+    }
+    int milisecondsPerStep = 1000 / stepsPerSecond;
+    animationSpeed = sf::milliseconds(milisecondsPerStep);
+}
+
+void resetWindowComponents(bool &solved,bool &solving, int &pathLengthCount, int &nodesExploredCount, sf::Text &pathFound, sf::Text &nodesExplored, sf::Text &pathLength)
+{
+    solved = false;
+    solving = false;
+    pathLengthCount = 0;
+    nodesExploredCount = 0;
+    pathFound.setString("Path Found: No");
+    nodesExplored.setString("Nodes Explored: 0");
+    pathLength.setString("Path Length: 0");
 }
 
 int main(int argc, char *argv[])
@@ -120,14 +182,19 @@ int main(int argc, char *argv[])
     int desktopWidth = desktopMode.width;
     int desktopHeight = desktopMode.height;
 
+    // Process command line arguments to configure maze dimensions
     MazeConfig config = processArgs(argc, argv);
     Maze maze(config.getHeight(), config.getWidth());
+
+    // Calculate window size based on maze dimensions and cell size, ensuring it fits within the desktop resolution
     int windowWidth, windowHeight;
     maze.getWindowSize(windowWidth, windowHeight, desktopWidth, desktopHeight);
 
+    // Add additional width for the information panel on the right
     windowWidth += PANEL; // Add space for the panel
 
     sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Lab2: Maze Generator");
+    // Set FPS limit to make animation smoother and more consistent across different machines
     window.setFramerateLimit(60);
     maze.generate();
     BreadthFirstSearch bfs(maze);
@@ -139,55 +206,67 @@ int main(int argc, char *argv[])
     panel.setOutlineThickness(1.f);
     panel.setOutlineColor(sf::Color::Black);
 
-    int panel_start = windowWidth - PANEL + 10.f; // Start of text in panel with some padding
-    sf::Font font = loadFont("/Users/jennifercwagenberg/Code/gaTech_v2/ECE-6122/Homework_1/KOMIKAP_.ttf");
+    int panel_start = windowWidth - PANEL + DEFAULT_PADDING; // Start of text in panel with some padding
+    sf::Font font = loadFont("fonts/KOMIKAP_.ttf");
+
+    sf::Time animationSpeed = sf::milliseconds(10);
+    int stepsPerSecond = 100;
+    bool solved = false;
+    int nodesExploredCount = 0;
+    int pathLengthCount = 0;
 
     // General information
-    sf::Text pTitle = getText(font, "Maze Generator", 20, sf::Color::Yellow, panel_start, 10.f);
+    sf::Text pTitle = getText(font, "Maze Generator", 20, sf::Color::Yellow, panel_start, DEFAULT_PADDING);
     sf::Text maxDimensions =
-        getText(font, "Maze: " + std::to_string(maze.getHeight()) + "x" + std::to_string(maze.getWidth()), 16,
-                sf::Color::White, panel_start, pTitle.getGlobalBounds().height + pTitle.getGlobalBounds().top + 20.f);
-    sf::Text algorithm = getText(font, "Algorithm: DFS", 16, sf::Color(173, 216, 230), panel_start,
-                                 maxDimensions.getGlobalBounds().height + maxDimensions.getGlobalBounds().top + 10.f);
-    sf::Text diagonal = getText(font, "Diagonal: No", 16, sf::Color::White, panel_start,
-                                algorithm.getGlobalBounds().height + algorithm.getGlobalBounds().top + 10.f);
-    sf::Text speed = getText(font, "Speed: 100 STEPS/S", 16, sf::Color::White, panel_start,
-                             diagonal.getGlobalBounds().height + diagonal.getGlobalBounds().top + 10.f);
+        getText(font, "Maze: " + std::to_string(maze.getHeight()) + " x " + std::to_string(maze.getWidth()),
+                DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                pTitle.getGlobalBounds().height + pTitle.getGlobalBounds().top + (2 * DEFAULT_PADDING));
+    sf::Text algorithm =
+        getText(font, "Algorithm: BFS", DEFAULT_FONT_SIZE, sf::Color(173, 216, 230), panel_start,
+                maxDimensions.getGlobalBounds().height + maxDimensions.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text diagonal = getText(font, "Diagonal: No", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                                algorithm.getGlobalBounds().height + algorithm.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text speed =
+        getText(font, "Speed: " + std::to_string(stepsPerSecond) + " STEPS/S", DEFAULT_FONT_SIZE, sf::Color::White,
+                panel_start, diagonal.getGlobalBounds().height + diagonal.getGlobalBounds().top + DEFAULT_PADDING);
 
     // Statistics
-    sf::Text statisticsTitle = getText(font, "-- Statistics --", 16, sf::Color::Green, panel_start,
-                                       speed.getGlobalBounds().height + speed.getGlobalBounds().top + 20.f);
+    sf::Text statisticsTitle =
+        getText(font, "-- Statistics --", DEFAULT_FONT_SIZE, sf::Color::Green, panel_start,
+                speed.getGlobalBounds().height + speed.getGlobalBounds().top + (2 * DEFAULT_PADDING));
     sf::Text nodesExplored =
-        getText(font, "Nodes Explored: 0", 16, sf::Color::White, panel_start,
-                statisticsTitle.getGlobalBounds().height + statisticsTitle.getGlobalBounds().top + 10.f);
-    sf::Text pathLength = getText(font, "Path Length: 0", 16, sf::Color::White, panel_start,
-                                  nodesExplored.getGlobalBounds().height + nodesExplored.getGlobalBounds().top + 10.f);
-    sf::Text timeTaken = getText(font, "Time: 0s", 16, sf::Color::White, panel_start,
-                                 pathLength.getGlobalBounds().height + pathLength.getGlobalBounds().top + 10.f);
-    sf::Text pathFound = getText(font, "Path Found: No", 16, sf::Color::Green, panel_start,
-                                 timeTaken.getGlobalBounds().height + timeTaken.getGlobalBounds().top + 10.f);
+        getText(font, "Nodes Explored: " + std::to_string(nodesExploredCount), DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                statisticsTitle.getGlobalBounds().height + statisticsTitle.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text pathLength =
+        getText(font, "Path Length: " + std::to_string(pathLengthCount), DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                nodesExplored.getGlobalBounds().height + nodesExplored.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text timeTaken =
+        getText(font, "Time: 0s", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                pathLength.getGlobalBounds().height + pathLength.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text pathFound =
+        getText(font, "Path Found: " + std::string(solved ? "Yes" : "No"), DEFAULT_FONT_SIZE, sf::Color::Green,
+                panel_start, timeTaken.getGlobalBounds().height + timeTaken.getGlobalBounds().top + DEFAULT_PADDING);
 
     // Controls
-    sf::Text controlsTitle = getText(font, "-- Controls --", 16, sf::Color::Green, panel_start,
+    sf::Text controlsTitle = getText(font, "-- Controls --", DEFAULT_FONT_SIZE, sf::Color::Green, panel_start,
                                      pathFound.getGlobalBounds().height + pathFound.getGlobalBounds().top + 20.f);
-    sf::Text generate = getText(font, "G: Generate", 16, sf::Color::White, panel_start,
-                                controlsTitle.getGlobalBounds().height + controlsTitle.getGlobalBounds().top + 10.f);
-    sf::Text solve = getText(font, "S: Solve", 16, sf::Color::White, panel_start,
-                             generate.getGlobalBounds().height + generate.getGlobalBounds().top + 10.f);
-    sf::Text reset = getText(font, "R: Reset", 16, sf::Color::White, panel_start,
-                             solve.getGlobalBounds().height + solve.getGlobalBounds().top + 10.f);
-    sf::Text toggleAlgorithm = getText(font, "A: Toggle Algorithm", 16, sf::Color::White, panel_start,
-                                       reset.getGlobalBounds().height + reset.getGlobalBounds().top + 10.f);
+    sf::Text generate =
+        getText(font, "G: Generate", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                controlsTitle.getGlobalBounds().height + controlsTitle.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text solve = getText(font, "S: Solve", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                             generate.getGlobalBounds().height + generate.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text reset = getText(font, "R: Reset", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                             solve.getGlobalBounds().height + solve.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text toggleAlgorithm = getText(font, "A: Toggle Algorithm", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                                       reset.getGlobalBounds().height + reset.getGlobalBounds().top + DEFAULT_PADDING);
     sf::Text adjustSpeed =
-        getText(font, "+/-: Adjust Speed", 16, sf::Color::White, panel_start,
-                toggleAlgorithm.getGlobalBounds().height + toggleAlgorithm.getGlobalBounds().top + 10.f);
-    sf::Text escape = getText(font, "ESC: Exit", 16, sf::Color::White, panel_start,
-                              adjustSpeed.getGlobalBounds().height + adjustSpeed.getGlobalBounds().top + 10.f);
+        getText(font, "+/-: Adjust Speed", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                toggleAlgorithm.getGlobalBounds().height + toggleAlgorithm.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text escape =
+        getText(font, "ESC: Exit", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                adjustSpeed.getGlobalBounds().height + adjustSpeed.getGlobalBounds().top + DEFAULT_PADDING);
 
-    // sf::Text mazWidth = getText(font, "Maze Width:", 18, sf::Color::Black, windowWidth - PANEL + 10.f, 50.f);
-    // sf::Text mazHeight = getText(font, "Maze Height:", 18, sf::Color::Black, windowWidth - PANEL + 10.f, 90.f);
     sf::Clock clock;
-    sf::Time animationSpeed = sf::milliseconds(50);
     bool solving = false;
 
     // Start the game loop
@@ -196,7 +275,7 @@ int main(int argc, char *argv[])
         // Clear the window
         window.clear(sf::Color::Black); // Dark background for contrast
 
-        // Draw the maze
+        // Draw all the things
         maze.draw(window);
         window.draw(panel);
         window.draw(pTitle);
@@ -220,20 +299,27 @@ int main(int argc, char *argv[])
         // Display the rendered content
         window.display();
 
+        // if we are currently solving, update the animation based on elapsed time
         if (solving)
         {
             sf::Time deltaTime = clock.restart();
-            update(deltaTime, solving, bfs);
+            update(deltaTime, solving, bfs, animationSpeed, nodesExploredCount);
 
+            // If we just finished solving, reconstruct the path and update statistics
             if (!solving)
             {
-                std::cout << "Path found! Reconstructing path..." << std::endl;
-                bfs.reconstructPath();
+                solved = true;
+                pathFound.setString("Path Found: " + std::string(solved ? "Yes" : "No"));
+                nodesExplored.setString("Nodes Explored: " + std::to_string(nodesExploredCount));
+                std::list<Position> path = bfs.reconstructPath();
+                pathLengthCount = path.size();
+                pathLength.setString("Path Length: " + std::to_string(pathLengthCount));
             }
         }
         else
         {
-            clock.restart(); // Reset clock when not solving to avoid large delta on next update
+            // Reset clock when not solving to avoid large delta on next update
+            clock.restart();
         }
 
         // Process events
@@ -250,7 +336,7 @@ int main(int argc, char *argv[])
                 case sf::Keyboard::G:
                     std::cout << "Generating new maze..." << std::endl;
                     maze.generate();
-                    solving = false;
+                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
                     break;
                 case sf::Keyboard::S:
                     std::cout << "Solving the maze..." << std::endl;
@@ -261,21 +347,24 @@ int main(int argc, char *argv[])
                     std::cout << "Resetting the maze..." << std::endl;
                     maze.resetVisualization();
                     maze.draw(window);
-                    solving = false;
+                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
                     bfs.reset();
                     break;
                 // Add key didn't trigger on my mac thus added equal as plus is on the same key
                 case sf::Keyboard::Equal:
                 case sf::Keyboard::Add:
-                    std::cout << "Increasing animation speed..." << std::endl;
+                    calculateStepsPerSecond(animationSpeed, stepsPerSecond, true);
+                    speed.setString("Speed: " + std::to_string(stepsPerSecond) + " STEPS/S");
                     break;
                 // Added hyphen as minus is on the same key
                 case sf::Keyboard::Hyphen:
                 case sf::Keyboard::Subtract:
                     std::cout << "Decreasing animation speed..." << std::endl;
+                    calculateStepsPerSecond(animationSpeed, stepsPerSecond, false);
+                    speed.setString("Speed: " + std::to_string(stepsPerSecond) + " STEPS/S");
                     break;
                 default:
-                    std::cout << "Unhandled key press: " << event.key.code << std::endl;
+                    // std::cout << "Unhandled key press: " << event.key.code << std::endl;
                     break;
                 }
             }
@@ -283,8 +372,6 @@ int main(int argc, char *argv[])
             // Close window: exit
             if (event.type == sf::Event::Closed)
                 window.close();
-
-            // std::cout << "Event type: " << event.type << std::endl;
         }
     }
 

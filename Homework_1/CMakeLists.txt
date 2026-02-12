@@ -10,3 +10,5 @@ target_link_libraries(Lab2 sfml::sfml)
 
 # Create a convenience target to build all Homework_1 components
 add_custom_target(Homework_1 DEPENDS Lab2)
+
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts" DESTINATION "${CMAKE_BINARY_DIR}/Homework_1")
