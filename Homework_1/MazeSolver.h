@@ -84,14 +84,11 @@ public:
     void reset() override;
 
 private:
-    std::function<int(Position)> heuristic;
     std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
     std::unordered_map<Position, int, PositionHash> gScore;
     std::unordered_map<Position, bool, PositionHash> inOpenSet;
 
     int manhattanDistance(Position a, Position b);
-    int euclideanDistance(Position a, Position b);
-    int chebyshevDistance(Position a, Position b);
 };
 
 #endif // MAZE_SOLVER_H

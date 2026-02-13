@@ -10,29 +10,34 @@
 #include <utility>
 #include <vector>
 
-MazeSolver::MazeSolver(Maze& maze) : m_maze(maze) {
+MazeSolver::MazeSolver(Maze &maze) : m_maze(maze)
+{
     terminator = Position{-1, -1}; // Sentinel value for path reconstruction
     start = Position{maze.getStart().first, maze.getStart().second};
     end = Position{maze.getEnd().first, maze.getEnd().second};
     cameFrom[start] = terminator; // Sentinel value for start
 }
 
-void MazeSolver::reset() {
+void MazeSolver::reset()
+{
     std::cout << "Resetting solver state..." << std::endl; // Debugging output
     cameFrom.clear();
     cameFrom[start] = terminator;
 }
 
-std::list<Position> MazeSolver::reconstructPath() {
+std::list<Position> MazeSolver::reconstructPath()
+{
     std::list<Position> path;
     Position current = end;
 
-    while (current != terminator) {
+    while (current != terminator)
+    {
         path.push_back(current);
         current = cameFrom[current];
 
         // Mark solution path for visualization
-        if (current != start) { // Avoid overwriting start cell
+        if (current != start)
+        { // Avoid overwriting start cell
             m_maze.setCellType(current.row, current.col, CellType::Solution);
         }
     }
@@ -77,6 +82,10 @@ std::list<Position> BreadthFirstSearch::solveMaze()
 
 bool BreadthFirstSearch::step(int &nodesExploredCount)
 {
+    if (frontier.empty())
+    {
+        return false; // No path found
+    }
     Position current = frontier.front();
     frontier.pop();
 
@@ -111,9 +120,8 @@ bool BreadthFirstSearch::step(int &nodesExploredCount)
 
 AStarSearch::AStarSearch(Maze &maze) : MazeSolver(maze)
 {
-    heuristic = [this](Position p) { return std::abs(p.row - end.row) + std::abs(p.col - end.col); };
+    openSet.push({start, manhattanDistance(start, end)});
     gScore[start] = 0;
-    openSet.push({start, heuristic(start)});
     inOpenSet[start] = true;
 }
 
@@ -127,7 +135,7 @@ void AStarSearch::reset()
     inOpenSet.clear();
 
     gScore[start] = 0;
-    openSet.push({start, heuristic(start)});
+    openSet.push({start, manhattanDistance(start, end)});
     inOpenSet[start] = true;
 }
 
@@ -149,12 +157,15 @@ std::list<Position> AStarSearch::solveMaze()
 
 bool AStarSearch::step(int &nodesExploredCount)
 {
+    if (openSet.empty())
+    {
+        return false; // No path found
+    }
+
     Node current = openSet.top();
     openSet.pop();
     inOpenSet[current.pos] = false;
 
-    std::cout << "Exploring node: (" << current.pos.row << ", " << current.pos.col << ") with fScore: " << current.fScore
-              << std::endl; // Debugging output
     if (current.pos == end)
     {
         return true;
@@ -164,34 +175,42 @@ bool AStarSearch::step(int &nodesExploredCount)
     {
         Position next = {current.pos.row + DR[i], current.pos.col + DC[i]};
 
-        if (!m_maze.isValidPath(next.row, next.col))
+        if (m_maze.isValidPath(next.row, next.col))
         {
-            return false; // Skip invalid paths
-        }
+            nodesExploredCount++;
+            int tentativeG = gScore[current.pos] + 1;
 
-        int tentativeG = gScore[current.pos] + 1;
-        nodesExploredCount++;
-
-        // If this path is better (or first path found)
-        if (gScore.find(next) == gScore.end() || tentativeG < gScore[next])
-        {
-            cameFrom[next] = current.pos;
-            gScore[next] = tentativeG;
-            int fScore = tentativeG + heuristic(next);
-
-            if (!inOpenSet[next])
+            // If this path is better (or first path found)
+            if (gScore.find(next) == gScore.end() || tentativeG < gScore[next])
             {
-                openSet.push({next, fScore});
-                inOpenSet[next] = true;
+                cameFrom[next] = current.pos;
+                gScore[next] = tentativeG;
+                int fScore = tentativeG + manhattanDistance(next, end);
 
-                // Mark for visualization
-                if (m_maze.getCell(next.row, next.col).type == CellType::Path)
+                if (!inOpenSet[next])
                 {
-                    m_maze.setCellType(next.row, next.col, CellType::Visited);
+                    openSet.push({next, fScore});
+                    inOpenSet[next] = true;
+
+                    // Mark for visualization
+                    if (m_maze.getCell(next.row, next.col).type == CellType::Path)
+                    {
+                        m_maze.setCellType(next.row, next.col, CellType::Visited);
+                    }
                 }
             }
         }
     }
 
     return false; // Path not found yet
+}
+
+// @brief Manhattan distance heuristic for A* search
+// @param a First position
+// @param b Second position
+// @return Manhattan distance between a and b
+int AStarSearch::manhattanDistance(Position a, Position b)
+{
+    int score = std::abs(a.row - b.row) + std::abs(a.col - b.col);
+    return score;
 }
