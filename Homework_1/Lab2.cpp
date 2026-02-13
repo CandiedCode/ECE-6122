@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <list>
+#include <memory>
 #include <string>
 
 #define PANEL 250
@@ -187,18 +188,23 @@ void calculateStepsPerSecond(sf::Time &animationSpeed, int &stepsPerSecond, bool
               << std::endl;
 }
 
-void switchAlgorithm(AlgorithmType &currentAlgorithm, MazeSolver *&solver, Maze &maze, sf::Text &algorithm)
+// @brief Switch between BFS and A* pathfinding algorithms
+// @param currentAlgorithm Reference to current algorithm type
+// @param solver Reference to the solver unique_ptr (automatically deleted when reassigned)
+// @param maze Reference to the maze object
+// @param algorithm Reference to the algorithm display text
+void switchAlgorithm(AlgorithmType &currentAlgorithm, std::unique_ptr<MazeSolver> &solver, Maze &maze, sf::Text &algorithm)
 {
-    delete solver; // Clean up existing solver
+    // std::unique_ptr automatically deletes the old solver when reassigned
     if (currentAlgorithm == AlgorithmType::BFS)
     {
         currentAlgorithm = AlgorithmType::AStar;
-        solver = new AStarSearch(maze);
+        solver = std::make_unique<AStarSearch>(maze);
     }
     else
     {
         currentAlgorithm = AlgorithmType::BFS;
-        solver = new BreadthFirstSearch(maze);
+        solver = std::make_unique<BreadthFirstSearch>(maze);
     }
 
     algorithm.setString("Algorithm: " + std::string(currentAlgorithm == AlgorithmType::BFS ? "BFS" : "A*"));
@@ -247,7 +253,8 @@ int main(int argc, char *argv[])
     window.setFramerateLimit(60);
     maze.generate();
     AlgorithmType currentAlgorithm = AlgorithmType::BFS;
-    MazeSolver *solver = new BreadthFirstSearch(maze);
+    // Use std::unique_ptr for automatic memory management
+    std::unique_ptr<MazeSolver> solver = std::make_unique<BreadthFirstSearch>(maze);
 
     // Panel
     sf::RectangleShape panel({PANEL, static_cast<float>(windowHeight)});
