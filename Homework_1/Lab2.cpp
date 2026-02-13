@@ -318,13 +318,14 @@ int main(int argc, char *argv[])
     sf::Time elapsedTime;
     bool solving = false;
 
-    // Start the game loop
+    // === MAIN APPLICATION LOOP ===
+    // Each iteration: render frame, update animation, handle user input
     while (window.isOpen())
     {
-        // Clear the window
-        window.clear(sf::Color::Black); // Dark background for contrast
+        // ==================== RENDERING ====================
+        window.clear(sf::Color::Black); // Clear previous frame with dark background
 
-        // Draw all the things
+        // Draw game elements
         maze.draw(window);
         window.draw(panel);
         window.draw(pTitle);
@@ -332,11 +333,15 @@ int main(int argc, char *argv[])
         window.draw(algorithm);
         window.draw(diagonal);
         window.draw(speed);
+
+        // Draw statistics section
         window.draw(statisticsTitle);
         window.draw(nodesExplored);
         window.draw(pathLength);
         window.draw(timeTaken);
         window.draw(pathFound);
+
+        // Draw controls section
         window.draw(controlsTitle);
         window.draw(generate);
         window.draw(solve);
@@ -345,21 +350,24 @@ int main(int argc, char *argv[])
         window.draw(adjustSpeed);
         window.draw(escape);
 
-        // Display the rendered content
+        // Display rendered content to screen
         window.display();
 
-        // if we are currently solving, update the animation based on elapsed time
+        // ==================== ANIMATION UPDATE ====================
+        // Animate the solver step-by-step based on animation speed
         if (solving)
         {
             sf::Time deltaTime = clock.restart();
             update(deltaTime, solving, *solver, animationSpeed, nodesExploredCount);
 
-            // If we just finished solving, reconstruct the path and update statistics
+            // If the solver just finished, reconstruct and display the solution path
             if (!solving)
             {
                 solved = true;
                 pathFound.setString("Path Found: " + std::string(solved ? "Yes" : "No"));
                 nodesExplored.setString("Nodes Explored: " + std::to_string(nodesExploredCount));
+
+                // Reconstruct full path and count steps
                 std::list<Position> path = solver->reconstructPath();
                 pathLengthCount = path.size();
                 pathLength.setString("Path Length: " + std::to_string(pathLengthCount));
@@ -367,11 +375,11 @@ int main(int argc, char *argv[])
         }
         else
         {
-            // Reset clock when not solving to avoid large delta on next update
+            // Reset clock when idle to avoid large time jumps on next animation start
             clock.restart();
         }
 
-        // Process events
+        // ==================== EVENT HANDLING ====================
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -380,9 +388,11 @@ int main(int argc, char *argv[])
                 switch (event.key.code)
                 {
                 case sf::Keyboard::Escape:
+                    // Exit application
                     window.close();
                     break;
                 case sf::Keyboard::A:
+                    // Toggle between BFS and A* algorithms
                     std::cout << "Toggling algorithm..." << std::endl;
                     switchAlgorithm(currentAlgorithm, solver, maze, algorithm);
                     resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
@@ -391,42 +401,44 @@ int main(int argc, char *argv[])
                     maze.draw(window);
                     break;
                 case sf::Keyboard::G:
+                    // Generate a new random maze
                     std::cout << "Generating new maze..." << std::endl;
                     maze.generate();
                     resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
                     break;
                 case sf::Keyboard::S:
+                    // Start solving the current maze
                     std::cout << "Solving the maze..." << std::endl;
                     solving = true;
                     solver->reset();
                     break;
                 case sf::Keyboard::R:
+                    // Reset the maze visualization (keep maze structure)
                     std::cout << "Resetting the maze..." << std::endl;
                     maze.resetVisualization();
                     maze.draw(window);
                     resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
                     solver->reset();
                     break;
-                // Add key didn't trigger on my mac thus added equal as plus is on the same key
                 case sf::Keyboard::Equal:
                 case sf::Keyboard::Add:
+                    // Increase animation speed
                     calculateStepsPerSecond(animationSpeed, stepsPerSecond, true);
                     speed.setString("Speed: " + std::to_string(stepsPerSecond) + " STEPS/S");
                     break;
-                // Added hyphen as minus is on the same key
                 case sf::Keyboard::Hyphen:
                 case sf::Keyboard::Subtract:
+                    // Decrease animation speed
                     std::cout << "Decreasing animation speed..." << std::endl;
                     calculateStepsPerSecond(animationSpeed, stepsPerSecond, false);
                     speed.setString("Speed: " + std::to_string(stepsPerSecond) + " STEPS/S");
                     break;
                 default:
-                    // std::cout << "Unhandled key press: " << event.key.code << std::endl;
                     break;
                 }
             }
 
-            // Close window: exit
+            // Handle window close button
             if (event.type == sf::Event::Closed)
                 window.close();
         }

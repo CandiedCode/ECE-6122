@@ -163,8 +163,9 @@ void Maze::draw(sf::RenderWindow &window)
             // Draw rectangles for walls based on cell.walls booleans
             float left = offsetX + x * cellSize;
             float top = offsetY + y * cellSize;
-            float right = left + cellSize;
-            float bottom = top + cellSize;
+            // These are not used
+            // float right = left + cellSize;
+            // float bottom = top + cellSize;
 
             sf::RectangleShape cellShape(sf::Vector2f(cellSize, cellSize));
             cellShape.setPosition(left, top);
