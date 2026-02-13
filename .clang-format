@@ -1,6 +1,6 @@
 ---
 BasedOnStyle: Microsoft
-BreakBeforeBraces: Custom
+# BreakBeforeBraces: Custom
 # BraceWrapping:
 #   AfterControlStatement: Always
 #   AfterFunction: false
@@ -10,5 +10,5 @@ BreakBeforeBraces: Custom
 #   AfterNamespace: false
 #   BeforeElse: true
 AlwaysBreakTemplateDeclarations: Yes
-ColumnLimit: 120
+ColumnLimit: 140
 ---

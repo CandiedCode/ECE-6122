@@ -46,9 +46,19 @@ struct Node {
 };
 
 class MazeSolver {
+protected:
+    Maze& m_maze;
+    Position start;
+    Position end;
+    Position terminator;
+
+    MazeSolver(Maze& maze) : m_maze(maze) {}
+
 public:
+    virtual ~MazeSolver() = default;
     virtual std::vector<Position> solveMaze() = 0;
     virtual bool step(int &nodesExploredCount) = 0;
+    virtual std::list<Position> reconstructPath() = 0;
     virtual void reset() = 0;
 };
 
@@ -56,16 +66,12 @@ class BreadthFirstSearch : public MazeSolver {
 public:
     BreadthFirstSearch(Maze& maze);
 
-    std::list<Position> reconstructPath();
     std::vector<Position> solveMaze() override;
     bool step(int &nodesExploredCount) override;
+    std::list<Position> reconstructPath() override;
     void reset() override;
 
 private:
-    Maze& m_maze;
-    Position start;
-    Position end;
-    Position terminator;
     std::queue<Position> frontier;
     std::unordered_map<Position, Position, PositionHash> cameFrom;
     std::unordered_map<Position, bool, PositionHash> visited;
@@ -74,19 +80,22 @@ private:
 class AStarSearch: public MazeSolver {
 public:
     AStarSearch(Maze& maze);
-    
-    int manhattanDistance(Position a, Position b);
-    int euclideanDistance(Position a, Position b);
-    int chebyshevDistance(Position a, Position b);
+
     std::vector<Position> solveMaze() override;
     bool step(int &nodesExploredCount) override;
+    std::list<Position> reconstructPath() override;
     void reset() override;
 
 private:
-    Maze& m_maze;
-    Position start;
-    Position end;
-    Position terminator;
+    std::function<int(Position)> heuristic;
+    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
+    std::unordered_map<Position, Position, PositionHash> cameFrom;
+    std::unordered_map<Position, int, PositionHash> gScore;
+    std::unordered_map<Position, bool, PositionHash> inOpenSet;
+
+    int manhattanDistance(Position a, Position b);
+    int euclideanDistance(Position a, Position b);
+    int chebyshevDistance(Position a, Position b);
 };
 
 #endif // MAZE_SOLVER_H

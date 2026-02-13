@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-BreadthFirstSearch::BreadthFirstSearch(Maze &maze) : m_maze(maze)
+BreadthFirstSearch::BreadthFirstSearch(Maze &maze) : MazeSolver(maze)
 {
     std::pair<int, int> startPos = maze.getStart();
     std::pair<int, int> endPos = maze.getEnd();
@@ -82,11 +82,6 @@ std::vector<Position> BreadthFirstSearch::solveMaze()
 
 bool BreadthFirstSearch::step(int &nodesExploredCount)
 {
-    if (frontier.empty())
-    {
-        return true; // No more steps possible
-    }
-
     Position current = frontier.front();
     frontier.pop();
 
@@ -99,7 +94,7 @@ bool BreadthFirstSearch::step(int &nodesExploredCount)
     }
 
     // Explore neighbors
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < NUM_DIRECTIONS; ++i)
     {
         Position next = {current.row + DR[i], current.col + DC[i]};
 
@@ -121,83 +116,66 @@ bool BreadthFirstSearch::step(int &nodesExploredCount)
     return false; // Path not found yet
 }
 
-AStarSearch::AStarSearch(Maze &maze) : m_maze(maze)
+AStarSearch::AStarSearch(Maze &maze) : MazeSolver(maze)
 {
+    terminator = Position{-1, -1}; // Sentinel value for path reconstruction
     start = Position{maze.getStart().first, maze.getStart().second};
     end = Position{maze.getEnd().first, maze.getEnd().second};
+    heuristic = [this](Position p) { return std::abs(p.row - end.row) + std::abs(p.col - end.col); };
+    gScore[start] = 0;
+    openSet.push({start, heuristic(start)});
+    inOpenSet[start] = true;
+    cameFrom[start] = terminator;
+}
+
+std::list<Position> AStarSearch::reconstructPath()
+{
+    // Reconstruct path
+    std::list<Position> path;
+    Position pos = end;
+    while (!(pos == terminator))
+    {
+        path.push_back(pos);
+        pos = cameFrom[pos];
+    }
+    std::reverse(path.begin(), path.end());
+    return path;
 }
 
 void AStarSearch::reset()
 {
-    // Clear any existing data structures if needed
-}
-
-std::vector<Position> AStarSearch::solveMaze()
-{
-    // Min-heap priority queue
-    std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
-    std::unordered_map<Position, Position, PositionHash> cameFrom;
-    std::unordered_map<Position, int, PositionHash> gScore;
-    std::unordered_map<Position, bool, PositionHash> inOpenSet;
-    Position end = this->end;
-
-    auto heuristic = [&end](Position p) { return std::abs(p.row - end.row) + std::abs(p.col - end.col); };
+    while (!openSet.empty())
+        openSet.pop();
+    gScore.clear();
+    cameFrom.clear();
+    inOpenSet.clear();
 
     gScore[start] = 0;
     openSet.push({start, heuristic(start)});
     inOpenSet[start] = true;
-    cameFrom[start] = {-1, -1};
+    cameFrom[start] = terminator;
+}
+
+std::vector<Position> AStarSearch::solveMaze()
+{
+    int nodesExploredCount = 0;
 
     while (!openSet.empty())
     {
-        Node current = openSet.top();
-        openSet.pop();
-        inOpenSet[current.pos] = false;
-
-        if (current.pos == end)
+        std::cout << "Open set size: " << openSet.size() << std::endl; // Debugging output
+        if (step(nodesExploredCount))
         {
-            // Reconstruct path
+            std::cout << "Path found with " << nodesExploredCount << " nodes explored." << std::endl; // Debugging output
+            // Path found, reconstruct it
             std::vector<Position> path;
-            Position pos = end;
-            while (!(pos.row == -1 && pos.col == -1))
+            Position current = end;
+            while (current != terminator)
             {
-                path.push_back(pos);
-                pos = cameFrom[pos];
+                path.push_back(current);
+                current = cameFrom[current];
             }
             std::reverse(path.begin(), path.end());
             return path;
-        }
-
-        for (int i = 0; i < NUM_DIRECTIONS; ++i)
-        {
-            Position next = {current.pos.row + DR[i], current.pos.col + DC[i]};
-
-            if (!m_maze.isValidPath(next.row, next.col))
-            {
-                continue;
-            }
-
-            int tentativeG = gScore[current.pos] + 1;
-
-            // If this path is better (or first path found)
-            if (gScore.find(next) == gScore.end() || tentativeG < gScore[next])
-            {
-                cameFrom[next] = current.pos;
-                gScore[next] = tentativeG;
-                int fScore = tentativeG + heuristic(next);
-
-                if (!inOpenSet[next])
-                {
-                    openSet.push({next, fScore});
-                    inOpenSet[next] = true;
-
-                    // Mark for visualization
-                    if (m_maze.getCell(next.row, next.col).type == CellType::Path)
-                    {
-                        m_maze.setCellType(next.row, next.col, CellType::Visited);
-                    }
-                }
-            }
         }
     }
 
@@ -206,6 +184,50 @@ std::vector<Position> AStarSearch::solveMaze()
 
 bool AStarSearch::step(int &nodesExploredCount)
 {
-    // Not implemented for stepwise execution in this example
-    return true;
+    Node current = openSet.top();
+    openSet.pop();
+    inOpenSet[current.pos] = false;
+
+    std::cout << "Exploring node: (" << current.pos.row << ", " << current.pos.col << ") with fScore: " << current.fScore
+              << std::endl; // Debugging output
+    if (current.pos == end)
+    {
+        reconstructPath();
+        return true;
+    }
+
+    for (int i = 0; i < NUM_DIRECTIONS; ++i)
+    {
+        Position next = {current.pos.row + DR[i], current.pos.col + DC[i]};
+
+        if (!m_maze.isValidPath(next.row, next.col))
+        {
+            return false; // Skip invalid paths
+        }
+
+        int tentativeG = gScore[current.pos] + 1;
+        nodesExploredCount++;
+
+        // If this path is better (or first path found)
+        if (gScore.find(next) == gScore.end() || tentativeG < gScore[next])
+        {
+            cameFrom[next] = current.pos;
+            gScore[next] = tentativeG;
+            int fScore = tentativeG + heuristic(next);
+
+            if (!inOpenSet[next])
+            {
+                openSet.push({next, fScore});
+                inOpenSet[next] = true;
+
+                // Mark for visualization
+                if (m_maze.getCell(next.row, next.col).type == CellType::Path)
+                {
+                    m_maze.setCellType(next.row, next.col, CellType::Visited);
+                }
+            }
+        }
+    }
+
+    return false; // Path not found yet
 }

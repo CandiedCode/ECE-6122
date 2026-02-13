@@ -2,6 +2,7 @@
 #include "MazeSolver.h"
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <list>
 #include <string>
 
 #define PANEL 250
@@ -26,10 +27,10 @@ struct MazeConfig
     {
         if (!isDimensionValid())
         {
-            std::cerr << "Invalid maze dimensions. Height and width must be between " << MIN_MAZE_SIZE << " and "
-                      << MAX_MAZE_SIZE << "." << std::endl;
-            throw std::invalid_argument("Invalid maze dimensions. Height and width must be between " +
-                                        std::to_string(MIN_MAZE_SIZE) + " and " + std::to_string(MAX_MAZE_SIZE) + ".");
+            std::cerr << "Invalid maze dimensions. Height and width must be between " << MIN_MAZE_SIZE << " and " << MAX_MAZE_SIZE << "."
+                      << std::endl;
+            throw std::invalid_argument("Invalid maze dimensions. Height and width must be between " + std::to_string(MIN_MAZE_SIZE) +
+                                        " and " + std::to_string(MAX_MAZE_SIZE) + ".");
         }
     }
 
@@ -57,6 +58,13 @@ struct MazeConfig
     {
         return height >= MIN_MAZE_SIZE && height <= MAX_MAZE_SIZE && width >= MIN_MAZE_SIZE && width <= MAX_MAZE_SIZE;
     }
+};
+
+// @brief Algorithm types for maze solving
+enum class AlgorithmType
+{
+    BFS,
+    AStar
 };
 
 // @brief Process command line arguments to configure maze dimensions
@@ -139,7 +147,6 @@ void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, sf::Time &ani
 {
     static sf::Time accumulated;
     accumulated += deltaTime;
-
     if (accumulated >= animationSpeed && solving)
     {
         accumulated = sf::Time::Zero;
@@ -150,21 +157,63 @@ void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, sf::Time &ani
     }
 }
 
+// @brief Calculate the animation speed in steps per second and update the animation speed accordingly
+// @param animationSpeed Reference to the sf::Time object representing the current animation speed
+// @param stepsPerSecond Reference to the integer representing the current steps per second
+// @param increase Boolean indicating whether to increase or decrease the speed
 void calculateStepsPerSecond(sf::Time &animationSpeed, int &stepsPerSecond, bool increase)
 {
+    if (stepsPerSecond <= 1 && !increase)
+    {
+        std::cout << "Minimum speed reached. Cannot decrease further." << std::endl;
+        return;
+    }
+    if (stepsPerSecond >= 1000 && increase)
+    {
+        std::cout << "Maximum speed reached. Cannot increase further." << std::endl;
+        return;
+    }
     if (increase)
     {
-        stepsPerSecond += 10;
+        stepsPerSecond += 50;
     }
     else
     {
-        stepsPerSecond -= 10;
+        stepsPerSecond -= 50;
     }
-    int milisecondsPerStep = 1000 / stepsPerSecond;
+    int milisecondsPerStep = 1000.f / stepsPerSecond;
     animationSpeed = sf::milliseconds(milisecondsPerStep);
+    std::cout << "Updated animation speed: " << stepsPerSecond << " steps per second (" << milisecondsPerStep << " ms per step)."
+              << std::endl;
 }
 
-void resetWindowComponents(bool &solved,bool &solving, int &pathLengthCount, int &nodesExploredCount, sf::Text &pathFound, sf::Text &nodesExplored, sf::Text &pathLength)
+void switchAlgorithm(AlgorithmType &currentAlgorithm, MazeSolver *&solver, Maze &maze, sf::Text &algorithm)
+{
+    delete solver; // Clean up existing solver
+    if (currentAlgorithm == AlgorithmType::BFS)
+    {
+        currentAlgorithm = AlgorithmType::AStar;
+        solver = new AStarSearch(maze);
+    }
+    else
+    {
+        currentAlgorithm = AlgorithmType::BFS;
+        solver = new BreadthFirstSearch(maze);
+    }
+
+    algorithm.setString("Algorithm: " + std::string(currentAlgorithm == AlgorithmType::BFS ? "BFS" : "A*"));
+}
+
+// @brief Reset the window components to their default state when generating a new maze or resetting the current maze
+// @param solved Reference to the boolean indicating if the maze is solved
+// @param solving Reference to the boolean indicating if the solver is currently animating
+// @param pathLengthCount Reference to the integer representing the current path length count
+// @param nodesExploredCount Reference to the integer representing the current nodes explored count
+// @param pathFound Reference to the sf::Text object displaying whether a path was found
+// @param nodesExplored Reference to the sf::Text object displaying the number of nodes explored
+// @param pathLength Reference to the sf::Text object displaying the path length
+void resetWindowComponents(bool &solved, bool &solving, int &pathLengthCount, int &nodesExploredCount, sf::Text &pathFound,
+                           sf::Text &nodesExplored, sf::Text &pathLength)
 {
     solved = false;
     solving = false;
@@ -197,7 +246,8 @@ int main(int argc, char *argv[])
     // Set FPS limit to make animation smoother and more consistent across different machines
     window.setFramerateLimit(60);
     maze.generate();
-    BreadthFirstSearch bfs(maze);
+    AlgorithmType currentAlgorithm = AlgorithmType::BFS;
+    MazeSolver *solver = new BreadthFirstSearch(maze);
 
     // Panel
     sf::RectangleShape panel({PANEL, static_cast<float>(windowHeight)});
@@ -218,55 +268,47 @@ int main(int argc, char *argv[])
     // General information
     sf::Text pTitle = getText(font, "Maze Generator", 20, sf::Color::Yellow, panel_start, DEFAULT_PADDING);
     sf::Text maxDimensions =
-        getText(font, "Maze: " + std::to_string(maze.getHeight()) + " x " + std::to_string(maze.getWidth()),
-                DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
-                pTitle.getGlobalBounds().height + pTitle.getGlobalBounds().top + (2 * DEFAULT_PADDING));
-    sf::Text algorithm =
-        getText(font, "Algorithm: BFS", DEFAULT_FONT_SIZE, sf::Color(173, 216, 230), panel_start,
-                maxDimensions.getGlobalBounds().height + maxDimensions.getGlobalBounds().top + DEFAULT_PADDING);
+        getText(font, "Maze: " + std::to_string(maze.getHeight()) + " x " + std::to_string(maze.getWidth()), DEFAULT_FONT_SIZE,
+                sf::Color::White, panel_start, pTitle.getGlobalBounds().height + pTitle.getGlobalBounds().top + (2 * DEFAULT_PADDING));
+    sf::Text algorithm = getText(font, "Algorithm: " + std::string(currentAlgorithm == AlgorithmType::BFS ? "BFS" : "A*"),
+                                 DEFAULT_FONT_SIZE, sf::Color(173, 216, 230), panel_start,
+                                 maxDimensions.getGlobalBounds().height + maxDimensions.getGlobalBounds().top + DEFAULT_PADDING);
     sf::Text diagonal = getText(font, "Diagonal: No", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
                                 algorithm.getGlobalBounds().height + algorithm.getGlobalBounds().top + DEFAULT_PADDING);
-    sf::Text speed =
-        getText(font, "Speed: " + std::to_string(stepsPerSecond) + " STEPS/S", DEFAULT_FONT_SIZE, sf::Color::White,
-                panel_start, diagonal.getGlobalBounds().height + diagonal.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text speed = getText(font, "Speed: " + std::to_string(stepsPerSecond) + " STEPS/S", DEFAULT_FONT_SIZE, sf::Color::White,
+                             panel_start, diagonal.getGlobalBounds().height + diagonal.getGlobalBounds().top + DEFAULT_PADDING);
 
     // Statistics
-    sf::Text statisticsTitle =
-        getText(font, "-- Statistics --", DEFAULT_FONT_SIZE, sf::Color::Green, panel_start,
-                speed.getGlobalBounds().height + speed.getGlobalBounds().top + (2 * DEFAULT_PADDING));
+    sf::Text statisticsTitle = getText(font, "-- Statistics --", DEFAULT_FONT_SIZE, sf::Color::Green, panel_start,
+                                       speed.getGlobalBounds().height + speed.getGlobalBounds().top + (2 * DEFAULT_PADDING));
     sf::Text nodesExplored =
         getText(font, "Nodes Explored: " + std::to_string(nodesExploredCount), DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
                 statisticsTitle.getGlobalBounds().height + statisticsTitle.getGlobalBounds().top + DEFAULT_PADDING);
-    sf::Text pathLength =
-        getText(font, "Path Length: " + std::to_string(pathLengthCount), DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
-                nodesExplored.getGlobalBounds().height + nodesExplored.getGlobalBounds().top + DEFAULT_PADDING);
-    sf::Text timeTaken =
-        getText(font, "Time: 0s", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
-                pathLength.getGlobalBounds().height + pathLength.getGlobalBounds().top + DEFAULT_PADDING);
-    sf::Text pathFound =
-        getText(font, "Path Found: " + std::string(solved ? "Yes" : "No"), DEFAULT_FONT_SIZE, sf::Color::Green,
-                panel_start, timeTaken.getGlobalBounds().height + timeTaken.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text pathLength = getText(font, "Path Length: " + std::to_string(pathLengthCount), DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                                  nodesExplored.getGlobalBounds().height + nodesExplored.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text timeTaken = getText(font, "Time: 0s", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                                 pathLength.getGlobalBounds().height + pathLength.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text pathFound = getText(font, "Path Found: " + std::string(solved ? "Yes" : "No"), DEFAULT_FONT_SIZE, sf::Color::Green,
+                                 panel_start, timeTaken.getGlobalBounds().height + timeTaken.getGlobalBounds().top + DEFAULT_PADDING);
 
     // Controls
     sf::Text controlsTitle = getText(font, "-- Controls --", DEFAULT_FONT_SIZE, sf::Color::Green, panel_start,
                                      pathFound.getGlobalBounds().height + pathFound.getGlobalBounds().top + 20.f);
-    sf::Text generate =
-        getText(font, "G: Generate", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
-                controlsTitle.getGlobalBounds().height + controlsTitle.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text generate = getText(font, "G: Generate", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                                controlsTitle.getGlobalBounds().height + controlsTitle.getGlobalBounds().top + DEFAULT_PADDING);
     sf::Text solve = getText(font, "S: Solve", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
                              generate.getGlobalBounds().height + generate.getGlobalBounds().top + DEFAULT_PADDING);
     sf::Text reset = getText(font, "R: Reset", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
                              solve.getGlobalBounds().height + solve.getGlobalBounds().top + DEFAULT_PADDING);
     sf::Text toggleAlgorithm = getText(font, "A: Toggle Algorithm", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
                                        reset.getGlobalBounds().height + reset.getGlobalBounds().top + DEFAULT_PADDING);
-    sf::Text adjustSpeed =
-        getText(font, "+/-: Adjust Speed", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
-                toggleAlgorithm.getGlobalBounds().height + toggleAlgorithm.getGlobalBounds().top + DEFAULT_PADDING);
-    sf::Text escape =
-        getText(font, "ESC: Exit", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
-                adjustSpeed.getGlobalBounds().height + adjustSpeed.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text adjustSpeed = getText(font, "+/-: Adjust Speed", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                                   toggleAlgorithm.getGlobalBounds().height + toggleAlgorithm.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text escape = getText(font, "ESC: Exit", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
+                              adjustSpeed.getGlobalBounds().height + adjustSpeed.getGlobalBounds().top + DEFAULT_PADDING);
 
     sf::Clock clock;
+    sf::Time elapsedTime;
     bool solving = false;
 
     // Start the game loop
@@ -303,7 +345,7 @@ int main(int argc, char *argv[])
         if (solving)
         {
             sf::Time deltaTime = clock.restart();
-            update(deltaTime, solving, bfs, animationSpeed, nodesExploredCount);
+            update(deltaTime, solving, *solver, animationSpeed, nodesExploredCount);
 
             // If we just finished solving, reconstruct the path and update statistics
             if (!solving)
@@ -311,7 +353,7 @@ int main(int argc, char *argv[])
                 solved = true;
                 pathFound.setString("Path Found: " + std::string(solved ? "Yes" : "No"));
                 nodesExplored.setString("Nodes Explored: " + std::to_string(nodesExploredCount));
-                std::list<Position> path = bfs.reconstructPath();
+                std::list<Position> path = solver->reconstructPath();
                 pathLengthCount = path.size();
                 pathLength.setString("Path Length: " + std::to_string(pathLengthCount));
             }
@@ -333,6 +375,14 @@ int main(int argc, char *argv[])
                 case sf::Keyboard::Escape:
                     window.close();
                     break;
+                case sf::Keyboard::A:
+                    std::cout << "Toggling algorithm..." << std::endl;
+                    switchAlgorithm(currentAlgorithm, solver, maze, algorithm);
+                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
+                    solver->reset();
+                    maze.resetVisualization();
+                    maze.draw(window);
+                    break;
                 case sf::Keyboard::G:
                     std::cout << "Generating new maze..." << std::endl;
                     maze.generate();
@@ -341,14 +391,14 @@ int main(int argc, char *argv[])
                 case sf::Keyboard::S:
                     std::cout << "Solving the maze..." << std::endl;
                     solving = true;
-                    bfs.reset();
+                    solver->reset();
                     break;
                 case sf::Keyboard::R:
                     std::cout << "Resetting the maze..." << std::endl;
                     maze.resetVisualization();
                     maze.draw(window);
                     resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
-                    bfs.reset();
+                    solver->reset();
                     break;
                 // Add key didn't trigger on my mac thus added equal as plus is on the same key
                 case sf::Keyboard::Equal:
