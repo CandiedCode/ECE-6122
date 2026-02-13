@@ -56,19 +56,19 @@ protected:
 public:
     MazeSolver(Maze& maze);
     virtual ~MazeSolver() = default;
-    virtual std::vector<Position> solveMaze() = 0;
+    virtual std::list<Position> solveMaze() = 0;
     virtual bool step(int &nodesExploredCount) = 0;
-    std::list<Position> reconstructPath();
-    void reset();
+    virtual std::list<Position> reconstructPath();
+    virtual void reset();
 };
 
 class BreadthFirstSearch : public MazeSolver {
 public:
     BreadthFirstSearch(Maze& maze);
 
-    std::vector<Position> solveMaze() override;
+    std::list<Position> solveMaze() override;
     bool step(int &nodesExploredCount) override;
-    void reset();
+    void reset() override;
 
 private:
     std::queue<Position> frontier;
@@ -79,9 +79,9 @@ class AStarSearch: public MazeSolver {
 public:
     AStarSearch(Maze& maze);
 
-    std::vector<Position> solveMaze() override;
+    std::list<Position> solveMaze() override;
     bool step(int &nodesExploredCount) override;
-    void reset();
+    void reset() override;
 
 private:
     std::function<int(Position)> heuristic;

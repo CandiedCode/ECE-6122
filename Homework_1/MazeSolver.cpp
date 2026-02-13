@@ -18,6 +18,7 @@ MazeSolver::MazeSolver(Maze& maze) : m_maze(maze) {
 }
 
 void MazeSolver::reset() {
+    std::cout << "Resetting solver state..." << std::endl; // Debugging output
     cameFrom.clear();
     cameFrom[start] = terminator;
 }
@@ -48,34 +49,26 @@ BreadthFirstSearch::BreadthFirstSearch(Maze &maze) : MazeSolver(maze)
 void BreadthFirstSearch::reset()
 {
     MazeSolver::reset();
+
+    std::cout << "Resetting BFS state..." << std::endl; // Debugging output
     // Clear all data structures
     while (!frontier.empty())
         frontier.pop();
     visited.clear();
-
 
     // Reinitialize with start position
     frontier.push(start);
     visited[start] = true;
 }
 
-std::vector<Position> BreadthFirstSearch::solveMaze()
+std::list<Position> BreadthFirstSearch::solveMaze()
 {
     int nodesExploredCount = 0;
     while (!frontier.empty())
     {
         if (step(nodesExploredCount))
         {
-            // Path found, reconstruct it
-            std::vector<Position> path;
-            Position current = end;
-            while (current != terminator)
-            {
-                path.push_back(current);
-                current = cameFrom[current];
-            }
-            std::reverse(path.begin(), path.end());
-            return path;
+            return reconstructPath(); // Mark the path on the maze
         }
     }
 
@@ -90,8 +83,6 @@ bool BreadthFirstSearch::step(int &nodesExploredCount)
     // Are we at the end?
     if (current == end)
     {
-        // // Reconstruct path
-        // reconstructPath();
         return true;
     }
 
@@ -120,31 +111,27 @@ bool BreadthFirstSearch::step(int &nodesExploredCount)
 
 AStarSearch::AStarSearch(Maze &maze) : MazeSolver(maze)
 {
-    terminator = Position{-1, -1}; // Sentinel value for path reconstruction
-    start = Position{maze.getStart().first, maze.getStart().second};
-    end = Position{maze.getEnd().first, maze.getEnd().second};
     heuristic = [this](Position p) { return std::abs(p.row - end.row) + std::abs(p.col - end.col); };
     gScore[start] = 0;
     openSet.push({start, heuristic(start)});
     inOpenSet[start] = true;
-    cameFrom[start] = terminator;
 }
 
 void AStarSearch::reset()
 {
+    MazeSolver::reset();
+
     while (!openSet.empty())
         openSet.pop();
     gScore.clear();
-    cameFrom.clear();
     inOpenSet.clear();
 
     gScore[start] = 0;
     openSet.push({start, heuristic(start)});
     inOpenSet[start] = true;
-    cameFrom[start] = terminator;
 }
 
-std::vector<Position> AStarSearch::solveMaze()
+std::list<Position> AStarSearch::solveMaze()
 {
     int nodesExploredCount = 0;
 
@@ -153,17 +140,7 @@ std::vector<Position> AStarSearch::solveMaze()
         std::cout << "Open set size: " << openSet.size() << std::endl; // Debugging output
         if (step(nodesExploredCount))
         {
-            std::cout << "Path found with " << nodesExploredCount << " nodes explored." << std::endl; // Debugging output
-            // Path found, reconstruct it
-            std::vector<Position> path;
-            Position current = end;
-            while (current != terminator)
-            {
-                path.push_back(current);
-                current = cameFrom[current];
-            }
-            std::reverse(path.begin(), path.end());
-            return path;
+            return reconstructPath(); // Mark the path on the maze
         }
     }
 
@@ -180,7 +157,6 @@ bool AStarSearch::step(int &nodesExploredCount)
               << std::endl; // Debugging output
     if (current.pos == end)
     {
-        reconstructPath();
         return true;
     }
 
