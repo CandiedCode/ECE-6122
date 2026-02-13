@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
     // Add additional width for the information panel on the right
     windowWidth += PANEL; // Add space for the panel
 
-    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Lab2: Maze Generator");
+    sf::RenderWindow window(sf::VideoMode(windowWidth, windowHeight), "Lab2: Maze Generator By Jennifer Cwagenberg");
     // Set FPS limit to make animation smoother and more consistent across different machines
     window.setFramerateLimit(60);
     maze.generate();
@@ -318,11 +318,11 @@ int main(int argc, char *argv[])
     sf::Time elapsedTime;
     bool solving = false;
 
-    // === MAIN APPLICATION LOOP ===
+    // main loop
     // Each iteration: render frame, update animation, handle user input
     while (window.isOpen())
     {
-        // ==================== RENDERING ====================
+        // rendering
         window.clear(sf::Color::Black); // Clear previous frame with dark background
 
         // Draw game elements
@@ -353,7 +353,6 @@ int main(int argc, char *argv[])
         // Display rendered content to screen
         window.display();
 
-        // ==================== ANIMATION UPDATE ====================
         // Animate the solver step-by-step based on animation speed
         if (solving)
         {
@@ -379,7 +378,7 @@ int main(int argc, char *argv[])
             clock.restart();
         }
 
-        // ==================== EVENT HANDLING ====================
+        // event handling
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -393,7 +392,6 @@ int main(int argc, char *argv[])
                     break;
                 case sf::Keyboard::A:
                     // Toggle between BFS and A* algorithms
-                    std::cout << "Toggling algorithm..." << std::endl;
                     switchAlgorithm(currentAlgorithm, solver, maze, algorithm);
                     resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
                     solver->reset();
@@ -402,19 +400,16 @@ int main(int argc, char *argv[])
                     break;
                 case sf::Keyboard::G:
                     // Generate a new random maze
-                    std::cout << "Generating new maze..." << std::endl;
                     maze.generate();
                     resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
                     break;
                 case sf::Keyboard::S:
                     // Start solving the current maze
-                    std::cout << "Solving the maze..." << std::endl;
                     solving = true;
                     solver->reset();
                     break;
                 case sf::Keyboard::R:
                     // Reset the maze visualization (keep maze structure)
-                    std::cout << "Resetting the maze..." << std::endl;
                     maze.resetVisualization();
                     maze.draw(window);
                     resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
@@ -429,7 +424,6 @@ int main(int argc, char *argv[])
                 case sf::Keyboard::Hyphen:
                 case sf::Keyboard::Subtract:
                     // Decrease animation speed
-                    std::cout << "Decreasing animation speed..." << std::endl;
                     calculateStepsPerSecond(animationSpeed, stepsPerSecond, false);
                     speed.setString("Speed: " + std::to_string(stepsPerSecond) + " STEPS/S");
                     break;
