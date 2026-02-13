@@ -10,51 +10,53 @@
 #include <utility>
 #include <vector>
 
-BreadthFirstSearch::BreadthFirstSearch(Maze &maze) : MazeSolver(maze)
-{
-    std::pair<int, int> startPos = maze.getStart();
-    std::pair<int, int> endPos = maze.getEnd();
+MazeSolver::MazeSolver(Maze& maze) : m_maze(maze) {
     terminator = Position{-1, -1}; // Sentinel value for path reconstruction
-    start = Position{startPos.first, startPos.second};
-    end = Position{endPos.first, endPos.second};
-
-    frontier.push(start);
-    visited[start] = true;
+    start = Position{maze.getStart().first, maze.getStart().second};
+    end = Position{maze.getEnd().first, maze.getEnd().second};
     cameFrom[start] = terminator; // Sentinel value for start
 }
 
-void BreadthFirstSearch::reset()
-{
-    // Clear all data structures
-    while (!frontier.empty())
-        frontier.pop();
-    visited.clear();
+void MazeSolver::reset() {
     cameFrom.clear();
-
-    // Reinitialize with start position
-    frontier.push(start);
-    visited[start] = true;
     cameFrom[start] = terminator;
 }
 
-std::list<Position> BreadthFirstSearch::reconstructPath()
-{
+std::list<Position> MazeSolver::reconstructPath() {
     std::list<Position> path;
     Position current = end;
 
-    while (current != terminator)
-    {
+    while (current != terminator) {
         path.push_back(current);
         current = cameFrom[current];
 
         // Mark solution path for visualization
-        if (current != start) // Avoid overwriting start cell
-        {
+        if (current != start) { // Avoid overwriting start cell
             m_maze.setCellType(current.row, current.col, CellType::Solution);
         }
     }
 
     return path;
+}
+
+BreadthFirstSearch::BreadthFirstSearch(Maze &maze) : MazeSolver(maze)
+{
+    frontier.push(start);
+    visited[start] = true;
+}
+
+void BreadthFirstSearch::reset()
+{
+    MazeSolver::reset();
+    // Clear all data structures
+    while (!frontier.empty())
+        frontier.pop();
+    visited.clear();
+
+
+    // Reinitialize with start position
+    frontier.push(start);
+    visited[start] = true;
 }
 
 std::vector<Position> BreadthFirstSearch::solveMaze()
@@ -88,8 +90,8 @@ bool BreadthFirstSearch::step(int &nodesExploredCount)
     // Are we at the end?
     if (current == end)
     {
-        // Reconstruct path
-        reconstructPath();
+        // // Reconstruct path
+        // reconstructPath();
         return true;
     }
 
@@ -126,20 +128,6 @@ AStarSearch::AStarSearch(Maze &maze) : MazeSolver(maze)
     openSet.push({start, heuristic(start)});
     inOpenSet[start] = true;
     cameFrom[start] = terminator;
-}
-
-std::list<Position> AStarSearch::reconstructPath()
-{
-    // Reconstruct path
-    std::list<Position> path;
-    Position pos = end;
-    while (!(pos == terminator))
-    {
-        path.push_back(pos);
-        pos = cameFrom[pos];
-    }
-    std::reverse(path.begin(), path.end());
-    return path;
 }
 
 void AStarSearch::reset()

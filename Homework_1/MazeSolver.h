@@ -51,15 +51,15 @@ protected:
     Position start;
     Position end;
     Position terminator;
-
-    MazeSolver(Maze& maze) : m_maze(maze) {}
+    std::unordered_map<Position, Position, PositionHash> cameFrom;
 
 public:
+    MazeSolver(Maze& maze);
     virtual ~MazeSolver() = default;
     virtual std::vector<Position> solveMaze() = 0;
     virtual bool step(int &nodesExploredCount) = 0;
-    virtual std::list<Position> reconstructPath() = 0;
-    virtual void reset() = 0;
+    std::list<Position> reconstructPath();
+    void reset();
 };
 
 class BreadthFirstSearch : public MazeSolver {
@@ -68,12 +68,10 @@ public:
 
     std::vector<Position> solveMaze() override;
     bool step(int &nodesExploredCount) override;
-    std::list<Position> reconstructPath() override;
-    void reset() override;
+    void reset();
 
 private:
     std::queue<Position> frontier;
-    std::unordered_map<Position, Position, PositionHash> cameFrom;
     std::unordered_map<Position, bool, PositionHash> visited;
 };
 
@@ -83,13 +81,11 @@ public:
 
     std::vector<Position> solveMaze() override;
     bool step(int &nodesExploredCount) override;
-    std::list<Position> reconstructPath() override;
-    void reset() override;
+    void reset();
 
 private:
     std::function<int(Position)> heuristic;
     std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
-    std::unordered_map<Position, Position, PositionHash> cameFrom;
     std::unordered_map<Position, int, PositionHash> gScore;
     std::unordered_map<Position, bool, PositionHash> inOpenSet;
 
