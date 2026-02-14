@@ -84,10 +84,11 @@ enum class AlgorithmType
     AStar
 };
 
-// @brief Process command line arguments to configure maze dimensions
-// @param argc Argument count
-// @param argv Argument vector
-// @return MazeConfig object with specified or default dimensions
+/** @brief Process command line arguments to configure maze dimensions
+ * @param argc Argument count
+ * @param argv Argument vector
+ * @return MazeConfig object with specified or default dimensions
+ */
 MazeConfig processArgs(int argc, char *argv[])
 {
     MazeConfig config;
@@ -119,9 +120,10 @@ MazeConfig processArgs(int argc, char *argv[])
     return MazeConfig(parsedHeight, parsedWidth);
 }
 
-// @brief Load a font from the specified file path
-// @param fontPath Path to the font file
-// @return Loaded sf::Font object
+/** @brief Load a font from the specified file path
+ * @param fontPath Path to the font file
+ * @return Loaded sf::Font object
+ */
 sf::Font loadFont(const std::string &fontPath)
 {
     sf::Font font;
@@ -133,14 +135,15 @@ sf::Font loadFont(const std::string &fontPath)
     return font;
 }
 
-// @brief Create an sf::Text object with specified properties
-// @param font Font to use for the text
-// @param str String content of the text
-// @param size Character size of the text
-// @param color Color of the text
-// @param x X position of the text
-// @param y Y position of the text
-// @return Configured sf::Text object
+/** @brief Create an sf::Text object with specified properties
+ * @param font Font to use for the text
+ * @param str String content of the text
+ * @param size Character size of the text
+ * @param color Color of the text
+ * @param x X position of the text
+ * @param y Y position of the text
+ * @return Configured sf::Text object
+ */
 sf::Text getText(sf::Font &font, const std::string &str, unsigned int size, sf::Color color, float x, float y)
 {
     sf::Text text;
@@ -152,10 +155,13 @@ sf::Text getText(sf::Font &font, const std::string &str, unsigned int size, sf::
     return text;
 }
 
-// @brief Update the maze solver animation based on elapsed time
-// @param deltaTime Time elapsed since last update
-// @param solving Reference to the boolean indicating if the solver is currently animating
-// @param solver Reference to the MazeSolver object to perform the next step
+/** @brief Update the maze solver animation based on elapsed time
+ * @param deltaTime Time elapsed since last update
+ * @param solving Reference to the boolean indicating if the solver is currently animating
+ * @param solver Reference to the MazeSolver object to perform the next step
+ * @param animationSpeed Reference to the animation speed
+ * @param nodesExploredCount Reference to the nodes explored counter
+ */
 void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, sf::Time &animationSpeed, int &nodesExploredCount)
 {
     static sf::Time accumulated;
@@ -170,10 +176,11 @@ void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, sf::Time &ani
     }
 }
 
-// @brief Calculate the animation speed in steps per second and update the animation speed accordingly
-// @param animationSpeed Reference to the sf::Time object representing the current animation speed
-// @param stepsPerSecond Reference to the integer representing the current steps per second
-// @param increase Boolean indicating whether to increase or decrease the speed
+/** @brief Calculate the animation speed in steps per second and update the animation speed accordingly
+ * @param animationSpeed Reference to the sf::Time object representing the current animation speed
+ * @param stepsPerSecond Reference to the integer representing the current steps per second
+ * @param increase Boolean indicating whether to increase or decrease the speed
+ */
 void calculateStepsPerSecond(sf::Time &animationSpeed, int &stepsPerSecond, bool increase)
 {
     if (stepsPerSecond <= 1 && !increase)
@@ -200,11 +207,12 @@ void calculateStepsPerSecond(sf::Time &animationSpeed, int &stepsPerSecond, bool
               << std::endl;
 }
 
-// @brief Switch between BFS and A* pathfinding algorithms
-// @param currentAlgorithm Reference to current algorithm type
-// @param solver Reference to the solver unique_ptr (automatically deleted when reassigned)
-// @param maze Reference to the maze object
-// @param algorithm Reference to the algorithm display text
+/** @brief Switch between BFS and A* pathfinding algorithms
+ * @param currentAlgorithm Reference to current algorithm type
+ * @param solver Reference to the solver unique_ptr (automatically deleted when reassigned)
+ * @param maze Reference to the maze object
+ * @param algorithm Reference to the algorithm display text
+ */
 void switchAlgorithm(AlgorithmType &currentAlgorithm, std::unique_ptr<MazeSolver> &solver, Maze &maze, sf::Text &algorithm)
 {
     // std::unique_ptr automatically deletes the old solver when reassigned
@@ -222,14 +230,15 @@ void switchAlgorithm(AlgorithmType &currentAlgorithm, std::unique_ptr<MazeSolver
     algorithm.setString("Algorithm: " + std::string(currentAlgorithm == AlgorithmType::BFS ? "BFS" : "A*"));
 }
 
-// @brief Reset the window components to their default state when generating a new maze or resetting the current maze
-// @param solved Reference to the boolean indicating if the maze is solved
-// @param solving Reference to the boolean indicating if the solver is currently animating
-// @param pathLengthCount Reference to the integer representing the current path length count
-// @param nodesExploredCount Reference to the integer representing the current nodes explored count
-// @param pathFound Reference to the sf::Text object displaying whether a path was found
-// @param nodesExplored Reference to the sf::Text object displaying the number of nodes explored
-// @param pathLength Reference to the sf::Text object displaying the path length
+/** @brief Reset the window components to their default state when generating a new maze or resetting the current maze
+ * @param solved Reference to the boolean indicating if the maze is solved
+ * @param solving Reference to the boolean indicating if the solver is currently animating
+ * @param pathLengthCount Reference to the integer representing the current path length count
+ * @param nodesExploredCount Reference to the integer representing the current nodes explored count
+ * @param pathFound Reference to the sf::Text object displaying whether a path was found
+ * @param nodesExplored Reference to the sf::Text object displaying the number of nodes explored
+ * @param pathLength Reference to the sf::Text object displaying the path length
+ */
 void resetWindowComponents(bool &solved, bool &solving, int &pathLengthCount, int &nodesExploredCount, sf::Text &pathFound,
                            sf::Text &nodesExplored, sf::Text &pathLength)
 {

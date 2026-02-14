@@ -87,11 +87,6 @@ std::list<Position> BreadthFirstSearch::solveMaze()
     return {}; // No path found
 }
 
-// @brief Perform one step of breadth-first search
-// Processes the next cell in the frontier and explores its unvisited neighbors.
-// For visualization, visited cells are marked with a light blue color.
-// @param nodesExploredCount Reference to counter for visited nodes
-// @return true if goal reached, false otherwise
 bool BreadthFirstSearch::step(int &nodesExploredCount)
 {
     // check if search is complete
@@ -170,14 +165,9 @@ std::list<Position> AStarSearch::solveMaze()
     return {}; // No path found
 }
 
-// @brief Perform one step of A* pathfinding
-// Processes the cell with the lowest f-score (g + h) and explores neighbors.
-// Uses Manhattan distance heuristic to guide search toward the goal.
-// @param nodesExploredCount Reference to counter for evaluated nodes
-// @return true if goal reached, false otherwise
 bool AStarSearch::step(int &nodesExploredCount)
 {
-    // === CHECK IF SEARCH IS COMPLETE ===
+    // check if search is complete
     if (openSet.empty())
     {
         return false; // No path found - no more cells to explore
@@ -239,12 +229,7 @@ bool AStarSearch::step(int &nodesExploredCount)
     return false; // Continue searching
 }
 
-// @brief Manhattan distance heuristic for A* search
-// @param a First position
-// @param b Second position
-// @return Manhattan distance between a and b
 int AStarSearch::manhattanDistance(Position a, Position b)
 {
-    int score = std::abs(a.row - b.row) + std::abs(a.col - b.col);
-    return score;
+    return std::abs(a.row - b.row) + std::abs(a.col - b.col);
 }

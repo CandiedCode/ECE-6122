@@ -44,6 +44,7 @@ struct PositionHash
     }
 };
 
+// Node structure for A* search
 struct Node
 {
     Position pos;
@@ -55,6 +56,8 @@ struct Node
     }
 };
 
+// @class MazeSolver
+// @brief Abstract base class for maze solving algorithms
 class MazeSolver
 {
   protected:
@@ -70,21 +73,58 @@ class MazeSolver
     std::unordered_map<Position, Position, PositionHash> cameFrom;
 
   public:
+    /**
+     * @brief Construct a new MazeSolver object
+     * @param maze Reference to the maze to be solved
+     */
     explicit MazeSolver(Maze &maze);
     virtual ~MazeSolver() = default;
+    /**
+     * @brief Solve the maze using the specific algorithm, returning the path from start to end as a list of positions
+     * @return List of positions representing the path from start to end (empty if no path found)
+     */
     virtual std::list<Position> solveMaze() = 0;
+    /**
+     * @brief Perform one step of the algorithm, exploring the next node and updating the search state accordingly
+     * @param nodesExploredCount Reference to the integer counting the number of nodes explored so far (incremented when a node is processed)
+     * @return true if the goal has been reached and the path can be reconstructed
+     */
     virtual bool step(int &nodesExploredCount) = 0;
+    /**
+     * @brief Reconstruct the path from start to end after the search is complete
+     * @return List of positions representing the reconstructed path
+     */
     virtual std::list<Position> reconstructPath();
+    /**
+     * @brief Reset the solver to its initial state, clearing all data structures and reinitializing the start position
+     */
     virtual void reset();
 };
 
+// @class BreadthFirstSearch
+// @brief Implements BFS algorithm for maze solving
 class BreadthFirstSearch : public MazeSolver
 {
   public:
+    /**
+     * @brief Construct a new BFS solver object
+     * @param maze Reference to the maze to be solved
+     */
     explicit BreadthFirstSearch(Maze &maze);
-
+    /**
+     * @brief Solve the maze using breadth-first search, returning the path from start to end as a list of positions
+     * @return List of positions representing the path from start to end (empty if no path found)
+     */
     std::list<Position> solveMaze() override;
+    /**
+     * @brief Perform one step of the BFS algorithm, exploring the next node in the frontier and updating the search state accordingly
+     * @param nodesExploredCount Reference to the integer counting the number of nodes explored so far (incremented when a node is processed)
+     * @return true if the goal has been reached and the path can be reconstructed
+     */
     bool step(int &nodesExploredCount) override;
+    /**
+     * @brief Reset the BFS solver to its initial state, clearing all data structures and reinitializing the frontier with the start position
+     */
     void reset() override;
 
   private:
@@ -92,13 +132,32 @@ class BreadthFirstSearch : public MazeSolver
     std::unordered_map<Position, bool, PositionHash> visited;
 };
 
+// @class AStarSearch
+// @brief Implements A* algorithm for maze solving
 class AStarSearch : public MazeSolver
 {
   public:
+    /**
+     * @brief Construct a new A* solver object
+     * @param maze Reference to the maze to be solved
+     */
     explicit AStarSearch(Maze &maze);
 
+    /**
+     * @brief Solve the maze using A* algorithm, returning the path from start to end as a list of positions
+     * @return List of positions representing the path from start to end (empty if no path found)
+     */
     std::list<Position> solveMaze() override;
+    /**
+     * @brief Perform one step of the A* algorithm, exploring the next node in the open set and updating the search state accordingly
+     * @param nodesExploredCount Reference to the integer counting the number of nodes explored so far (incremented when a node is processed)
+     * @return true if the goal has been reached and the path can be reconstructed
+     */
     bool step(int &nodesExploredCount) override;
+
+    /**
+     * @brief Reset the A* solver to its initial state, clearing all data structures and reinitializing the open set with the start position
+     */
     void reset() override;
 
   private:
@@ -106,6 +165,11 @@ class AStarSearch : public MazeSolver
     std::unordered_map<Position, int, PositionHash> gScore;
     std::unordered_map<Position, bool, PositionHash> inOpenSet;
 
+    /** @brief Manhattan distance heuristic for A* search
+     *  @param a First position
+     *  @param b Second position
+     *  @return Manhattan distance between a and b
+     */
     int manhattanDistance(Position a, Position b);
 };
 
