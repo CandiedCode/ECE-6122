@@ -86,7 +86,8 @@ class MazeSolver
     virtual std::list<Position> solveMaze() = 0;
     /**
      * @brief Perform one step of the algorithm, exploring the next node and updating the search state accordingly
-     * @param nodesExploredCount Reference to the integer counting the number of nodes explored so far (incremented when a node is processed)
+     * @param nodesExploredCount Reference to the integer counting the number of nodes explored so far (incremented when a node is
+     * processed)
      * @return true if the goal has been reached and the path can be reconstructed
      */
     virtual bool step(int &nodesExploredCount) = 0;
@@ -118,12 +119,14 @@ class BreadthFirstSearch : public MazeSolver
     std::list<Position> solveMaze() override;
     /**
      * @brief Perform one step of the BFS algorithm, exploring the next node in the frontier and updating the search state accordingly
-     * @param nodesExploredCount Reference to the integer counting the number of nodes explored so far (incremented when a node is processed)
+     * @param nodesExploredCount Reference to the integer counting the number of nodes explored so far (incremented when a node is
+     * processed)
      * @return true if the goal has been reached and the path can be reconstructed
      */
     bool step(int &nodesExploredCount) override;
     /**
-     * @brief Reset the BFS solver to its initial state, clearing all data structures and reinitializing the frontier with the start position
+     * @brief Reset the BFS solver to its initial state, clearing all data structures and reinitializing the frontier with the start
+     * position
      */
     void reset() override;
 
@@ -150,7 +153,8 @@ class AStarSearch : public MazeSolver
     std::list<Position> solveMaze() override;
     /**
      * @brief Perform one step of the A* algorithm, exploring the next node in the open set and updating the search state accordingly
-     * @param nodesExploredCount Reference to the integer counting the number of nodes explored so far (incremented when a node is processed)
+     * @param nodesExploredCount Reference to the integer counting the number of nodes explored so far (incremented when a node is
+     * processed)
      * @return true if the goal has been reached and the path can be reconstructed
      */
     bool step(int &nodesExploredCount) override;

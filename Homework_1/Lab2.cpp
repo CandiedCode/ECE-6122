@@ -161,18 +161,22 @@ sf::Text getText(sf::Font &font, const std::string &str, unsigned int size, sf::
  * @param solver Reference to the MazeSolver object to perform the next step
  * @param animationSpeed Reference to the animation speed
  * @param nodesExploredCount Reference to the nodes explored counter
+ * @param elapsedTime Reference to the sf::Time object representing the elapsed time for solving the maze
  */
-void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, sf::Time &animationSpeed, int &nodesExploredCount)
+void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, sf::Time &animationSpeed, int &nodesExploredCount, sf::Time &elapsedTime)
 {
     static sf::Time accumulated;
     accumulated += deltaTime;
     if (accumulated >= animationSpeed && solving)
     {
         accumulated = sf::Time::Zero;
+        sf::Clock stepClock;
         if (solver.step(nodesExploredCount))
         {
             solving = false;
         }
+        elapsedTime += stepClock.getElapsedTime();
+        std::cout << "Step completed. Nodes explored: " << nodesExploredCount << ", Elapsed time: " << elapsedTime.asMicroseconds() << " µs." << std::endl;
     }
 }
 
@@ -195,11 +199,11 @@ void calculateStepsPerSecond(sf::Time &animationSpeed, int &stepsPerSecond, bool
     }
     if (increase)
     {
-        stepsPerSecond += 25;
+        stepsPerSecond += 10;
     }
     else
     {
-        stepsPerSecond -= 25;
+        stepsPerSecond -= 10;
     }
     int milisecondsPerStep = 1000.f / stepsPerSecond;
     animationSpeed = sf::milliseconds(milisecondsPerStep);
@@ -238,17 +242,21 @@ void switchAlgorithm(AlgorithmType &currentAlgorithm, std::unique_ptr<MazeSolver
  * @param pathFound Reference to the sf::Text object displaying whether a path was found
  * @param nodesExplored Reference to the sf::Text object displaying the number of nodes explored
  * @param pathLength Reference to the sf::Text object displaying the path length
+ * @param elapsedTime Reference to the sf::Time object representing the elapsed time for solving the maze
+ * @param timeTaken Reference to the sf::Text object displaying the time taken to solve the maze
  */
 void resetWindowComponents(bool &solved, bool &solving, int &pathLengthCount, int &nodesExploredCount, sf::Text &pathFound,
-                           sf::Text &nodesExplored, sf::Text &pathLength)
+                           sf::Text &nodesExplored, sf::Text &pathLength, sf::Time &elapsedTime, sf::Text &timeTaken)
 {
     solved = false;
     solving = false;
     pathLengthCount = 0;
     nodesExploredCount = 0;
+    elapsedTime = sf::Time::Zero;
     pathFound.setString("Path Found: No");
     nodesExplored.setString("Nodes Explored: 0");
     pathLength.setString("Path Length: 0");
+    timeTaken.setString("Time: 0s");
 }
 
 int main(int argc, char *argv[])
@@ -287,8 +295,10 @@ int main(int argc, char *argv[])
     int panel_start = windowWidth - PANEL + DEFAULT_PADDING; // Start of text in panel with some padding
     sf::Font font = loadFont("fonts/KOMIKAP_.ttf");
 
-    sf::Time animationSpeed = sf::milliseconds(10);
-    int stepsPerSecond = 100;
+
+    int stepsPerSecond = 10;
+    sf::Time animationSpeed = sf::milliseconds(1000.f / stepsPerSecond);
+    sf::Time elapsedTime;
     bool solved = false;
     int nodesExploredCount = 0;
     int pathLengthCount = 0;
@@ -336,7 +346,6 @@ int main(int argc, char *argv[])
                               adjustSpeed.getGlobalBounds().height + adjustSpeed.getGlobalBounds().top + DEFAULT_PADDING);
 
     sf::Clock clock;
-    sf::Time elapsedTime;
     bool solving = false;
 
     // main loop
@@ -378,7 +387,7 @@ int main(int argc, char *argv[])
         if (solving)
         {
             sf::Time deltaTime = clock.restart();
-            update(deltaTime, solving, *solver, animationSpeed, nodesExploredCount);
+            update(deltaTime, solving, *solver, animationSpeed, nodesExploredCount, elapsedTime);
 
             // If the solver just finished, reconstruct and display the solution path
             if (!solving)
@@ -386,6 +395,7 @@ int main(int argc, char *argv[])
                 solved = true;
                 pathFound.setString("Path Found: " + std::string(solved ? "Yes" : "No"));
                 nodesExplored.setString("Nodes Explored: " + std::to_string(nodesExploredCount));
+                timeTaken.setString("Time: " + std::to_string(elapsedTime.asMilliseconds()) + " ms");
 
                 // Reconstruct full path and count steps
                 std::list<Position> path = solver->reconstructPath();
@@ -414,7 +424,7 @@ int main(int argc, char *argv[])
                 case sf::Keyboard::A:
                     // Toggle between BFS and A* algorithms
                     switchAlgorithm(currentAlgorithm, solver, maze, algorithm);
-                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
+                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength, elapsedTime, timeTaken);
                     solver->reset();
                     maze.resetVisualization();
                     maze.draw(window);
@@ -422,7 +432,7 @@ int main(int argc, char *argv[])
                 case sf::Keyboard::G:
                     // Generate a new random maze
                     maze.generate();
-                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
+                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength, elapsedTime, timeTaken);
                     break;
                 case sf::Keyboard::S:
                     // Start solving the current maze
@@ -433,7 +443,7 @@ int main(int argc, char *argv[])
                     // Reset the maze visualization (keep maze structure)
                     maze.resetVisualization();
                     maze.draw(window);
-                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength);
+                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength, elapsedTime, timeTaken);
                     solver->reset();
                     break;
                 case sf::Keyboard::Equal:
