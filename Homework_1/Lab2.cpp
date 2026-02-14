@@ -1,3 +1,19 @@
+/*
+Author: Jennifer Cwagenberg
+Class: ECE6122
+Last Date Modified: 2026-02-13
+Description:  Homework 1: Maze Generator and Solver Visualization
+
+Write a C++ program that generates and visualizes a maze using the SFML library. Your program must:
+1. Generate a random maze of configurable size (e.g., 25x25) using a maze generation algorithm (e.g., Recursive Backtracking).
+2. Implement two pathfinding algorithms (BFS and A*) to solve the maze.
+3. Visualize the maze and the solving process step-by-step with a configurable animation speed.
+4. Display statistics such as the number of nodes explored, path length, and time taken to solve the maze.
+5. Allow the user to toggle between algorithms, reset the maze, and adjust animation speed using keyboard controls. 
+
+This file is our main entry point that controls the animation loop, event handling, and overall application flow. 
+*/
+
 #include "MazeGenerator.h"
 #include "MazeSolver.h"
 #include <SFML/Graphics.hpp>
@@ -75,10 +91,6 @@ enum class AlgorithmType
 MazeConfig processArgs(int argc, char *argv[])
 {
     MazeConfig config;
-
-    std::cout << "Processing command line arguments..." << std::endl;
-    std::cout << "Argument count: " << argc << std::endl;
-    std::cout << "Arguments: ";
 
     // To process arguments, we expect two integers for height and width. If not provided, we use defaults.
     if (argc != 3)
@@ -176,11 +188,11 @@ void calculateStepsPerSecond(sf::Time &animationSpeed, int &stepsPerSecond, bool
     }
     if (increase)
     {
-        stepsPerSecond += 50;
+        stepsPerSecond += 25;
     }
     else
     {
-        stepsPerSecond -= 50;
+        stepsPerSecond -= 25;
     }
     int milisecondsPerStep = 1000.f / stepsPerSecond;
     animationSpeed = sf::milliseconds(milisecondsPerStep);

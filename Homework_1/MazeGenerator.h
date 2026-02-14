@@ -1,10 +1,17 @@
 /**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-02-13
+ * Description:  Homework 1: Maze Generator and Solver Visualization
+ *
  * @file MazeGenerator.h
  * @brief Maze generation using recursive backtracking algorithm
  * @course ECE 4122/6122 - Homework 1
  *
  * This header defines the Maze class which generates random, solvable mazes
  * using the recursive backtracking algorithm.
+ *
+ * This file was provided as part of Homework 1 artifacts.
  */
 
 #ifndef HOMEWORK_1_MAZEGENERATOR_H_
@@ -165,7 +172,18 @@ class Maze
      */
     std::vector<std::pair<int, int>> getUnvisitedNeighbors(int row, int col);
 
+    /**
+     * @brief Calculate the minimum window size needed to display the maze based on its dimensions
+     * @param window_width Reference to the variable to store calculated window width
+     * @param window_height Reference to the variable to store calculated window height
+     */
     void calculateWindowSize(int &window_width, int &window_height);
+
+    /**
+     * @brief Calculate the adjusted window and cell size to fit the maze within the desktop resolution
+     * @param window_width Reference to the variable to store adjusted window width
+     * @param window_height Reference to the variable to store adjusted window height
+     */
     void calculateAdjustedWindowAndCellSize(int &window_width, int &window_height);
 
     /**
