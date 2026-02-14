@@ -460,7 +460,7 @@ int main(int argc, char *argv[])
                 solved = true;
                 pathFound.setString("Path Found: " + std::string(solved ? "Yes" : "No"));
                 nodesExplored.setString("Nodes Explored: " + std::to_string(nodesExploredCount));
-                timeTaken.setString("Time: " + std::to_string(elapsedTime.asMilliseconds()) + " ms");
+                timeTaken.setString("Time: " + std::to_string(elapsedTime.asMicroseconds()) + " us"); // using u instead of µ to avoid encoding issues from KOMIKAP_.ttf
 
                 // Reconstruct full path and count steps
                 std::list<Position> path = solver->reconstructPath();

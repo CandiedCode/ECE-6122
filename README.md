@@ -11,16 +11,12 @@ module load cmake/3.26.3
 
 # Build
 
-cd build
-cmake ..
-make ./Problem1_test
+`make build/debug` or `make build/release`
 
-ctest --verbose
+>[!IMPORTANT]
+> It is assume that a build directory has already been created.
 
-clang-format -i Homework_0/*.cpp
+# Homework 1
 
-g++ Homework_0/Problem1.cpp -o test
 
-g++ -std=c++17 -Wall -Wextra -o program Problem1.cpp
-
-python3 -m pip install --user cpplint
+See [Homework_1](./Homework_1/README.md) for more details.
