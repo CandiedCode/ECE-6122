@@ -17,6 +17,7 @@ This file is our main entry point that controls the animation loop, event handli
 #include "MazeGenerator.h"
 #include "MazeSolver.h"
 #include <SFML/Graphics.hpp>
+#include <filesystem>
 #include <iostream>
 #include <list>
 #include <memory>
@@ -122,15 +123,22 @@ MazeConfig processArgs(int argc, char *argv[])
 
 /** @brief Load a font from the specified file path
  * @param fontPath Path to the font file
+ * @param executableDir Directory of the executable
  * @return Loaded sf::Font object
  */
-sf::Font loadFont(const std::string &fontPath)
+sf::Font loadFont(const std::string &fontPath, const std::string &executableDir)
 {
     sf::Font font;
     if (!font.loadFromFile(fontPath))
     {
-        std::cerr << "Failed to load font from " << fontPath << std::endl;
-        exit(EXIT_FAILURE);
+        // Try relative to executable directory
+        std::string fullPath = executableDir + "/" + fontPath;
+
+        if (!font.loadFromFile(fullPath))
+        {
+            std::cerr << "Failed to load font from " << fontPath << " or " << fullPath << std::endl;
+            exit(EXIT_FAILURE);
+        }
     }
     return font;
 }
@@ -275,6 +283,9 @@ int main(int argc, char *argv[])
                   << desktopWidth << "x" << desktopHeight << std::endl;
     }
 
+    // Extract executable directory from argv[0]
+    std::string executableDir = std::filesystem::path(argv[0]).parent_path().string();
+
     // Process command line arguments to configure maze dimensions
     MazeConfig config = processArgs(argc, argv);
     Maze maze(config.getHeight(), config.getWidth());
@@ -302,7 +313,7 @@ int main(int argc, char *argv[])
     panel.setOutlineColor(sf::Color::Black);
 
     int panel_start = windowWidth - PANEL + DEFAULT_PADDING; // Start of text in panel with some padding
-    sf::Font font = loadFont("fonts/KOMIKAP_.ttf");
+    sf::Font font = loadFont("fonts/KOMIKAP_.ttf", executableDir);
 
     int stepsPerSecond = 10;
     sf::Time animationSpeed = sf::milliseconds(1000.f / stepsPerSecond);
