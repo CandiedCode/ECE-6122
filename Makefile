@@ -33,23 +33,23 @@ cmake: ## Generate CMake build files using the default preset
 	cd build && cmake .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
 .PHONY: cmake/debug
-cmake/debug: BUILD_TYPE ?= Debug
-cmake/debug: cmake ## Generate CMake build files for Debug configuration
+cmake/debug: ## Generate CMake build files for Debug configuration
+	@$(MAKE) -B cmake BUILD_TYPE=Debug
 
 .PHONY: cmake/release
-cmake/release: BUILD_TYPE ?= Release
-cmake/release: cmake ## Generate CMake build files for Release configuration
+cmake/release: ## Generate CMake build files for Release configuration
+	@$(MAKE) -B cmake BUILD_TYPE=Release
 
 build: cmake ## Build the project using CMake
-	cd build && cmake --build .
+	cd build && cmake --build . -j 8
 
 .PHONY: build/debug
-build/debug: BUILD_TYPE = Debug
-build/debug: build ## Build the project in Debug configuration
+build/debug: cmake/debug ## Build the project in Debug configuration
+	cd build && cmake --build . -j 8
 
 .PHONY: build/release
-build/release: BUILD_TYPE = Release
-build/release: build ## Build the project in Release configuration
+build/release: cmake/release ## Build the project in Release configuration
+	cd build && cmake --build . -j 8
 
 .PHONY: clean
 clean:

@@ -17,11 +17,20 @@ This file is our main entry point that controls the animation loop, event handli
 #include "MazeGenerator.h"
 #include "MazeSolver.h"
 #include <SFML/Graphics.hpp>
+#include <cstdio>
+#include <fcntl.h>
 #include <filesystem>
 #include <iostream>
 #include <list>
 #include <memory>
+#include <sstream>
 #include <string>
+
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 #define PANEL 250
 #define DEFAULT_MAZE_SIZE 25
@@ -114,8 +123,11 @@ MazeConfig processArgs(int argc, char *argv[])
     catch (const std::exception &e)
     {
         // throw error with details about the failure and the received arguments
-        throw std::invalid_argument("Error parsing Maze dimensions: " + std::string(e.what()) +
-                                    ".  Received height: " + std::string(height) + ", width: " + std::string(width));
+        std::cerr << "Error parsing Maze dimensions: " + std::string(e.what()) + ".  Received height: " + std::string(height) +
+                         ", width: " + std::string(width)
+                  << std::endl;
+        std::cerr << "Defaulting to maze size 25x25." << std::endl;
+        return MazeConfig();
     }
 
     return MazeConfig(parsedHeight, parsedWidth);
@@ -129,17 +141,50 @@ MazeConfig processArgs(int argc, char *argv[])
 sf::Font loadFont(const std::string &fontPath, const std::string &executableDir)
 {
     sf::Font font;
-    if (!font.loadFromFile(fontPath))
-    {
-        // Try relative to executable directory
-        std::string fullPath = executableDir + "/" + fontPath;
 
-        if (!font.loadFromFile(fullPath))
-        {
-            std::cerr << "Failed to load font from " << fontPath << " or " << fullPath << std::endl;
-            exit(EXIT_FAILURE);
-        }
+    // Suppress SFML error output by redirecting stderr file descriptor
+    // If the first load fails, SFML will print an error message to stderr.
+    // We want to suppress this message since we will attempt a second load with a different path.
+    // After the second attempt, we restore stderr to its original state.
+    // Flush any pending output from stderr to ensure everything is written before we redirect
+    fflush(stderr);
+
+#ifdef _WIN32
+    int saved_stderr = _dup(2);            // Duplicate file descriptor 2 (stderr) and returns a new file descriptor number
+    int devnull = _open("NUL", _O_WRONLY); // Open the null device for writing
+    _dup2(devnull, 2);                     // Redirect file descriptor 2 (stderr) to point to the null device
+#else
+    int saved_stderr = dup(2);                 // Duplicate file descriptor 2 (stderr) and returns a new file descriptor number
+    int devnull = open("/dev/null", O_WRONLY); // Open the null device for writing
+    dup2(devnull, 2);                          // Redirects file descriptor 2 (stderr) to point to the null device
+#endif
+
+    bool loaded = font.loadFromFile(fontPath);
+
+    if (!loaded)
+    {
+        std::string fullPath = executableDir + "/" + fontPath;
+        loaded = font.loadFromFile(fullPath);
     }
+
+    // Restore stderr
+    fflush(stderr);
+#ifdef _WIN32
+    _dup2(saved_stderr, 2);
+    _close(devnull);
+    _close(saved_stderr);
+#else
+    dup2(saved_stderr, 2);
+    close(devnull);
+    close(saved_stderr);
+#endif
+
+    if (!loaded)
+    {
+        std::cerr << "Failed to load font from " << fontPath << " or " << executableDir << "/" << fontPath << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     return font;
 }
 
@@ -276,11 +321,12 @@ int main(int argc, char *argv[])
     int desktopHeight = desktopMode.height;
 
     // If desktop mode query failed, use safe defaults for X11 forwarding
-    if (desktopWidth == 0 || desktopHeight == 0) {
+    if (desktopWidth == 0 || desktopHeight == 0)
+    {
         desktopWidth = 1920;
         desktopHeight = 1080;
-        std::cout << "Could not query desktop mode (likely X11 forwarding), using defaults: "
-                  << desktopWidth << "x" << desktopHeight << std::endl;
+        std::cout << "Could not query desktop mode (likely X11 forwarding), using defaults: " << desktopWidth << "x" << desktopHeight
+                  << std::endl;
     }
 
     // Extract executable directory from argv[0]
