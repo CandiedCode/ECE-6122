@@ -1,86 +1,55 @@
 .PHONY: all
 all: build
 
-.PHONY: help
-help:
-	@echo "Available targets:"
-	@echo "  make format          - Format all .cpp files with clang-format"
-	@echo "  make lint            - Run all linting (C++ and Makefile)"
-	@echo "  make lint/cpp        - Lint all .cpp files with cpplint"
-	@echo "  make lint/makefile   - Lint Makefile with checkmake"
-	@echo "  make conan-install   - Install dependencies with Conan"
-	@echo "  make cmake-configure - Configure CMake with Conan toolchain"
-	@echo "  make build           - Build all targets"
-	@echo "  make build/hw0       - Build Homework_0 targets"
-	@echo "  make build/hw1       - Build Homework_1 targets"
-	@echo "  make test            - Run all tests with CTest"
-	@echo "  make clean           - Remove build artifacts"
-
 .PHONY: format
-format:
+format: ## Format all .cpp files using clang-format
 	@echo "Formatting all .cpp files..."
 	@find . -name "*.cpp" -type f -exec clang-format -i {} \;
 	@echo "✓ Formatting complete"
 
 .PHONY: lint
+lint: ## Lint all .cpp files using cpplint and the Makefile using checkmake
 lint: lint/cpp lint/makefile
 	@echo "✓ All linting complete"
 
 .PHONY: lint/cpp
-lint/cpp:
+lint/cpp: ## Lint all .cpp files using cpplint
 	@echo "Linting all .cpp files..."
 	@find . -name "*.cpp" -type f -exec cpplint {} \;
+	@find . -name "*.h" -type f -exec cpplint {} \;
 	@echo "✓ C++ linting complete"
 
 .PHONY: lint/makefile
-lint/makefile:
+lint/makefile: ## Lint Makefile using checkmake
 	@echo "Linting Makefile..."
 	@checkmake Makefile
 	@echo "✓ Makefile linting complete"
 
-.PHONY: conan-install
-conan-install:
-	@echo "Installing dependencies with Conan..."
-	@mkdir -p build
-	@cd build && conan install .. --output-folder=. --build=missing
-	@echo "✓ Conan dependencies installed"
 
-.PHONY: cmake-configure
-cmake-configure: conan-install
-	@echo "Configuring CMake..."
-	@cd build && cmake .. --preset conan-release
-	@echo "✓ CMake configured"
+.PHONY: cmake
+cmake: BUILD_TYPE ?= Debug
+cmake: ## Generate CMake build files using the default preset
+	@echo "Generating CMake build files..."
+	cd build && cmake .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
-.PHONY: cmake-default
-cmake-default: conan-install
-	@echo "Configuring CMake with default settings..."
-	@cmake --preset default
-	@echo "✓ CMake configured with default settings"
-	@cd build && make
+.PHONY: cmake/debug
+cmake/debug: BUILD_TYPE ?= Debug
+cmake/debug: cmake ## Generate CMake build files for Debug configuration
 
-.PHONY: build
-build: cmake-configure
-	@echo "Building all targets..."
-	@cmake --build build/build/Release
-	@echo "✓ Build complete"
+.PHONY: cmake/release
+cmake/release: BUILD_TYPE ?= Release
+cmake/release: cmake ## Generate CMake build files for Release configuration
 
-.PHONY: build/hw0
-build/hw0: cmake-configure
-	@echo "Building Homework_0..."
-	@cmake --build build/build/Release --target Homework_0
-	@echo "✓ Homework_0 build complete"
+build: cmake ## Build the project using CMake
+	cd build && cmake --build .
 
-.PHONY: build/hw1
-build/hw1: cmake-configure
-	@echo "Building Homework_1..."
-	@cmake --build build/build/Release --target Homework_1
-	@echo "✓ Homework_1 build complete"
+.PHONY: build/debug
+build/debug: BUILD_TYPE = Debug
+build/debug: build ## Build the project in Debug configuration
 
-.PHONY: test
-test: build
-	@echo "Running tests..."
-	@ctest --test-dir build/build/Release --verbose
-	@echo "✓ Tests complete"
+.PHONY: build/release
+build/release: BUILD_TYPE = Release
+build/release: build ## Build the project in Release configuration
 
 .PHONY: clean
 clean:
