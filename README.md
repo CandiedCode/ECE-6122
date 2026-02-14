@@ -1,4 +1,5 @@
 # ECE-6122
+
 Advanced Programming
 
 # Load modules on Pace
@@ -8,20 +9,14 @@ module load zstd/1.5.6-5ktxetg
 module load gcc/14.2.0
 module load cmake/3.26.3
 
-
 # Build
-cd build
-cmake ..
-make ./Problem1_test
 
-ctest --verbose
+`make build/debug` or `make build/release`
 
+>[!IMPORTANT]
+> It is assume that a build directory has already been created.
 
-clang-format -i Homework_0/*.cpp
-
-g++ Homework_0/Problem1.cpp -o test
+# Homework 1
 
 
-g++ -std=c++17 -Wall -Wextra -o program Problem1.cpp 
-
-python3 -m pip install --user cpplint
+See [Homework_1](./Homework_1/README.md) for more details.
