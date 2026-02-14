@@ -12,7 +12,7 @@ FetchContent_Declare(SFML-GIT
     GIT_TAG 2.6.2
     GIT_SHALLOW ON
 )
-
+set(SFML_BUILD_AUDIO OFF CACHE BOOL "")  # We only need graphics, window, and system modules
 # Download and make SFML available
 FetchContent_MakeAvailable(SFML-GIT)
 

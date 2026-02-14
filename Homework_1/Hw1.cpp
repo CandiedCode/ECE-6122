@@ -267,6 +267,14 @@ int main(int argc, char *argv[])
     int desktopWidth = desktopMode.width;
     int desktopHeight = desktopMode.height;
 
+    // If desktop mode query failed, use safe defaults for X11 forwarding
+    if (desktopWidth == 0 || desktopHeight == 0) {
+        desktopWidth = 1920;
+        desktopHeight = 1080;
+        std::cout << "Could not query desktop mode (likely X11 forwarding), using defaults: "
+                  << desktopWidth << "x" << desktopHeight << std::endl;
+    }
+
     // Process command line arguments to configure maze dimensions
     MazeConfig config = processArgs(argc, argv);
     Maze maze(config.getHeight(), config.getWidth());
