@@ -129,7 +129,7 @@ void Maze::getWindowSize(int &window_width, int &window_height, int desktopWidth
     // If the calculated window size is smaller than minimum, adjust to minimum and recalculate cell size
     if (window_width < MIN_WINDOW_WIDTH || window_height < MIN_WINDOW_HEIGHT)
     {
-        window_width = std::min(window_width, MIN_WINDOW_WIDTH);
+        window_width = std::max(window_width, MIN_WINDOW_WIDTH);
         window_height = std::max(window_height, MIN_WINDOW_HEIGHT);
 
         // Recalculate cell size based on new window dimensions
