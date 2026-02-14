@@ -5,23 +5,30 @@ project(ECE6122 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Load Conan-generated files from the build generators directory
-# The layout directive in conanfile.txt uses cmake_layout
-list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/build/Release/generators")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/build/Release/generators")
+# Define a common output directory
+set(COMMON_OUTPUT_DIR "${CMAKE_BINARY_DIR}/output")
+if(WIN32)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${COMMON_OUTPUT_DIR}/lib")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${COMMON_OUTPUT_DIR}/lib")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${COMMON_OUTPUT_DIR}/bin")
+
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${COMMON_OUTPUT_DIR}/lib")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${COMMON_OUTPUT_DIR}/lib")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${COMMON_OUTPUT_DIR}/bin")
+elseif(UNIX)
+    # Set output directories for different types of binaries
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${COMMON_OUTPUT_DIR}/bin")  # For executables
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${COMMON_OUTPUT_DIR}/lib")  # For shared libraries
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${COMMON_OUTPUT_DIR}/lib")  # For static libraries
+endif()
 
 # Add compiler warnings globally
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
-# Find packages managed by Conan
-find_package(GTest REQUIRED)
-find_package(SFML REQUIRED COMPONENTS graphics window system)
-
-# Enable testing
-enable_testing()
-
-# Add homework subdirectories
 add_subdirectory(Homework_0)
 add_subdirectory(Homework_1)
+
+include_directories(${PROJECT_SOURCE_DIR}/include)
+link_directories(${PROJECT_SOURCE_DIR}/lib)
