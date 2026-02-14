@@ -5,8 +5,8 @@ Last Date Modified: 2026-02-13
 Description:  Homework 1: Maze Generator and Solver Visualization
 
 This file uses sample code provided in PathfindingNotes.md and makes slight modifications
-to implement the required functionality for Homework 1.  
-The MazeSolver class is an abstract base class that defines the interface for maze solving algorithms.  
+to implement the required functionality for Homework 1.
+The MazeSolver class is an abstract base class that defines the interface for maze solving algorithms.
 The BreadthFirstSearch and AStarSearch classes inherit from MazeSolver and implement the BFS and A* algorithms, respectively.
 */
 

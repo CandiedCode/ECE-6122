@@ -9,9 +9,9 @@ Write a C++ program that generates and visualizes a maze using the SFML library.
 2. Implement two pathfinding algorithms (BFS and A*) to solve the maze.
 3. Visualize the maze and the solving process step-by-step with a configurable animation speed.
 4. Display statistics such as the number of nodes explored, path length, and time taken to solve the maze.
-5. Allow the user to toggle between algorithms, reset the maze, and adjust animation speed using keyboard controls. 
+5. Allow the user to toggle between algorithms, reset the maze, and adjust animation speed using keyboard controls.
 
-This file is our main entry point that controls the animation loop, event handling, and overall application flow. 
+This file is our main entry point that controls the animation loop, event handling, and overall application flow.
 */
 
 #include "MazeGenerator.h"
@@ -176,7 +176,8 @@ void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, sf::Time &ani
             solving = false;
         }
         elapsedTime += stepClock.getElapsedTime();
-        std::cout << "Step completed. Nodes explored: " << nodesExploredCount << ", Elapsed time: " << elapsedTime.asMicroseconds() << " µs." << std::endl;
+        std::cout << "Step completed. Nodes explored: " << nodesExploredCount << ", Elapsed time: " << elapsedTime.asMicroseconds()
+                  << " µs." << std::endl;
     }
 }
 
@@ -294,7 +295,6 @@ int main(int argc, char *argv[])
 
     int panel_start = windowWidth - PANEL + DEFAULT_PADDING; // Start of text in panel with some padding
     sf::Font font = loadFont("fonts/KOMIKAP_.ttf");
-
 
     int stepsPerSecond = 10;
     sf::Time animationSpeed = sf::milliseconds(1000.f / stepsPerSecond);
@@ -424,7 +424,8 @@ int main(int argc, char *argv[])
                 case sf::Keyboard::A:
                     // Toggle between BFS and A* algorithms
                     switchAlgorithm(currentAlgorithm, solver, maze, algorithm);
-                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength, elapsedTime, timeTaken);
+                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength,
+                                          elapsedTime, timeTaken);
                     solver->reset();
                     maze.resetVisualization();
                     maze.draw(window);
@@ -432,7 +433,8 @@ int main(int argc, char *argv[])
                 case sf::Keyboard::G:
                     // Generate a new random maze
                     maze.generate();
-                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength, elapsedTime, timeTaken);
+                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength,
+                                          elapsedTime, timeTaken);
                     break;
                 case sf::Keyboard::S:
                     // Start solving the current maze
@@ -443,7 +445,8 @@ int main(int argc, char *argv[])
                     // Reset the maze visualization (keep maze structure)
                     maze.resetVisualization();
                     maze.draw(window);
-                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength, elapsedTime, timeTaken);
+                    resetWindowComponents(solved, solving, pathLengthCount, nodesExploredCount, pathFound, nodesExplored, pathLength,
+                                          elapsedTime, timeTaken);
                     solver->reset();
                     break;
                 case sf::Keyboard::Equal:

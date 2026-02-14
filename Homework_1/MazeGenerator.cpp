@@ -3,7 +3,7 @@
  * Class: ECE6122
  * Last Date Modified: 2026-02-13
  * Description:  Homework 1: Maze Generator and Solver Visualization
- * 
+ *
  * @file MazeGenerator.cpp
  * @brief Implementation of maze generation using recursive backtracking
  * @course ECE 4122/6122 - Homework 21
@@ -20,7 +20,7 @@
  *    b. Else if stack is not empty:
  *       - Pop a cell from stack and make it current
  * 4. Algorithm terminates when stack is empty
- * 
+ *
  * This file was provided as part of Homework 1 artifacts.  It has been slightly modified to extend it's functionality.
  */
 

@@ -1,7 +1,6 @@
 # Homework_1 CMakeLists.txt
 # Inherits C++ standard and compiler options from parent
 
-
 project(Homework_1 VERSION 1.0)
 
 # Include FetchContent for downloading SFML
