@@ -3,6 +3,7 @@
 ## Overview
 
 This document covers the two most common algorithms for finding the shortest path in a maze:
+
 1. **Breadth-First Search (BFS)** - Guaranteed shortest path for unweighted graphs
 2. **A\* (A-Star) Algorithm** - Optimal path with heuristic optimization
 
@@ -17,12 +18,14 @@ Both algorithms are well-suited for grid-based mazes where movement costs are un
 BFS explores the maze level by level, visiting all cells at distance 1 from the start, then all cells at distance 2, and so on. This guarantees finding the shortest path in an unweighted graph.
 
 ### Key Properties
+
 - **Time Complexity**: O(V + E) where V = vertices, E = edges
 - **Space Complexity**: O(V) for the queue and visited set
 - **Guarantee**: Always finds the shortest path (for unweighted graphs)
 - **Best for**: Mazes where all movements have equal cost
 
 ### Data Structures Needed
+
 ```cpp
 #include <queue>
 #include <unordered_map>
@@ -160,11 +163,13 @@ std::vector<Position> solveBFS(Maze& maze) {
 ### Concept
 
 A\* combines the benefits of Dijkstra's algorithm (guaranteed shortest path) with a heuristic function that guides the search toward the goal. It uses:
+
 - **g(n)**: Actual cost from start to node n
 - **h(n)**: Estimated cost from node n to goal (heuristic)
 - **f(n) = g(n) + h(n)**: Total estimated cost
 
 ### Key Properties
+
 - **Time Complexity**: O(E log V) with good heuristic, worse without
 - **Space Complexity**: O(V)
 - **Guarantee**: Optimal if heuristic is admissible (never overestimates)
@@ -348,6 +353,7 @@ std::vector<Position> solveAStar(Maze& maze) {
 ### Visual Example
 
 Consider this 7x7 maze:
+
 ```
 # # # # # # #
 # S . . . . #
@@ -359,11 +365,13 @@ Consider this 7x7 maze:
 ```
 
 **BFS Exploration** (explores level by level):
+
 - Explores all cells at distance 1 from S
 - Then all cells at distance 2
 - Continues until finding E
 
 **A\* Exploration** (guided by Manhattan distance):
+
 - Prioritizes cells that appear closer to E
 - May skip exploring "dead ends" away from E
 - Generally explores fewer cells
@@ -450,28 +458,30 @@ sf::Color lerpColor(sf::Color a, sf::Color b, float t) {
 - [SFML Documentation](https://www.sfml-dev.org/documentation/)
 
 ---
+
 ## Third Party Coding Resources
+
 These can be used for reference and you can use snippets of the code.  You can not copy the full solution from any third party code and use it as your solution.
 
 1. **mazegen (Header-Only)**
 
-GitHub: https://github.com/aleksandrbazhin/mazegen
+GitHub: <https://github.com/aleksandrbazhin/mazegen>
 Features: Header-only C++ library with zero dependencies, uses STL heavily. Based on Bob Nystrom's room-and-maze approach. GitHub
-SFML Demo: https://github.com/aleksandrbazhin/mazegen_sfml_example
+SFML Demo: <https://github.com/aleksandrbazhin/mazegen_sfml_example>
 Why it's good: Students just include one header file, configure room sizes, wiggle chance, dead-end removal, etc.
 
-2. **fuyalasmit/Maze-Generator-and-Solver (Complete Reference Project)**
+1. **fuyalasmit/Maze-Generator-and-Solver (Complete Reference Project)**
 
-GitHub: https://github.com/fuyalasmit/Maze-Generator-and-Solver
+GitHub: <https://github.com/fuyalasmit/Maze-Generator-and-Solver>
 Uses recursive backtracking algorithm to create complex and solvable mazes, and implements the A* algorithm to efficiently find the shortest path. Developed as part of a third-semester computer engineering course demonstrating OOP concepts. GitHub
 Why it's good: Almost exactly matches the homework requirements - could serve as a reference architecture.
 
-3. **RamezzE/MazeSolver**
+1. **RamezzE/MazeSolver**
 
-GitHub: https://github.com/RamezzE/MazeSolver
+GitHub: <https://github.com/RamezzE/MazeSolver>
 Maze generation, solving & finding shortest paths algorithms with backtracking, written in C++ and SFML. GitHub
 
-4. **fawzeus/maze-generator (Multiple Algorithms)**
+1. **fawzeus/maze-generator (Multiple Algorithms)**
 
-GitHub: https://github.com/fawzeus/maze-generator
+GitHub: <https://github.com/fawzeus/maze-generator>
 Four algorithms implemented: Depth-First Search (DFS), Hunt and Kill, Prim's Maze, and the Shift Origin algorithm. Each algorithm is visually demonstrated. GitHub
