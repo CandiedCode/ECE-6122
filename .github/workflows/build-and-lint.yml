@@ -13,13 +13,18 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v6
-
+    - name: Setup Cpp
+      uses: aminya/setup-cpp@v1
+      with:
+        compiler: gcc
+        vcvarsall: false
+        cmake: true
+        ninja: true
+        vcpkg: true
     - name: Run CMake
       run: cd build && cmake ..
-
     - name: Build with CMake
       run: cd build && cmake --build . --config Release
-
     - name: Run cpplint with reviewdog
       uses: cpp-linter/cpp-linter-action@v2
       id: linter
