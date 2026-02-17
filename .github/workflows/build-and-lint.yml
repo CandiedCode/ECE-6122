@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-lint:
+    runs-on: ubuntu-slim
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+
+    - name: Run CMake
+      run: cd build && cmake ..
+
+    - name: Build with CMake
+      run: cd build && cmake --build . --config Release
+
+    - name: Run cpplint with reviewdog
+      uses: cpp-linter/cpp-linter-action@v2
+      id: linter
+      with:
+          style: 'file' 
