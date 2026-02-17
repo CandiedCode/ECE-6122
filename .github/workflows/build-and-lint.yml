@@ -21,6 +21,14 @@ jobs:
         cmake: true
         ninja: true
         vcpkg: true
+    - name: Install X11 and SFML dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libudev-dev
+
+    - name: Create build directory
+      run: mkdir -p build
+
     - name: Run CMake
       run: cd build && cmake ..
     - name: Build with CMake
