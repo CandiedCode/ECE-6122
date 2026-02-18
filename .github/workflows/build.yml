@@ -56,3 +56,4 @@ jobs:
         tidy-checks: ''
         ignore: 'build'
         thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+        files-changed-only: true
