@@ -40,12 +40,12 @@ cmake/release: ## Generate CMake build files for Release configuration
 	@$(MAKE) -B cmake BUILD_TYPE=Release
 
 .PHONY: build
-build: cmake 
+build: cmake
 build: ## Build the project using CMake
 	cd build && cmake --build . -j 8
 
 .PHONY: build/debug
-build/debug: cmake/debug 
+build/debug: cmake/debug
 build/debug: ## Build the project in Debug configuration
 	cd build && cmake --build . -j 8
 
@@ -75,3 +75,27 @@ help: ## Shows all targets and help from the Makefile (this message).
 				printf "%s\n", $$2; \
 			} \
 		}'
+
+.PHONY: pre-commit/gc
+pre-commit/gc: ## Clean unused cached repos.
+	@pre-commit gc
+
+.PHONY: pre-commit/remove-cache
+pre-commit/remove-cache: ## Remove all of pre-commit's cache
+	rm -rf ~/.cache/pre-commit/
+
+.PHONY: pre-commit/run
+pre-commit/run: ## Manually run pre-commit
+	@pre-commit run --verbose
+
+.PHONY: pre-commit/install
+pre-commit/install: ## Install pre-commit
+	@pre-commit install
+
+.PHONY: pre-commit/autoupdate
+pre-commit/autoupdate: ## Update pre-commit hook versions
+	@pre-commit autoupdate
+
+.PHONY: pre-commit/uninstall
+pre-commit/uninstall: ## Uninstall pre-commit
+	@pre-commit uninstall
