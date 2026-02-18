@@ -250,8 +250,7 @@ int main()
     printMatrix(matrixStruct.data);
     std::cout << "Scaled Matrix Struct Copy (by value):" << std::endl;
     printMatrix(scaledMatrixStruct.data);
-    std::cout << "Original Struct Matrix modified: " << (!matrixEqual(matrixStruct.data, matrix) ? "Yes" : "No")
-              << std::endl;
+    std::cout << "Original Struct Matrix modified: " << (!matrixEqual(matrixStruct.data, matrix) ? "Yes" : "No") << std::endl;
 
     std::cout << std::endl;
     // Pass-by-reference: Modifies the original struct in place
@@ -261,8 +260,7 @@ int main()
     scaleMatrixInPlace(matrixStruct, scalar);
     std::cout << "Matrix Struct after scaleMatrixInPlace:" << std::endl;
     printMatrix(matrixStruct.data);
-    std::cout << "Original Struct Matrix modified: " << (!matrixEqual(matrixStruct.data, matrix) ? "Yes" : "No")
-              << std::endl;
+    std::cout << "Original Struct Matrix modified: " << (!matrixEqual(matrixStruct.data, matrix) ? "Yes" : "No") << std::endl;
     return 0;
 }
 

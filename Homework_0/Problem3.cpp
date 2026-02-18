@@ -158,7 +158,6 @@ bool isFibonacci(int number)
         return true;
     }
 
-
     for (int i = 2; i < 50; i++)
     {
         int current = fib_cache[i];
@@ -271,8 +270,8 @@ int main()
             std::cout << "Analysis of " << number << ":\n";
             std::cout << "  Sign: \t\t" << (number == 0 ? "Zero" : (isPositive ? "Positive" : "Negative")) << std::endl;
             std::cout << "  Parity: \t\t" << (isEven ? "Even" : "Odd") << std::endl;
-            std::cout << "  Primality: \t\t"
-                      << (number <= 1 ? "Neither Prime nor Composite" : (prime ? "Prime" : "Composite")) << std::endl;
+            std::cout << "  Primality: \t\t" << (number <= 1 ? "Neither Prime nor Composite" : (prime ? "Prime" : "Composite"))
+                      << std::endl;
             std::cout << "  Perfect Square: \t" << (perfectSquare ? "Yes" : "No") << std::endl;
             std::cout << "  Fibonacci: \t\t" << (fibonacci ? "Yes" : "No") << std::endl;
             std::cout << "  Magnitude: \t\t" << magnitude(number) << std::endl;

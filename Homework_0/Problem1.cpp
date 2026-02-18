@@ -139,10 +139,8 @@ int main()
     std::cout << "Mean:              " << std::fixed << std::setprecision(2) << mean << std::endl;
     std::cout << "Variance:          " << std::fixed << std::setprecision(2) << variance << std::endl;
     std::cout << "Standard Deviation: " << std::fixed << std::setprecision(2) << stdDev << std::endl;
-    std::cout << "Minimum Value:     " << std::fixed << std::setprecision(2) << minVal << " (at index " << minIndex
-              << ")" << std::endl;
-    std::cout << "Maximum Value:     " << std::fixed << std::setprecision(2) << maxVal << " (at index " << maxIndex
-              << ")" << std::endl;
+    std::cout << "Minimum Value:     " << std::fixed << std::setprecision(2) << minVal << " (at index " << minIndex << ")" << std::endl;
+    std::cout << "Maximum Value:     " << std::fixed << std::setprecision(2) << maxVal << " (at index " << maxIndex << ")" << std::endl;
 
     delete[] readings;
     return 0;
