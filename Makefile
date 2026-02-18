@@ -7,6 +7,24 @@ lint/makefile: ## Lint Makefile using checkmake
 	@checkmake Makefile
 	@echo "✓ Makefile linting complete"
 
+.PHONY: lint/format
+lint/format: ## Check code formatting using clang-format
+	@echo "Checking code formatting..."
+	@find . -path ./build -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-format -i --Werror
+	@echo "✓ Code formatting check complete"
+
+.PHONY: lint/cpp
+lint/cpp: ## Lint C++ code using cpplint
+	@echo "Linting C++ code..."
+	@find . -path ./build -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs cpplint
+	@echo "✓ C++ linting complete"
+
+.PHONY: lint/tidy
+lint/tidy: ## Run clang-tidy static analysis
+	@echo "Running clang-tidy..."
+	@find . -path ./build -prune -o -path ./Homework_0 -prune -o -path ./Homework_1 -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy
+	@echo "✓ clang-tidy analysis complete"
+
 .PHONY: cmake
 cmake: BUILD_TYPE ?= Debug
 cmake: ## Generate CMake build files using the default preset
@@ -46,3 +64,14 @@ clean: ## Clean the build directory
 list-presets: ## List available CMake presets
 	@echo "Available CMake presets:"
 	@cmake --list-presets
+
+.PHONY: help
+help: ## Shows all targets and help from the Makefile (this message).
+	@grep --no-filename -E '^([a-zA-Z0-9_.%/-]+:.*?)##' $(MAKEFILE_LIST) | sort | \
+		awk 'BEGIN {FS = ":.*?(## ?)"}; { \
+			if (length($$1) > 0) { \
+				printf "  \033[36m%-30s\033[0m %s\n", $$1, $$2; \
+			} else { \
+				printf "%s\n", $$2; \
+			} \
+		}'
