@@ -2,21 +2,23 @@
 
 Advanced Programming
 
-# Load modules on Pace
+## Load modules on Pace
 
-// Load latest version of gcc available on Pace
+```shell
+# Load latest version of gcc available on Pace
 module load zstd/1.5.6-5ktxetg
 module load gcc/14.2.0
 module load cmake/3.26.3
+```
 
-# Build
+## Build
 
-`make build/debug` or `make build/release`
+To build code in this repo run
 
->[!IMPORTANT]
-> It is assume that a build directory has already been created.
+```shell
+# For debug build
+make build/debug
 
-# Homework 1
-
-
-See [Homework_1](./Homework_1/README.md) for more details.
+# For release build
+make build/release
+```
