@@ -6,6 +6,15 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-build
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
 jobs:
   build-and-lint:
     runs-on: ubuntu-latest
@@ -40,6 +49,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         style: 'file'
-        tidy_checks: '-*'
-        thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+        tidy-checks: ''
         ignore: 'build'
