@@ -1,0 +1,36 @@
+---
+Checks: >
+  -*,
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  modernize-*,
+  readability-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -readability-magic-numbers,
+  -readability-identifier-naming
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '.*'
+
+FormatStyle: none
+
+CheckOptions:
+  # Prefer modern C++ constructs
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'
+
+  - key: modernize-use-using.IgnoreMacros
+    value: '1'
+
+  # Encourage defaulted special members where possible
+  - key: modernize-use-equals-default.IgnoreMacros
+    value: '1'
+
+  # Allow structured bindings without warnings
+  - key: readability-qualified-auto.IgnoreAutoInParameters
+    value: '1'
