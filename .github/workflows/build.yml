@@ -36,9 +36,10 @@ jobs:
     - name: Run cpplint
       uses: cpp-linter/cpp-linter-action@v2
       id: linter
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         style: 'file'
         tidy_checks: '-*'
-        extensions: 'cpp,h,hpp'
+        thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
         ignore: 'build'
-        github-token: ${{ secrets.GITHUB_TOKEN }} 
