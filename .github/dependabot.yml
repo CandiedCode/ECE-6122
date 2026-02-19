@@ -1,0 +1,26 @@
+---
+version: 2
+
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "03:00"
+    reviewers:
+      - CandiedCode
+    commit-message:
+      prefix: "chore(deps):"
+      prefix-development: "chore(deps-dev):"
+      include: "scope"
+    pull-request-branch-name:
+      separator: "/"
+    allow:
+      - dependency-type: "all"
+    rebase-strategy: "disabled"
+    labels:
+      - "dependencies"
+      - "npm"
+    open-pull-requests-limit: 10

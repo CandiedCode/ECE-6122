@@ -99,3 +99,15 @@ pre-commit/autoupdate: ## Update pre-commit hook versions
 .PHONY: pre-commit/uninstall
 pre-commit/uninstall: ## Uninstall pre-commit
 	@pre-commit uninstall
+
+.PHONY: release/dry-run
+release/dry-run: ## Perform a dry-run of semantic-release (no changes made)
+	@echo "Running semantic-release dry-run..."
+	@npx semantic-release --dry-run --no-ci --branches main
+	@echo "✓ Dry-run complete"
+
+.PHONY: release/publish
+release/publish: ## Publish a release using semantic-release
+	@echo "Publishing release..."
+	@npx semantic-release --branches main
+	@echo "✓ Release published"
