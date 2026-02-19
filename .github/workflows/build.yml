@@ -1,3 +1,4 @@
+---
 name: Build
 
 on:
@@ -18,42 +19,43 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v6
-    - name: Setup Cpp
-      uses: aminya/setup-cpp@v1
-      with:
-        compiler: gcc
-        vcvarsall: false
-        cmake: true
-        ninja: true
-        vcpkg: true
-    - name: Install X11 and SFML dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libx11-dev \
-          libxrandr-dev \
-          libxinerama-dev \
-          libxcursor-dev \
-          libxi-dev \
-          libudev-dev \
-          libgl1-mesa-dev \
-          libglu1-mesa-dev \
-          libfreetype6-dev
-    - name: Create build directory
-      run: mkdir -p build
-    - name: Run CMake
-      run: cd build && cmake ..
-    - name: Build with CMake
-      run: cd build && cmake --build . --config Release
-    - name: Run cpplint
-      uses: cpp-linter/cpp-linter-action@v2
-      id: linter
-      env:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Setup Cpp
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: gcc
+          vcvarsall: false
+          cmake: true
+          ninja: true
+          vcpkg: true
+      - name: Install X11, SFML, and OpenMP dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev \
+            libxrandr-dev \
+            libxinerama-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libudev-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libfreetype6-dev \
+            libomp-dev
+      - name: Create build directory
+        run: mkdir -p build
+      - name: Run CMake
+        run: cd build && cmake ..
+      - name: Build with CMake
+        run: cd build && cmake --build . --config Release
+      - name: Run cpplint
+        uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        style: 'file'
-        tidy-checks: ''
-        ignore: 'build'
-        thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
-        files-changed-only: true
+        with:
+          style: 'file'
+          tidy-checks: ''
+          ignore: 'build'
+          thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+          files-changed-only: true

@@ -1,5 +1,5 @@
+#include <cstdio>
 #include <omp.h>
-#include <stdio.h>
 
 auto main() -> int
 {
