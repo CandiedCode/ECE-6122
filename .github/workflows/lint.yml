@@ -30,14 +30,9 @@ jobs:
         run: pip install pre-commit
 
       - name: Run pre-commit on changed files (PR)
-        run: |
-          pre-commit run \
-            --from-ref origin/${{ github.base_ref }} \
-            --to-ref HEAD \
-            --exclude cpplint \
-            --exclude clang-format \
-            --exclude clang-tidy \
-            --verbose
+        env:
+          SKIP: cpplint,clang-format,clang-tidy
+        run: pre-commit run --from-ref origin/${{ github.base_ref }} --to-ref HEAD --verbose
 
       - name: Manage PR comment
         if: always() && github.event_name == 'pull_request'
