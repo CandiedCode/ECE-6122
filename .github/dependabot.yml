@@ -19,8 +19,28 @@ updates:
       separator: "/"
     allow:
       - dependency-type: "all"
-    rebase-strategy: "disabled"
+    rebase-strategy: "auto"
     labels:
       - "dependencies"
       - "npm"
+    open-pull-requests-limit: 10
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "04:00"
+    reviewers:
+      - CandiedCode
+    commit-message:
+      prefix: "chore(ci):"
+      include: "scope"
+    pull-request-branch-name:
+      separator: "/"
+    rebase-strategy: "auto"
+    labels:
+      - "dependencies"
+      - "github-actions"
     open-pull-requests-limit: 10

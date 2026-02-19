@@ -2,13 +2,10 @@
 name: Lint
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-lint
   cancel-in-progress: true
 
 permissions:
@@ -32,8 +29,8 @@ jobs:
       - name: Install pre-commit
         run: pip install pre-commit
 
-      - name: Run pre-commit
-        run: pre-commit run --all-files --verbose
+      - name: Run pre-commit on changed files (PR)
+        run: pre-commit run --from-ref origin/${{ github.base_ref }} --to-ref HEAD --verbose
 
       - name: Comment PR on failure
         if: failure() && github.event_name == 'pull_request'
