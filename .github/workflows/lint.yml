@@ -32,14 +32,45 @@ jobs:
       - name: Run pre-commit on changed files (PR)
         run: pre-commit run --from-ref origin/${{ github.base_ref }} --to-ref HEAD --verbose
 
-      - name: Comment PR on failure
-        if: failure() && github.event_name == 'pull_request'
+      - name: Manage PR comment
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            const botCommentBody = '❌ Pre-commit checks failed. Please run `pre-commit run --all-files` locally and fix any issues.';
+            const comments = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '❌ Pre-commit checks failed. Please run `pre-commit run --all-files` locally and fix any issues.'
-            })
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Pre-commit checks failed')
+            );
+
+            if ('${{ job.status }}' === 'failure') {
+              // Lint failed - create or update comment
+              if (botComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: botCommentBody
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: botCommentBody
+                });
+              }
+            } else if (botComment) {
+              // Lint passed - delete previous comment
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id
+              });
+            }
