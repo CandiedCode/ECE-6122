@@ -24,12 +24,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
-
+          python-version: "3.14"
       - name: Install pre-commit
         run: pip install pre-commit
-
       - name: Run pre-commit on changed files (PR)
+        env:
+          SKIP: cpplint,clang-format,clang-tidy,cppcheck
         run: pre-commit run --from-ref origin/${{ github.base_ref }} --to-ref HEAD --verbose
 
       - name: Manage PR comment

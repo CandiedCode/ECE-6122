@@ -165,7 +165,7 @@ void Maze::draw(sf::RenderWindow &window)
     {
         for (int x = 0; x < m_width; ++x)
         {
-            Cell &cell = m_grid[y][x];
+            const Cell &cell = m_grid[y][x];
 
             // Draw rectangles for walls based on cell.walls booleans
             float left = offsetX + x * cellSize;
@@ -261,7 +261,7 @@ std::vector<std::pair<int, int>> Maze::getUnvisitedNeighbors(int row, int col)
     // Direction: {row_delta, col_delta}
     const int directions[4][2] = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}};
 
-    for (const auto &dir : directions)
+    for (const auto *dir : directions)
     {
         int newRow = row + dir[0];
         int newCol = col + dir[1];

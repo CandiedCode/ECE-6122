@@ -1,0 +1,4 @@
+#ifndef HOMEWORK_2_GEOMETRY_H_
+#define HOMEWORK_2_GEOMETRY_H_
+
+#endif // HOMEWORK_2_GEOMETRY_H_

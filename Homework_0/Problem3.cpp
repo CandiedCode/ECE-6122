@@ -49,15 +49,6 @@ bool isNegativeNumber(int number)
     return number < 0;
 }
 
-/// Checks if a number is zero.
-///
-/// @param number The integer to check.
-/// @return true if the number equals zero, false otherwise.
-bool isZero(int number)
-{
-    return number == 0;
-}
-
 /// Checks if a number is even.
 ///
 /// @param number The integer to check.
@@ -90,22 +81,6 @@ bool isPrime(int number)
         }
     }
     return true;
-}
-
-/// Checks if a number is composite.
-///
-/// A composite number is a positive integer greater than 1 that is not prime.
-///
-/// @param number The integer to check.
-/// @return true if the number is composite, false otherwise.
-bool isComposite(int number)
-{
-    // Composite numbers are greater than 1 and not prime
-    if (number <= 1)
-    {
-        return false;
-    }
-    return !isPrime(number);
 }
 
 /// Checks if a number is a perfect square.

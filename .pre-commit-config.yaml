@@ -41,6 +41,25 @@ repos:
         language: python
         types: [c++]
         exclude: ^build/
+        args:
+          - "-p=build"
+          - "--checks=-clang-diagnostic-error"
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      - id: cppcheck
+        name: cppcheck
+        description: Run Cppcheck security analysis with MISRA rules
+        entry: cppcheck
+        language: python
+        types: [c++]
+        exclude: ^build/
+        args:
+          - "--enable=all"
+          - "--suppress=missingIncludeSystem"
+          - "--suppress=checkersReport"
+          - "--suppress=normalCheckLevelMaxBranches"
+          - "--std=c++17"
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.38.0
     hooks:

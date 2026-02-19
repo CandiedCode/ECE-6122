@@ -174,7 +174,7 @@ class AStarSearch : public MazeSolver
      *  @param b Second position
      *  @return Manhattan distance between a and b
      */
-    int manhattanDistance(Position a, Position b);
+    static int manhattanDistance(Position a, Position b);
 };
 
 #endif // HOMEWORK_1_MAZESOLVER_H_

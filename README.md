@@ -1,9 +1,13 @@
 # ECE-6122 Advanced Programming
 
 [![Build](https://github.com/CandiedCode/ECE-6122/actions/workflows/build.yml/badge.svg)](https://github.com/CandiedCode/ECE-6122/actions/workflows/build.yml)
+[![Lint](https://github.com/CandiedCode/ECE-6122/actions/workflows/lint.yml/badge.svg)](https://github.com/CandiedCode/ECE-6122/actions/workflows/lint.yml)
+[![Release](https://github.com/CandiedCode/ECE-6122/actions/workflows/release.yml/badge.svg)](https://github.com/CandiedCode/ECE-6122/actions/workflows/release.yml)
 [![clang-format](https://img.shields.io/badge/code%20style-clang--format-blue)](https://clang.llvm.org/docs/ClangFormat/)
 [![clang-tidy](https://img.shields.io/badge/linter-clang--tidy-green)](https://clang.llvm.org/extra/clang-tidy/)
 [![cpp-linter](https://img.shields.io/badge/cpplint-enabled-brightgreen)](https://github.com/cpp-linter/cpp-linter-action)
+[![semantic-release](https://img.shields.io/badge/semantic--release-enabled-green)](https://github.com/semantic-release/semantic-release)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-blue)](https://dependabot.com)
 
 ## About
 

@@ -21,6 +21,7 @@ Requirements:
 
 */
 #include <cmath>
+
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -94,32 +95,32 @@ void findExtrema(const double data[], int size, double &minVal, double &maxVal, 
     }
 }
 
-int main()
+auto main() -> int
 {
     const int MIN_READINGS = 5;
     const int MAX_READINGS = 100;
-    std::cout << "Enter number of readings (" << MIN_READINGS << "-" << MAX_READINGS << "): " << std::endl;
+    std::cout << "Enter number of readings (" << MIN_READINGS << "-" << MAX_READINGS << "): " << '\n';
 
     // Capture and Validate input for number of readings
-    int numReadings;
+    int numReadings = 0;
     std::cin >> numReadings;
     while (std::cin.fail() || numReadings < 5 || numReadings > 100)
     {
-        std::cerr << "Error: Input is invalid." << std::endl;
-        std::cout << "Enter number of readings (" << MIN_READINGS << "-" << MAX_READINGS << "): " << std::endl;
+        std::cerr << "Error: Input is invalid." << '\n';
+        std::cout << "Enter number of readings (" << MIN_READINGS << "-" << MAX_READINGS << "): " << '\n';
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cin >> numReadings;
     }
 
-    double *readings = new double[numReadings];
+    auto *readings = new double[numReadings];
     for (int i = 0; i < numReadings; ++i)
     {
         std::cout << "Enter reading " << (i + 1) << ": ";
         std::cin >> readings[i];
         while (std::cin.fail())
         {
-            std::cerr << "Error: Invalid input. Please enter a valid floating-point number." << std::endl;
+            std::cerr << "Error: Invalid input. Please enter a valid floating-point number." << '\n';
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Enter reading " << (i + 1) << ": ";
@@ -127,20 +128,24 @@ int main()
         }
     }
 
-    double mean, variance, stdDev;
+    double mean = NAN;
+    double variance = NAN;
+    double stdDev = NAN;
     computeStatistics(readings, numReadings, mean, variance, stdDev);
 
-    double minVal, maxVal;
-    int minIndex, maxIndex;
+    double minVal = NAN;
+    double maxVal = NAN;
+    int minIndex = 0;
+    int maxIndex = 0;
     findExtrema(readings, numReadings, minVal, maxVal, minIndex, maxIndex);
 
     std::cout << "\nStatistical Analysis Results:\n";
     std::cout << "---------------------------\n";
-    std::cout << "Mean:              " << std::fixed << std::setprecision(2) << mean << std::endl;
-    std::cout << "Variance:          " << std::fixed << std::setprecision(2) << variance << std::endl;
-    std::cout << "Standard Deviation: " << std::fixed << std::setprecision(2) << stdDev << std::endl;
-    std::cout << "Minimum Value:     " << std::fixed << std::setprecision(2) << minVal << " (at index " << minIndex << ")" << std::endl;
-    std::cout << "Maximum Value:     " << std::fixed << std::setprecision(2) << maxVal << " (at index " << maxIndex << ")" << std::endl;
+    std::cout << "Mean:              " << std::fixed << std::setprecision(2) << mean << '\n';
+    std::cout << "Variance:          " << std::fixed << std::setprecision(2) << variance << '\n';
+    std::cout << "Standard Deviation: " << std::fixed << std::setprecision(2) << stdDev << '\n';
+    std::cout << "Minimum Value:     " << std::fixed << std::setprecision(2) << minVal << " (at index " << minIndex << ")" << '\n';
+    std::cout << "Maximum Value:     " << std::fixed << std::setprecision(2) << maxVal << " (at index " << maxIndex << ")" << '\n';
 
     delete[] readings;
     return 0;

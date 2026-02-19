@@ -216,7 +216,8 @@ sf::Text getText(sf::Font &font, const std::string &str, unsigned int size, sf::
  * @param nodesExploredCount Reference to the nodes explored counter
  * @param elapsedTime Reference to the sf::Time object representing the elapsed time for solving the maze
  */
-void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, sf::Time &animationSpeed, int &nodesExploredCount, sf::Time &elapsedTime)
+void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, const sf::Time &animationSpeed, int &nodesExploredCount,
+            sf::Time &elapsedTime)
 {
     static sf::Time accumulated;
     accumulated += deltaTime;
@@ -333,7 +334,16 @@ int main(int argc, char *argv[])
     std::string executableDir = std::filesystem::path(argv[0]).parent_path().string();
 
     // Process command line arguments to configure maze dimensions
-    MazeConfig config = processArgs(argc, argv);
+    MazeConfig config;
+    try
+    {
+        config = processArgs(argc, argv);
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
     Maze maze(config.getHeight(), config.getWidth());
 
     // Calculate window size based on maze dimensions and cell size, ensuring it fits within the desktop resolution
@@ -373,8 +383,7 @@ int main(int argc, char *argv[])
     sf::Text maxDimensions =
         getText(font, "Maze: " + std::to_string(maze.getHeight()) + " x " + std::to_string(maze.getWidth()), DEFAULT_FONT_SIZE,
                 sf::Color::White, panel_start, pTitle.getGlobalBounds().height + pTitle.getGlobalBounds().top + (2 * DEFAULT_PADDING));
-    sf::Text algorithm = getText(font, "Algorithm: " + std::string(currentAlgorithm == AlgorithmType::BFS ? "BFS" : "A*"),
-                                 DEFAULT_FONT_SIZE, sf::Color(173, 216, 230), panel_start,
+    sf::Text algorithm = getText(font, "Algorithm: BFS", DEFAULT_FONT_SIZE, sf::Color(173, 216, 230), panel_start,
                                  maxDimensions.getGlobalBounds().height + maxDimensions.getGlobalBounds().top + DEFAULT_PADDING);
     sf::Text diagonal = getText(font, "Diagonal: No", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
                                 algorithm.getGlobalBounds().height + algorithm.getGlobalBounds().top + DEFAULT_PADDING);
@@ -391,8 +400,8 @@ int main(int argc, char *argv[])
                                   nodesExplored.getGlobalBounds().height + nodesExplored.getGlobalBounds().top + DEFAULT_PADDING);
     sf::Text timeTaken = getText(font, "Time: 0s", DEFAULT_FONT_SIZE, sf::Color::White, panel_start,
                                  pathLength.getGlobalBounds().height + pathLength.getGlobalBounds().top + DEFAULT_PADDING);
-    sf::Text pathFound = getText(font, "Path Found: " + std::string(solved ? "Yes" : "No"), DEFAULT_FONT_SIZE, sf::Color::Green,
-                                 panel_start, timeTaken.getGlobalBounds().height + timeTaken.getGlobalBounds().top + DEFAULT_PADDING);
+    sf::Text pathFound = getText(font, "Path Found: No", DEFAULT_FONT_SIZE, sf::Color::Green, panel_start,
+                                 timeTaken.getGlobalBounds().height + timeTaken.getGlobalBounds().top + DEFAULT_PADDING);
 
     // Controls
     sf::Text controlsTitle = getText(font, "-- Controls --", DEFAULT_FONT_SIZE, sf::Color::Green, panel_start,
@@ -458,7 +467,7 @@ int main(int argc, char *argv[])
             if (!solving)
             {
                 solved = true;
-                pathFound.setString("Path Found: " + std::string(solved ? "Yes" : "No"));
+                pathFound.setString("Path Found: Yes");
                 nodesExplored.setString("Nodes Explored: " + std::to_string(nodesExploredCount));
                 timeTaken.setString("Time: " + std::to_string(elapsedTime.asMicroseconds()) +
                                     " us"); // using u instead of µ to avoid encoding issues from KOMIKAP_.ttf
