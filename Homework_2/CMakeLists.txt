@@ -14,10 +14,10 @@ set(SFML_BUILD_AUDIO OFF CACHE BOOL "")  # We only need graphics, window, and sy
 
 # Download and make dependencies available
 FetchContent_MakeAvailable(SFML)
-find_package(OpenMP)
+find_package(OpenMP REQUIRED COMPONENTS CXX)
 
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 # Create Homework_2 executable
 add_executable(Hw2 ${SOURCES})
-target_link_libraries(Hw2 PRIVATE sfml-graphics sfml-window sfml-system)
+target_link_libraries(Hw2 PRIVATE sfml-graphics sfml-window sfml-system OpenMP::OpenMP_CXX)

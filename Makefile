@@ -29,7 +29,7 @@ lint/tidy: ## Run clang-tidy static analysis
 cmake: BUILD_TYPE ?= Debug
 cmake: ## Generate CMake build files using the default preset
 	@echo "Generating CMake build files..."
-	cd build && cmake .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
+	cd build && cmake .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_PREFIX_PATH=/opt/homebrew/opt/libomp
 
 .PHONY: cmake/debug
 cmake/debug: ## Generate CMake build files for Debug configuration
