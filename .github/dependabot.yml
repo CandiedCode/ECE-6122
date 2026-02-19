@@ -7,24 +7,20 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-      day: monday
-      time: "03:00"
-    reviewers:
-      - CandiedCode
-    commit-message:
-      prefix: "chore(deps):"
-      prefix-development: "chore(deps-dev):"
-      include: "scope"
-    pull-request-branch-name:
-      separator: "/"
-    allow:
-      - dependency-type: "all"
-    rebase-strategy: "auto"
+    cooldown:
+      default-days: 5
+      semver-major-days: 15
+      semver-minor-days: 7
+      semver-patch-days: 3
     labels:
       - "dependencies"
       - "npm"
+    rebase-strategy: auto
     groups:
-      non-major:
+      major:
+        update-types:
+          - "major"
+      minor-and-patch:
         update-types:
           - "patch"
           - "minor"
@@ -35,22 +31,15 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-      day: monday
-      time: "04:00"
+    cooldown:
+      default-days: 5
     reviewers:
       - CandiedCode
-    commit-message:
-      prefix: "chore(ci):"
-      include: "scope"
-    pull-request-branch-name:
-      separator: "/"
-    rebase-strategy: "auto"
     labels:
       - "dependencies"
       - "github-actions"
     groups:
-      non-major:
-        update-types:
-          - "minor"
-          - "patch"
+      actions:
+        patterns:
+          - "*"
     open-pull-requests-limit: 10
