@@ -23,6 +23,11 @@ updates:
     labels:
       - "dependencies"
       - "npm"
+    groups:
+      non-major:
+        dependency-types:
+          - "patch"
+          - "minor"
     open-pull-requests-limit: 10
 
   # Enable version updates for GitHub Actions
@@ -43,4 +48,9 @@ updates:
     labels:
       - "dependencies"
       - "github-actions"
+    groups:
+      non-major:
+        update-types:
+          - "minor"
+          - "patch"
     open-pull-requests-limit: 10
