@@ -4,14 +4,16 @@ This application has been tested locally and on pace ice.
 
 ## General Info
 
-The Time measurement shown in the maze displace is only measuring the time of the execution of the step specifically.   Because there are other loops and conditional code happening outside of each MazeSolver algorithm, to be able to compare the speed of that MazeSolver directly, we are measuring precisely the step call.
+The Time measurement shown in the maze displace is only measuring the time of the execution of the step specifically.
+Because there are other loops and conditional code happening outside of each MazeSolver algorithm, to be able to compare
+the speed of that MazeSolver directly, we are measuring precisely the step call.
 
-## Building on Pace ICE 
+## Building on Pace ICE
 
 ### Within this repo or shared zip file
+>
 >[!Important]
 > You don't need to copy this folder to ECE4122-6122-SFML it will run as a standalone setup for ease and portability
-
 
 This project cmake for Homework1 [CMakeLists.txt](./CMakeLists.txt) Fetches SFML from git directly via
 
@@ -30,19 +32,21 @@ FetchContent_MakeAvailable(SFML-GIT)
 At the root of directory you only need to run either
 
 ```shell
-cd build 
-cmake ../ 
+cd build
+cmake ../
 cmake --build . -j 8`
 
-# or 
+# or
 make build/release
 ```
-A empty build directory is included for convenience.
 
+A empty build directory is included for convenience.
 
 ### With `ECE4122-6122-SFML`
 
-To run this on pace ice in the `ECE4122-6122-SFML` github repo, the CMakelist.txt needs to be modified at the root.  All that needs to change is commenting out `add_subdirectory(SFML)`.  I do comment all subdirectory's that are not HW1 specifically, but only the SFML is required.
+To run this on pace ice in the `ECE4122-6122-SFML` github repo, the CMakelist.txt needs to be modified at the root.
+All that needs to change is commenting out `add_subdirectory(SFML)`.  I do comment all subdirectory's that are not HW1
+specifically, but only the SFML is required.
 
 ```cmake
 # Minimum CMake version required
@@ -83,6 +87,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 link_directories(${PROJECT_SOURCE_DIR}/lib)
 ```
+
 I've also included [this file](../CMakeLists-ECE4122-6122.txt) that will need to be renamed to replace the root CMakeLists.txt
 
 This is because SFML is being fetched in this Homework1 [CMakeLists.txt](./CMakeLists.txt)
@@ -106,4 +111,3 @@ This application will look for Font either in the cwd/Font or where the executab
 This means you can run ./build/output/bin/Hw1 without having to change directories.
 
 ![Maze Solver Demo](docs/hw1.gif)
-

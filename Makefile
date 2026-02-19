@@ -25,6 +25,18 @@ lint/tidy: ## Run clang-tidy static analysis
 	@find . -path ./build -prune -o -path ./Homework_0 -prune -o -path ./Homework_1 -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy
 	@echo "✓ clang-tidy analysis complete"
 
+.PHONY: lint/markdown
+lint/markdown: ## Check markdown files using markdownlint v0.38.0
+	@echo "Linting markdown files..."
+	@find . -name "*.md" ! -path "./build/*" ! -path "./node_modules/*" -print | xargs markdownlint
+	@echo "✓ Markdown linting complete"
+
+.PHONY: lint/markdown-fix
+lint/markdown-fix: ## Fix markdown files using markdownlint v0.38.0
+	@echo "Fixing markdown files..."
+	@find . -name "*.md" ! -path "./build/*" ! -path "./node_modules/*" -print | xargs markdownlint --fix
+	@echo "✓ Markdown files fixed"
+
 .PHONY: cmake
 cmake: BUILD_TYPE ?= Debug
 cmake: ## Generate CMake build files using the default preset
@@ -99,3 +111,23 @@ pre-commit/autoupdate: ## Update pre-commit hook versions
 .PHONY: pre-commit/uninstall
 pre-commit/uninstall: ## Uninstall pre-commit
 	@pre-commit uninstall
+
+.PHONY: semantic-release/install
+semantic-release/install: ## Install semantic-release dependencies (nvm use + npm install)
+	@echo "Setting up Node.js environment for semantic-release..."
+	@command -v nvm >/dev/null 2>&1 && . ~/.nvm/nvm.sh && nvm use || echo "⚠ nvm not found, skipping nvm use"
+	@echo "Installing dependencies..."
+	@npm install
+	@echo "✓ Setup complete"
+
+.PHONY: semantic-release/dry-run
+semantic-release/dry-run: ## Perform a dry-run of semantic-release (no changes made)
+	@echo "Running semantic-release dry-run..."
+	@npx semantic-release --dry-run --no-ci --branches main
+	@echo "✓ Dry-run complete"
+
+.PHONY: semantic-release/publish
+semantic-release/publish: ## Publish a release using semantic-release
+	@echo "Publishing release..."
+	@npx semantic-release --branches main
+	@echo "✓ Release published"

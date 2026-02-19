@@ -1,0 +1,40 @@
+---
+branches:
+  - name: main
+    prerelease: beta
+    range: "0.x.x"
+
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - "@semantic-release/release-notes-generator"
+  - "@semantic-release/changelog"
+  - - "@semantic-release/git"
+    - assets:
+        - CHANGELOG.md
+        - package.json
+      message: "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+  - "@semantic-release/github"
+
+preset: conventionalcommits
+
+verifyConditions:
+  - "@semantic-release/github"
+
+analyzeCommits:
+  - "@semantic-release/commit-analyzer"
+
+generateNotes:
+  - "@semantic-release/release-notes-generator"
+
+prepare:
+  - "@semantic-release/changelog"
+  - "@semantic-release/git"
+
+publish:
+  - "@semantic-release/github"
+
+success:
+  - "@semantic-release/github"
+
+fail:
+  - "@semantic-release/github"

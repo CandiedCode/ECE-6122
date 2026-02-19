@@ -1,0 +1,24 @@
+{
+  "name": "ece-6122",
+  "version": "0.0.0-development",
+  "description": "ECE-6122 Advanced Programming - Georgia Tech",
+  "author": "Jennifer Cwagenberg",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CandiedCode/ECE-6122.git"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.6",
+    "@semantic-release/release-notes-generator": "^14.1.0",
+    "conventional-changelog-conventionalcommits": "^9.1.0",
+    "semantic-release": "^25.0.3"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
