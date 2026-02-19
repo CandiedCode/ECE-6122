@@ -34,7 +34,7 @@ jobs:
 
       - name: Manage PR comment
         if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const botCommentBody = '❌ Pre-commit checks failed. Please run `pre-commit run --all-files` locally and fix any issues.';
