@@ -5,13 +5,15 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-release
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-release
   cancel-in-progress: true
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   release:
@@ -31,7 +33,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Release
+      - name: Semantic Release (dry-run on PR)
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release --dry-run --no-ci --branches main
+
+      - name: Semantic Release (publish on main)
+        if: github.event_name == 'push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release --branches main
