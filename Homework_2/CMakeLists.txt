@@ -14,7 +14,12 @@ set(SFML_BUILD_AUDIO OFF CACHE BOOL "")  # We only need graphics, window, and sy
 
 # Download and make dependencies available
 FetchContent_MakeAvailable(SFML)
+
+# Find OpenMP with proper error handling
 find_package(OpenMP REQUIRED COMPONENTS CXX)
+message(STATUS "OpenMP found: ${OPENMP_CXX_FOUND}")
+message(STATUS "OpenMP libraries: ${OpenMP_CXX_LIBRARIES}")
+message(STATUS "OpenMP include dirs: ${OpenMP_CXX_INCLUDE_DIRS}")
 
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
