@@ -25,6 +25,18 @@ lint/tidy: ## Run clang-tidy static analysis
 	@find . -path ./build -prune -o -path ./Homework_0 -prune -o -path ./Homework_1 -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy
 	@echo "✓ clang-tidy analysis complete"
 
+.PHONY: lint/markdown
+lint/markdown: ## Check markdown files using markdownlint v0.38.0
+	@echo "Linting markdown files..."
+	@find . -name "*.md" ! -path "./build/*" ! -path "./node_modules/*" -print | xargs markdownlint
+	@echo "✓ Markdown linting complete"
+
+.PHONY: lint/markdown-fix
+lint/markdown-fix: ## Fix markdown files using markdownlint v0.38.0
+	@echo "Fixing markdown files..."
+	@find . -name "*.md" ! -path "./build/*" ! -path "./node_modules/*" -print | xargs markdownlint --fix
+	@echo "✓ Markdown files fixed"
+
 .PHONY: cmake
 cmake: BUILD_TYPE ?= Debug
 cmake: ## Generate CMake build files using the default preset
