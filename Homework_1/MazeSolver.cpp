@@ -19,11 +19,9 @@ constexpr int MazeSolver::DIRECTION_ROW[];
 constexpr int MazeSolver::DIRECTION_COL[];
 constexpr int MazeSolver::NUM_DIRECTIONS;
 
-MazeSolver::MazeSolver(Maze &maze) : m_maze(maze)
+MazeSolver::MazeSolver(Maze &maze)
+    : m_maze(maze), start{maze.getStart().first, maze.getStart().second}, end{maze.getEnd().first, maze.getEnd().second}, terminator{-1, -1}
 {
-    terminator = Position{-1, -1}; // Sentinel value for path reconstruction
-    start = Position{maze.getStart().first, maze.getStart().second};
-    end = Position{maze.getEnd().first, maze.getEnd().second};
     cameFrom[start] = terminator; // Sentinel value for start
 }
 
@@ -229,7 +227,7 @@ bool AStarSearch::step(int &nodesExploredCount)
     return false; // Continue searching
 }
 
-int AStarSearch::manhattanDistance(Position a, Position b)
+int AStarSearch::manhattanDistance(const Position a, const Position b)
 {
     return std::abs(a.row - b.row) + std::abs(a.col - b.col);
 }

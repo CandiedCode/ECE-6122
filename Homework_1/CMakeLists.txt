@@ -7,19 +7,19 @@ project(Homework_1 VERSION 1.0)
 include(FetchContent)
 
 # Declare SFML from GitHub
-FetchContent_Declare(SFML-GIT
+FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML
     GIT_TAG 2.6.2
     GIT_SHALLOW ON
 )
 set(SFML_BUILD_AUDIO OFF CACHE BOOL "")  # We only need graphics, window, and system modules
 # Download and make SFML available
-FetchContent_MakeAvailable(SFML-GIT)
+FetchContent_MakeAvailable(SFML)
 
 # Create library for Maze components
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
-# Create Lab2 executable
+# Create Homework_1 executable
 add_executable(Hw1 ${SOURCES})
 target_link_libraries(Hw1 PRIVATE sfml-graphics sfml-window sfml-system)
 

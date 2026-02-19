@@ -13,8 +13,8 @@ lint/format: ## Check code formatting using clang-format
 	@find . -path ./build -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-format -i --Werror
 	@echo "✓ Code formatting check complete"
 
-.PHONY: lint/cpp
-lint/cpp: ## Lint C++ code using cpplint
+.PHONY: lint/cpplint
+lint/cpplint: ## Lint C++ code using cpplint
 	@echo "Linting C++ code..."
 	@find . -path ./build -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs cpplint
 	@echo "✓ C++ linting complete"
@@ -22,8 +22,25 @@ lint/cpp: ## Lint C++ code using cpplint
 .PHONY: lint/tidy
 lint/tidy: ## Run clang-tidy static analysis
 	@echo "Running clang-tidy..."
-	@find . -path ./build -prune -o -path ./Homework_0 -prune -o -path ./Homework_1 -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy
+	@find . -path ./build -prune -o \
+		-path ./node_modules -prune -o \
+		-path ./Homework_0 -prune -o \
+		-path ./Homework_1 -prune -o \
+		\( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy -p build --fix --fix-errors
 	@echo "✓ clang-tidy analysis complete"
+
+.PHONY: lint/cppcheck
+lint/cppcheck: ## Run Cppcheck security analysis with MISRA rules
+	@echo "Running Cppcheck with MISRA security checks..."
+	@cppcheck --enable=all --suppress=missingIncludeSystem \
+		--suppress=checkersReport \
+		--suppress=normalCheckLevelMaxBranches \
+		--error-exitcode=1 \
+		--std=c++17 \
+		-i build \
+		-i node_modules \
+		.
+	@echo "✓ Cppcheck analysis complete"
 
 .PHONY: lint/markdown
 lint/markdown: ## Check markdown files using markdownlint v0.38.0

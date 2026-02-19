@@ -16,11 +16,13 @@ void findExtrema(const double data[], int size, double &minVal, double &maxVal, 
 const double EPSILON = 0.01;
 
 // Tests for computeStatistics
-TEST(ComputeStatisticsTest, SampleData)
+TEST(ComputeStatisticsTest /*unused*/, SampleData /*unused*/)
 {
     double data[] = {23.5, 18.2, 31.7, 25.0, 19.8, 27.3};
     int size = 6;
-    double mean, variance, stdDev;
+    double mean;
+    double variance = NAN;
+    double stdDev = NAN;
 
     computeStatistics(data, size, mean, variance, stdDev);
 
@@ -29,11 +31,13 @@ TEST(ComputeStatisticsTest, SampleData)
     EXPECT_NEAR(stdDev, 4.76, EPSILON);
 }
 
-TEST(ComputeStatisticsTest, AllSameValues)
+TEST(ComputeStatisticsTest /*unused*/, AllSameValues /*unused*/)
 {
     double data[] = {10.0, 10.0, 10.0, 10.0, 10.0};
     int size = 5;
-    double mean, variance, stdDev;
+    double mean = NAN;
+    double variance = NAN;
+    double stdDev = NAN;
 
     computeStatistics(data, size, mean, variance, stdDev);
 
@@ -42,11 +46,13 @@ TEST(ComputeStatisticsTest, AllSameValues)
     EXPECT_NEAR(stdDev, 0.0, EPSILON);
 }
 
-TEST(ComputeStatisticsTest, SimpleSequence)
+TEST(ComputeStatisticsTest /*unused*/, SimpleSequence /*unused*/)
 {
     double data[] = {1.0, 2.0, 3.0, 4.0, 5.0};
     int size = 5;
-    double mean, variance, stdDev;
+    double mean = NAN;
+    double variance = NAN;
+    double stdDev = NAN;
 
     computeStatistics(data, size, mean, variance, stdDev);
 
@@ -55,11 +61,13 @@ TEST(ComputeStatisticsTest, SimpleSequence)
     EXPECT_NEAR(stdDev, 1.414, EPSILON);
 }
 
-TEST(ComputeStatisticsTest, NegativeValues)
+TEST(ComputeStatisticsTest /*unused*/, NegativeValues /*unused*/)
 {
     double data[] = {-5.0, -3.0, -1.0, 1.0, 3.0, 5.0};
     int size = 6;
-    double mean, variance, stdDev;
+    double mean = NAN;
+    double variance = NAN;
+    double stdDev = NAN;
 
     computeStatistics(data, size, mean, variance, stdDev);
 
@@ -69,12 +77,14 @@ TEST(ComputeStatisticsTest, NegativeValues)
 }
 
 // Tests for findExtrema
-TEST(FindExtremaTest, SampleData)
+TEST(FindExtremaTest /*unused*/, SampleData /*unused*/)
 {
     double data[] = {23.5, 18.2, 31.7, 25.0, 19.8, 27.3};
     int size = 6;
-    double minVal, maxVal;
-    int minIndex, maxIndex;
+    double minVal = NAN;
+    double maxVal = NAN;
+    int minIndex = 0;
+    int maxIndex = 0;
 
     findExtrema(data, size, minVal, maxVal, minIndex, maxIndex);
 
@@ -84,12 +94,14 @@ TEST(FindExtremaTest, SampleData)
     EXPECT_EQ(maxIndex, 2);
 }
 
-TEST(FindExtremaTest, MinAtStart)
+TEST(FindExtremaTest /*unused*/, MinAtStart /*unused*/)
 {
     double data[] = {1.0, 5.0, 3.0, 4.0, 2.0};
     int size = 5;
-    double minVal, maxVal;
-    int minIndex, maxIndex;
+    double minVal = NAN;
+    double maxVal = NAN;
+    int minIndex = 0;
+    int maxIndex = 0;
 
     findExtrema(data, size, minVal, maxVal, minIndex, maxIndex);
 
@@ -99,12 +111,14 @@ TEST(FindExtremaTest, MinAtStart)
     EXPECT_EQ(maxIndex, 1);
 }
 
-TEST(FindExtremaTest, MaxAtEnd)
+TEST(FindExtremaTest /*unused*/, MaxAtEnd /*unused*/)
 {
     double data[] = {3.0, 2.0, 1.0, 4.0, 10.0};
     int size = 5;
-    double minVal, maxVal;
-    int minIndex, maxIndex;
+    double minVal = NAN;
+    double maxVal = NAN;
+    int minIndex = 0;
+    int maxIndex = 0;
 
     findExtrema(data, size, minVal, maxVal, minIndex, maxIndex);
 
@@ -114,12 +128,14 @@ TEST(FindExtremaTest, MaxAtEnd)
     EXPECT_EQ(maxIndex, 4);
 }
 
-TEST(FindExtremaTest, AllSameValues)
+TEST(FindExtremaTest /*unused*/, AllSameValues /*unused*/)
 {
     double data[] = {5.5, 5.5, 5.5, 5.5};
     int size = 4;
-    double minVal, maxVal;
-    int minIndex, maxIndex;
+    double minVal = NAN;
+    double maxVal = NAN;
+    int minIndex = 0;
+    int maxIndex = 0;
 
     findExtrema(data, size, minVal, maxVal, minIndex, maxIndex);
 
@@ -129,12 +145,14 @@ TEST(FindExtremaTest, AllSameValues)
     EXPECT_EQ(maxIndex, 0);
 }
 
-TEST(FindExtremaTest, NegativeValues)
+TEST(FindExtremaTest /*unused*/, NegativeValues /*unused*/)
 {
     double data[] = {-10.0, -5.0, -15.0, -2.0, -8.0};
     int size = 5;
-    double minVal, maxVal;
-    int minIndex, maxIndex;
+    double minVal = NAN;
+    double maxVal = NAN;
+    int minIndex = 0;
+    int maxIndex = 0;
 
     findExtrema(data, size, minVal, maxVal, minIndex, maxIndex);
 
@@ -144,7 +162,7 @@ TEST(FindExtremaTest, NegativeValues)
     EXPECT_EQ(maxIndex, 3);
 }
 
-int main(int argc, char **argv)
+auto main(int argc, char **argv) -> int
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -11,9 +11,6 @@ Checks: >
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-type-reinterpret-cast,
-  -readability-magic-numbers,
-  -readability-identifier-naming
-
 WarningsAsErrors: ''
 
 HeaderFilterRegex: '.*'
