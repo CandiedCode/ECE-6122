@@ -27,8 +27,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
-add_subdirectory(Homework_0)
-add_subdirectory(Homework_1)
+# add_subdirectory(Homework_0)
+# add_subdirectory(Homework_1)
+add_subdirectory(Homework_2)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 link_directories(${PROJECT_SOURCE_DIR}/lib)

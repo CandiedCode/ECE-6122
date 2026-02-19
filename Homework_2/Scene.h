@@ -1,0 +1,4 @@
+#ifndef HOMEWORK_2_SCENE_H_
+#define HOMEWORK_2_SCENE_H_
+
+#endif // HOMEWORK_2_SCENE_H_
