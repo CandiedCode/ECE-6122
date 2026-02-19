@@ -5,6 +5,13 @@
 [![clang-tidy](https://img.shields.io/badge/linter-clang--tidy-green)](https://clang.llvm.org/extra/clang-tidy/)
 [![cpp-linter](https://img.shields.io/badge/cpplint-enabled-brightgreen)](https://github.com/cpp-linter/cpp-linter-action)
 
+## About
+
+[ECE-6122](https://ece.gatech.edu/courses/ece6122) is Georgia Tech's Advanced Programming course covering modern C++,
+software engineering best practices, parallel programming (OpenMP, threading), and high-performance computing. This
+repository contains coursework implementing advanced concepts including ray tracing, maze solving, and 2D physics
+simulations with a focus on code quality and performance optimization.
+
 ## Load modules on [Pace](https://ondemand-ice.pace.gatech.edu/)
 
 ```shell
