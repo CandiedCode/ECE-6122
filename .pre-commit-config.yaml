@@ -60,8 +60,6 @@ repos:
           - "--suppress=checkersReport"
           - "--suppress=normalCheckLevelMaxBranches"
           - "--std=c++17"
-        stages: [commit]
-
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.38.0
     hooks:

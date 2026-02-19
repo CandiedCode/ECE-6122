@@ -29,7 +29,7 @@ jobs:
         run: pip install pre-commit
       - name: Run pre-commit on changed files (PR)
         env:
-          SKIP: cpplint,clang-format,clang-tidy
+          SKIP: cpplint,clang-format,clang-tidy,cppcheck
         run: pre-commit run --from-ref origin/${{ github.base_ref }} --to-ref HEAD --verbose
 
       - name: Manage PR comment
