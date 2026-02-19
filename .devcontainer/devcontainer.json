@@ -1,0 +1,25 @@
+{
+  "name": "ECE-6122 Development",
+  "image": "mcr.microsoft.com/devcontainers/cpp:ubuntu-24.04",
+  "features": {
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-vscode.cmake-tools",
+        "xaver.clang-format"
+      ],
+      "settings": {
+        "C_Cpp.default.compilerPath": "/usr/bin/gcc",
+        "C_Cpp.default.cppStandard": "c++17",
+        "[cpp]": {
+          "editor.defaultFormatter": "xaver.clang-format",
+          "editor.formatOnSave": true
+        }
+      }
+    }
+  },
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y clang-format clang-tidy cpplint pre-commit libx11-dev libxrandr-dev libxinerama-dev libxi-dev libgl1-mesa-dev libfreetype-dev libudev-dev libxcursor-dev"
+}
