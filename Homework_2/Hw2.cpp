@@ -17,7 +17,7 @@ auto main() -> int
     sf::RenderWindow window(sf::VideoMode({1000, 600}), "Ray Tracer");
     window.setFramerateLimit(60);
     RayTracer rayTracer;
-    int numRays = 360; // 3600; // 3600 rays for 1 degree resolution
+    int numRays = 3600; // 3600; // 3600 rays for 1 degree resolution
 
     // Create scene
     // Scene scene(2, 4); // Example: 2 spheres and 4 planes
@@ -28,11 +28,13 @@ auto main() -> int
 
     while (window.isOpen())
     {
-        sf::Event event;
+        sf::Event event{};
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
+            {
                 window.close();
+            }
             if (event.type == sf::Event::KeyPressed)
             {
                 switch (event.key.code)
@@ -83,7 +85,7 @@ auto main() -> int
 
             // End point is dim if hit, or far if no hit
             lines[2 * i + 1].position = results[i].point;
-            lines[2 * i + 1].color = sf::Color(255, 100, 0, 30); // dim at hit
+            lines[(2 * i) + 1].color = sf::Color(255, 100, 0, 30); // dim at hit
         }
 
         // Clear window and draw scene

@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "Geometry.h"
 #include <SFML/Graphics.hpp>
+#include <algorithm>
 #include <cstdlib>
 #include <limits>
 #include <random>
@@ -67,17 +68,36 @@ void Scene::createWalls()
 
     for (int i = 0; i < numWalls; ++i)
     {
-        // Generate random width, height, and color for the wall
-        // Random width between 50 and 150
-        double width = 50.0 + (rand_r(&seed) % 600);
-        // Random height between 10 and 30
-        double height = 5.0;
+        // One dimension is small (max 5 pixels), other is larger
+        // Randomly choose which dimension is small
+        int orientation = rand_r(&seed) % 2;
+        double width;
+        double height;
+
+        if (orientation == 0)
+        {
+            // Horizontal rectangle (wide, short)
+            width = 100.0 + (rand_r(&seed) % (windowWidth - 10));
+            height = 5;
+        }
+        else
+        {
+            // Vertical rectangle (narrow, tall)
+            width = 5;
+            height = 100.0 + (rand_r(&seed) % (windowHeight - 10));
+        }
+
         // Random color with RGB components between 0 and 255
         sf::Color color(rand_r(&seed) % 256, rand_r(&seed) % 256, rand_r(&seed) % 256);
-        // Create wall using Geometry class
+        // Create wall using helper method
         sf::RectangleShape wall = Scene::createWall(width, height, color);
-        // Set random position for the wall
-        wall.setPosition(static_cast<float>(rand_r(&seed) % 400), static_cast<float>(rand_r(&seed) % 400));
+        // Set random position within window bounds, accounting for rectangle dimensions
+        int maxX = std::max(1, static_cast<int>(windowWidth - width));
+        int maxY = std::max(1, static_cast<int>(windowHeight - height));
+        wall.setPosition(static_cast<float>(rand_r(&seed) % maxX), static_cast<float>(rand_r(&seed) % maxY));
+        // Apply random rotation for diagonal effect
+        auto rotation = static_cast<float>(rand_r(&seed) % 360);
+        wall.setRotation(rotation);
         // Add wall to the scene
         walls.push_back(wall);
     }
@@ -96,19 +116,19 @@ void Scene::draw(sf::RenderWindow &window)
         window.draw(sphere);
     }
 
-    // for (auto &wall : walls)
-    // {
-    //     window.draw(wall);
-    // }
+    for (auto &wall : walls)
+    {
+        window.draw(wall);
+    }
 }
 
 HitResult Scene::closestIntersection(const Ray &ray) const
 {
-    constexpr float MAX_RAY_DIST = 2000.0f;
+    constexpr float MAX_RAY_DIST = 2000.0F;
     HitResult closest;
     closest.hit = false;
     closest.distance = std::numeric_limits<float>::max();
-    closest.point = ray.origin + ray.direction * MAX_RAY_DIST; // Default far point if no hit
+    closest.point = ray.origin + (ray.direction * MAX_RAY_DIST); // Default far point if no hit
 
     // Check intersection with all spheres
     for (const auto &sphere : spheres)
@@ -120,15 +140,15 @@ HitResult Scene::closestIntersection(const Ray &ray) const
         }
     }
 
-    // // Check intersection with all walls
-    // for (const auto &wall : walls)
-    // {
-    //     HitResult hit = Geometry::intersectRectangle(ray, wall);
-    //     if (hit.hit && hit.distance < closest.distance)
-    //     {
-    //         closest = hit;
-    //     }
-    // }
+    // Check intersection with all walls
+    for (const auto &wall : walls)
+    {
+        HitResult hit = Geometry::intersectRectangle(ray, wall);
+        if (hit.hit && hit.distance < closest.distance)
+        {
+            closest = hit;
+        }
+    }
 
     return closest;
 }

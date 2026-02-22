@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include <algorithm>
 #include <cmath>
+#include <math.h>
 #include <omp.h>
 #include <thread>
 #include <vector>

@@ -1,10 +1,13 @@
 #include "Geometry.h"
+
 #include "RayTracer.h"
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <math.h>
 #include <utility>
+#include <vector>
 
 constexpr float PARALLEL_THRESHOLD = std::numeric_limits<float>::epsilon() * 100.0F;
 
@@ -20,7 +23,7 @@ HitResult Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &p1,
 
     // Calculate the 2D cross product (returns scalar)
     // A × B = A.x * B.y - A.y * B.x
-    float denom = ray.direction.x * segment_dir.y - ray.direction.y * segment_dir.x;
+    float denom = (ray.direction.x * segment_dir.y) - (ray.direction.y * segment_dir.x);
 
     // Check if ray and segment are parallel
     if (std::abs(denom) < PARALLEL_THRESHOLD)
@@ -41,7 +44,7 @@ HitResult Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &p1,
     {
         result.hit = true;
         result.distance = t;
-        result.point = ray.origin + ray.direction * t;
+        result.point = ray.origin + (ray.direction * t);
     }
 
     return result;
@@ -49,71 +52,51 @@ HitResult Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &p1,
 
 HitResult Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall)
 {
-    HitResult result;
+    HitResult closest_result;
+    closest_result.hit = false;
+    closest_result.distance = std::numeric_limits<float>::max();
 
-    // Get rectangle bounds
+    // Get rectangle properties
     sf::Vector2f pos = wall.getPosition();
     sf::Vector2f size = wall.getSize();
+    float rotation_degrees = wall.getRotation();
+    float rotation_radians = rotation_degrees * 3.14159265F / 180.0F;
 
-    float x_min = pos.x;
-    float x_max = pos.x + size.x;
-    float y_min = pos.y;
-    float y_max = pos.y + size.y;
+    // Calculate the four corners of the unrotated rectangle
+    // Corners relative to position (0,0)
+    std::vector<sf::Vector2f> corners = {{0.0F, 0.0F}, {size.x, 0.0F}, {size.x, size.y}, {0.0F, size.y}};
 
-    // find intersection times for x and y walls of the rectangle
-    float t_min = 0.0f;
-    float t_max = std::numeric_limits<float>::max();
+    // Rotate and translate corners to world space
+    float cos_rot = std::cos(rotation_radians);
+    float sin_rot = std::sin(rotation_radians);
 
-    // Check x axis
-    // Check if ray is parallel to x axis
-    if (std::abs(ray.direction.x) > PARALLEL_THRESHOLD)
+    std::vector<sf::Vector2f> rotated_corners;
+    for (const auto &corner : corners)
     {
-        float t1 = (x_min - ray.origin.x) / ray.direction.x;
-        float t2 = (x_max - ray.origin.x) / ray.direction.x;
+        // Rotate the corner around the origin
+        float rotated_x = corner.x * cos_rot - corner.y * sin_rot;
+        float rotated_y = corner.x * sin_rot + corner.y * cos_rot;
 
-        if (t1 > t2)
-            std::swap(t1, t2);
-
-        t_min = std::max(t_min, t1);
-        t_max = std::min(t_max, t2);
-    }
-    else
-    {
-        // Ray doesn't intersect x range as it's parallel
-        if (ray.origin.x < x_min || ray.origin.x > x_max)
-            return result; // Ray doesn't intersect x range
+        // Translate to the rectangle's position
+        rotated_corners.push_back({rotated_x + pos.x, rotated_y + pos.y});
     }
 
-    // Check y axis
-    // Check if ray is parallel to y axis
-    if (std::abs(ray.direction.y) > PARALLEL_THRESHOLD)
+    // Test ray intersection against each edge of the rotated rectangle
+    for (int i = 0; i < 4; ++i)
     {
-        float t1 = (y_min - ray.origin.y) / ray.direction.y;
-        float t2 = (y_max - ray.origin.y) / ray.direction.y;
-        if (t1 > t2)
-            std::swap(t1, t2);
-        t_min = std::max(t_min, t1);
-        t_max = std::min(t_max, t2);
-    }
-    else
-    {
-        // Ray doesn't intersect y range as it's parallel
-        if (ray.origin.y < y_min || ray.origin.y > y_max)
-            return result; // Ray doesn't intersect y range
+        int next = (i + 1) % 4;
+        HitResult edge_hit = intersectLineSegment(ray, rotated_corners[i], rotated_corners[next]);
+
+        if (edge_hit.hit && edge_hit.distance < closest_result.distance)
+        {
+            closest_result = edge_hit;
+        }
     }
 
-    // Check if there's a valid intersection
-    if (t_min < 0.0f || t_min > t_max)
-        return result; // No intersection in front of ray
-
-    result.hit = true;
-    result.distance = t_min;
-    result.point = ray.origin + ray.direction * t_min;
-
-    return result;
+    return closest_result;
 }
 
-HitResult Geometry::intersectCircle(const Ray &ray, const sf::CircleShape &circle)
+auto Geometry::intersectCircle(const Ray &ray, const sf::CircleShape &circle) -> HitResult
 {
     HitResult result;
 
@@ -127,36 +110,42 @@ HitResult Geometry::intersectCircle(const Ray &ray, const sf::CircleShape &circl
 
     // Quadratic formula: t²(d·d) + 2t(oc·d) + (oc·oc - r²) = 0
     // Since direction is normalized: d·d = 1
-    float a = 1.0f; // ray.direction · ray.direction
-    float b = 2.0f * (oc.x * ray.direction.x + oc.y * ray.direction.y);
+    float a = 1.0F; // ray.direction · ray.direction
+    float b = 2.0F * (oc.x * ray.direction.x + oc.y * ray.direction.y);
     float c = (oc.x * oc.x + oc.y * oc.y) - (radius * radius);
 
     // Discriminant
-    float discriminant = b * b - 4.0f * a * c;
+    float discriminant = (b * b) - (4.0F * a * c);
 
-    if (discriminant < 0.0f)
+    if (discriminant < 0.0F)
     {
         return result; // No intersection
     }
 
     // Find the two solutions
     float sqrt_discriminant = std::sqrt(discriminant);
-    float t1 = (-b - sqrt_discriminant) / (2.0f * a);
-    float t2 = (-b + sqrt_discriminant) / (2.0f * a);
+    float t1 = (-b - sqrt_discriminant) / (2.0F * a);
+    float t2 = (-b + sqrt_discriminant) / (2.0F * a);
 
     // We want the closest intersection in front of the ray (t > 0)
-    float t = -1.0f;
-    if (t1 > 0.0f)
+    float t = -1.0F;
+    if (t1 > 0.0F)
+    {
         t = t1;
-    else if (t2 > 0.0f)
+    }
+    else if (t2 > 0.0F)
+    {
         t = t2;
+    }
 
-    if (t < 0.0f)
+    if (t < 0.0F)
+    {
         return result; // No valid intersection
+    }
 
     result.hit = true;
     result.distance = t;
-    result.point = ray.origin + ray.direction * t;
+    result.point = ray.origin + (ray.direction * t);
 
     return result;
 }
