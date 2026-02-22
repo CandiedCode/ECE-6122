@@ -54,6 +54,10 @@ auto main() -> int
                     numRays = std::max(3600, numRays - 3600); // Decrease rays but not below 3600
                     std::cout << "Decreased rays: " << numRays << "\n";
                     break;
+                case sf::Keyboard::R:
+                    scene.createScene(); // Regenerate scene with new random objects
+                    std::cout << "Scene randomized\n";
+                    break;
                 default:
                     break;
                 }

@@ -39,6 +39,7 @@ sf::RectangleShape Scene::createWall(double width, double height, sf::Color colo
 void Scene::createSpheres()
 {
     // Reserve space for spheres to improve performance
+    spheres.clear();
     spheres.reserve(numSpheres);
 
     thread_local static unsigned int seed = std::random_device()();
@@ -62,6 +63,7 @@ void Scene::createSpheres()
 void Scene::createWalls()
 {
     // Reserve space for walls to improve performance
+    walls.clear();
     walls.reserve(numWalls);
 
     thread_local static unsigned int seed = std::random_device()();

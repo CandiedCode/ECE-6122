@@ -53,7 +53,6 @@ class Scene
      */
     void createSpheres();
     void createWalls();
-    void createScene();
 
   public:
     /** @brief Construct a scene with specified number of spheres and walls
@@ -74,6 +73,7 @@ class Scene
      *  @return HitResult containing the closest intersection, or no hit if nothing is intersected
      */
     HitResult closestIntersection(const Ray &ray) const;
+    void createScene();
 };
 
 #endif // HOMEWORK_2_SCENE_H_
