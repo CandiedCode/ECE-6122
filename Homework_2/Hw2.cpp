@@ -225,10 +225,9 @@ auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, in
  */
 void parseArgs(int argc, const char *argv[], RenderMode &mode, int &numThreads, int &numRays)
 {
-    // To process arguments, we expect two integers for height and width. If not provided, we use defaults.
-    if (argc != 4 && argc > 1)
+    // Parse command line arguments. If not exactly 4 arguments, use defaults.
+    if (argc != 4)
     {
-        std::cout << "Usage: " << argv[0] << " <mode> <threads> <numRays> <numThreads>\n";
         return;
     }
     std::string modeStr = argv[1];
