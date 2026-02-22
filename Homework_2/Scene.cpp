@@ -75,8 +75,8 @@ auto Scene::createWalls() -> void
         // One dimension is small (max 5 pixels), other is larger
         // Randomly choose which dimension is small
         int orientation = rand_r(&seed) % 2;
-        double width;
-        double height;
+        double width{};
+        double height{};
 
         if (orientation == 0)
         {
@@ -128,15 +128,15 @@ auto Scene::createWalls() -> void
         }
 
         // Compute and apply correction offset to shift the wall so all corners are within bounds
-        float offsetX = 0.f;
-        float offsetY = 0.f;
+        float offsetX = 0.F;
+        float offsetY = 0.F;
 
-        if (minX < 0.f)
+        if (minX < 0.F)
             offsetX = -minX;
         else if (maxX > windowWidth)
             offsetX = static_cast<float>(windowWidth) - maxX;
 
-        if (minY < 0.f)
+        if (minY < 0.F)
             offsetY = -minY;
         else if (maxY > windowHeight)
             offsetY = static_cast<float>(windowHeight) - maxY;

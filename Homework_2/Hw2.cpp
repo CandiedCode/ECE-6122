@@ -100,7 +100,7 @@ sf::Font loadFont(const std::string &fontPath, const std::string &executablePath
 // @brief Calculate the number of threads available on the hardware
 int calculateThreads()
 {
-    int maxThreads = std::thread::hardware_concurrency();
+    int maxThreads = static_cast<int>(std::thread::hardware_concurrency());
     if (maxThreads == 0)
     {
         maxThreads = 1; // Fallback if hardware_concurrency() returns 0

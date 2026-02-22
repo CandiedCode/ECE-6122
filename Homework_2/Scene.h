@@ -73,7 +73,7 @@ class Scene
      *  @param ray The ray to test
      *  @return HitResult containing the closest intersection, or no hit if nothing is intersected
      */
-    auto closestIntersection(const Ray &ray) const -> HitResult;
+    [[nodiscard]] auto closestIntersection(const Ray &ray) const -> HitResult;
     auto createScene() -> void;
 };
 

@@ -10,15 +10,15 @@
 
 constexpr float PARALLEL_THRESHOLD = std::numeric_limits<float>::epsilon() * 100.0F;
 
-auto Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &p1, const sf::Vector2f &p2) -> HitResult
+auto Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &point1, const sf::Vector2f &point2) -> HitResult
 {
     HitResult result;
 
     // Ray: R(t) = ray.origin + t * ray.direction  (t ≥ 0)
     // Segment: S(u) = p1 + u * (p2 - p1)          (0 ≤ u ≤ 1)
 
-    sf::Vector2f segment_direction = p2 - p1;
-    sf::Vector2f oc = p1 - ray.origin;
+    sf::Vector2f segment_direction = point2 - point1;
+    sf::Vector2f oc = point1 - ray.origin;
 
     // Calculate the 2D cross product (returns scalar)
     // A × B = A.x * B.y - A.y * B.x
@@ -60,7 +60,7 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall
     sf::Vector2f pos = wall.getPosition();
     sf::Vector2f size = wall.getSize();
     float rotation_degrees = wall.getRotation();
-    float rotation_radians = rotation_degrees * 3.14159265F / 180.0F;
+    float rotation_radians = rotation_degrees * static_cast<float>(M_PI) / 180.0F;
 
     // Calculate the four corners of the rectangle
     // Corners relative to position (0,0)
