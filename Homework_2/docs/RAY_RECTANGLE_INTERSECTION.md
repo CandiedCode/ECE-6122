@@ -1,9 +1,10 @@
 # Slab Method for Ray-Rectangle Intersection
 
 ## Overview
+
 The algorithm checks if a ray intersects with an axis-aligned rectangle by testing two "slabs" (X and Y ranges):
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                   STEP 1: X-SLAB CHECK                      │
 ├─────────────────────────────────────────────────────────────┤
@@ -31,7 +32,7 @@ The algorithm checks if a ray intersects with an axis-aligned rectangle by testi
 
 Calculate when the ray enters and exits the X-range of the rectangle:
 
-```
+```text
 t1 = (x_min - ray.origin.x) / ray.direction.x   ← when ray enters X range
 t2 = (x_max - ray.origin.x) / ray.direction.x   ← when ray exits X range
 
@@ -41,7 +42,8 @@ Update: t_min = max(t_min, t1)
 ```
 
 **Visual representation:**
-```
+
+```text
 X-Axis:
 ←──────•─────[════ x_min to x_max ════]──────→ ray direction
        origin    t1            t2
@@ -51,7 +53,7 @@ X-Axis:
 
 Same process for the Y-axis:
 
-```
+```text
 t1 = (y_min - ray.origin.y) / ray.direction.y   ← when ray enters Y range
 t2 = (y_max - ray.origin.y) / ray.direction.y   ← when ray exits Y range
 
@@ -60,7 +62,8 @@ Update: t_min = max(t_min, t1)
 ```
 
 **Visual representation:**
-```
+
+```text
 Y-Axis:
 ↑
 │     [════ y_min to y_max ════]
@@ -73,9 +76,10 @@ origin
 ## Intersection Detection
 
 ### Valid Intersection Scenario
+
 When the X and Y ranges overlap, there's a hit:
 
-```
+```text
 X-Slab:  ─────[t_min_x────────t_max_x]──────
 Y-Slab:  ─────[t_min_y────────t_max_y]──────
 Overlap: ─────[t_min─────────t_max]──────  ✓ HIT!
@@ -85,9 +89,10 @@ distance = t_min
 ```
 
 ### No Intersection Scenario
+
 When the X and Y ranges don't overlap:
 
-```
+```text
 X-Slab:  ─────[t_min_x────────t_max_x]──────
 Y-Slab:           ────[t_min_y────────t_max_y]──────
 Overlap:              (no overlap)  ✗ MISS!
@@ -96,7 +101,7 @@ Overlap:              (no overlap)  ✗ MISS!
 ## Key Edge Cases
 
 | Case | Condition | Handling |
-|------|-----------|----------|
+| ------ | ----------- | ---------- |
 | **Ray parallel to X** | `abs(ray.direction.x) ≈ 0` | Check if ray's X is between x_min and x_max |
 | **Ray parallel to Y** | `abs(ray.direction.y) ≈ 0` | Check if ray's Y is between y_min and y_max |
 | **Ray behind rectangle** | `t_min < 0` | Return no hit (rectangle is behind ray origin) |
@@ -105,7 +110,8 @@ Overlap:              (no overlap)  ✗ MISS!
 ## Worked Example
 
 ### Setup
-```
+
+```text
 Rectangle: position=(100, 50), size=(200, 100)
   → x_min=100, x_max=300, y_min=50, y_max=150
 
@@ -113,7 +119,8 @@ Ray: origin=(50, 100), direction=(1, 0)  [moving right →]
 ```
 
 ### X-Slab Calculation
-```
+
+```text
 t1 = (100 - 50) / 1 = 50
 t2 = (300 - 50) / 1 = 250
 
@@ -122,14 +129,16 @@ t_min = 50, t_max = 250
 ```
 
 ### Y-Slab Calculation
-```
+
+```text
 Ray direction Y = 0 → ray is parallel to Y axis
 Check: Is ray.origin.y (100) between y_min (50) and y_max (150)?
 YES ✓ → ray crosses entire height of rectangle
 ```
 
 ### Result
-```
+
+```text
 ✓ HIT!
 Closest intersection:
   distance = t_min = 50
@@ -182,14 +191,15 @@ HitResult Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape 
 
 ## Why This Algorithm Works
 
-1. **Separating Axis Theorem**: A ray intersects an axis-aligned rectangle if and only if it intersects both the X-slab and Y-slab
+1. **Separating Axis Theorem**: A ray intersects an axis-aligned rectangle if and only if it intersects both the X-slab
+    and Y-slab
 2. **Efficient**: Only 4 divisions (or fewer with special cases), no trigonometry
 3. **Robust**: Handles parallel rays, rays starting inside/outside the rectangle
 4. **Ordered Intersection**: `t_min` automatically gives the closest intersection point
 
 ## Visualization Summary
 
-```
+```text
 WITHOUT SLAB METHOD (4 edge tests needed):
        ┌─────────┐
        │ ╱test 1  │

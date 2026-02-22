@@ -4,7 +4,7 @@
 
 This function tests if a ray intersects with a line segment using parametric equations and 2D cross products.
 
-```
+```text
 Ray:     R(t) = O + t·D      (t ≥ 0)
 Segment: S(u) = P1 + u·(P2 - P1)  (0 ≤ u ≤ 1)
 ```
@@ -12,7 +12,8 @@ Segment: S(u) = P1 + u·(P2 - P1)  (0 ≤ u ≤ 1)
 ## Parametric Equations Explained
 
 ### Ray
-```
+
+```text
 R(t) = ray.origin + t * ray.direction
 ```
 
@@ -21,7 +22,8 @@ R(t) = ray.origin + t * ray.direction
 - **t < 0**: Behind the ray (invalid for rays)
 
 ### Line Segment
-```
+
+```text
 S(u) = P1 + u * (P2 - P1)
 ```
 
@@ -32,7 +34,7 @@ S(u) = P1 + u * (P2 - P1)
 
 ## Visual Representation
 
-```
+```text
 Ray starting at origin, moving right:
      t=0      t=3      t=6
       │        │        │
@@ -54,7 +56,8 @@ R(t) = S(u)
 ### Setting Up the Equation
 
 When ray and segment intersect:
-```
+
+```text
 O + t·D = P1 + u·(P2 - P1)
 
 Rearranging:
@@ -62,6 +65,7 @@ t·D - u·(P2 - P1) = P1 - O
 ```
 
 Let:
+
 - `d = D` (ray direction)
 - `s = P2 - P1` (segment direction)
 - `oc = P1 - O` (vector from ray origin to segment start)
@@ -71,28 +75,32 @@ So: `t·d - u·s = oc`
 ### Solving Using Cross Products
 
 In 2D, the cross product gives a scalar:
-```
+
+```text
 A × B = A.x * B.y - A.y * B.x
 ```
 
 Taking cross products of both sides:
 
 **For t (cross with segment direction):**
-```
+
+```text
 t·(d × s) - u·(s × s) = oc × s
 t·(d × s) = oc × s          [since s × s = 0]
 t = (oc × s) / (d × s)
 ```
 
 **For u (cross with ray direction):**
-```
+
+```text
 t·(d × d) - u·(s × d) = oc × d
 -u·(s × d) = oc × d         [since d × d = 0]
 u = (d × oc) / (d × s)
 ```
 
 **Denominator (determinant):**
-```
+
+```text
 denom = d × s = d.x * s.y - d.y * s.x
 ```
 
@@ -140,7 +148,7 @@ HitResult Geometry::intersectLineSegment(const Ray& ray,
 For a valid intersection, we need:
 
 | Condition | Meaning | Why |
-|-----------|---------|-----|
+| ----------- | --------- | ----- |
 | `t ≥ 0` | Ray moving forward | Intersection must be in front of ray origin |
 | `u ≥ 0` | After segment start | Intersection on or after P1 |
 | `u ≤ 1` | Before segment end | Intersection on or before P2 |
@@ -149,7 +157,7 @@ For a valid intersection, we need:
 
 ### Example 1: Intersection Found
 
-```
+```text
 Ray:     origin=(0, 0), direction=(1, 0)  [moving right]
 Segment: P1=(2, -1), P2=(2, 1)           [vertical line at x=2]
 
@@ -167,7 +175,7 @@ Check: t=2 ≥ 0 ✓, u=-0.5 < 0 ✗  → NO INTERSECTION
 
 ### Example 2: Intersection Found
 
-```
+```text
 Ray:     origin=(0, 0), direction=(1, 1)  [moving northeast]
 Segment: P1=(1, 0), P2=(1, 2)            [vertical line at x=1]
 
@@ -184,7 +192,7 @@ Check: t=1 ≥ 0 ✓, u=-0.5 < 0 ✗  → NO INTERSECTION
 
 ### Example 3: Intersection Found
 
-```
+```text
 Ray:     origin=(0, 1), direction=(1, 0)  [moving right]
 Segment: P1=(2, 0), P2=(2, 2)            [vertical line at x=2]
 
@@ -200,7 +208,8 @@ Check: t=2 ≥ 0 ✓, u=-0.5 < 0 ✗  → NO INTERSECTION
 ```
 
 Actually, let me recalculate Example 3:
-```
+
+```text
 Ray:     origin=(0, 1), direction=(1, 0)  [moving right along y=1]
 Segment: P1=(2, 0), P2=(2, 2)            [vertical line at x=2, y∈[0,2]]
 
@@ -269,8 +278,10 @@ Oh wait, I think I made an error. Let me recalculate using the correct approach.
 
 From my code:
 ```
-float u = (ray.direction.x * oc.y - ray.direction.y * oc.x) / denom;
-```
+
+float u = (ray.direction.x *oc.y - ray.direction.y* oc.x) / denom;
+
+```text
 
 With:
 - ray.direction = (1, 0)
@@ -281,9 +292,11 @@ u = (1 * (-1) - 0 * 2) / 2 = -1/2 = -0.5
 
 But this is giving -0.5, not 0.5!
 
-Hmm, let me verify the formula derivation again. Actually, I think there might be a sign issue in my formula. Let me recalculate from scratch...
+Hmm, let me verify the formula derivation again. Actually, I think there might be a sign issue in my formula. Let me
+recalculate from scratch...
 
-Actually, you know what, maybe the formula in the code I wrote has a sign issue. Let me verify it differently. I should use the standard formula which is:
+Actually, you know what, maybe the formula in the code I wrote has a sign issue. Let me verify it differently. I should
+use the standard formula which is:
 
 For line-line intersection where:
 L1: P1 + t*d1
