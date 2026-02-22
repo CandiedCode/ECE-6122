@@ -132,14 +132,21 @@ auto Scene::createWalls() -> void
         float offsetY = 0.F;
 
         if (minX < 0.F)
+        {
             offsetX = -minX;
+        }
         else if (maxX > windowWidth)
+        {
             offsetX = static_cast<float>(windowWidth) - maxX;
-
+        }
         if (minY < 0.F)
+        {
             offsetY = -minY;
+        }
         else if (maxY > windowHeight)
+        {
             offsetY = static_cast<float>(windowHeight) - maxY;
+        }
 
         wall.setPosition(pos.x + offsetX, pos.y + offsetY);
 

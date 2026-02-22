@@ -17,7 +17,7 @@
 #endif
 
 // @brief Enum to represent different rendering modes
-enum class RenderMode
+enum class RenderMode : std::uint8_t
 {
     SingleThreaded,
     OpenMP,
@@ -45,7 +45,7 @@ auto renderModeToString(RenderMode mode) -> std::string
  * @param executableDir Directory of the executable
  * @return Loaded sf::Font object
  */
-sf::Font loadFont(const std::string &fontPath, const std::string &executablePath)
+auto loadFont(const std::string &fontPath, const std::string &executablePath) -> sf::Font
 {
     // Extract executable directory from argv[0]
     std::string executableDir = std::filesystem::path(executablePath).parent_path().string();
@@ -98,7 +98,7 @@ sf::Font loadFont(const std::string &fontPath, const std::string &executablePath
 }
 
 // @brief Calculate the number of threads available on the hardware
-int calculateThreads()
+auto calculateThreads() -> int
 {
     int maxThreads = static_cast<int>(std::thread::hardware_concurrency());
     if (maxThreads == 0)
@@ -109,7 +109,7 @@ int calculateThreads()
     return maxThreads;
 }
 
-sf::VertexArray getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitResult> &results)
+auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitResult> &results) -> sf::VertexArray
 {
     sf::VertexArray lines(sf::Lines, 2 * numRays);
     for (int i = 0; i < numRays; ++i)
@@ -191,11 +191,17 @@ auto main(int argc, const char *argv[]) -> int
                 case sf::Keyboard::M:
                     // Cycle through render modes
                     if (mode == RenderMode::SingleThreaded)
+                    {
                         mode = RenderMode::OpenMP;
+                    }
                     else if (mode == RenderMode::OpenMP)
+                    {
                         mode = RenderMode::StdThread;
+                    }
                     else
+                    {
                         mode = RenderMode::SingleThreaded;
+                    }
                     std::cout << "Switched to " << renderModeToString(mode) << " mode\n";
                     break;
                 case sf::Keyboard::R:

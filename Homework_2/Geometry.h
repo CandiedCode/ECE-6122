@@ -30,11 +30,11 @@ class Geometry
     /**
      * @brief Test intersection between a ray and a line segment defined by two points
      * @param ray The ray to test
-     * @param p1 The first endpoint of the line segment
-     * @param p2 The second endpoint of the line segment
+     * @param point1 The first endpoint of the line segment
+     * @param point2 The second endpoint of the line segment
      * @return HitResult containing intersection information
      */
-    static auto intersectLineSegment(const Ray &ray, const sf::Vector2f &p1, const sf::Vector2f &p2) -> HitResult;
+    static auto intersectLineSegment(const Ray &ray, const sf::Vector2f &point1, const sf::Vector2f &point2) -> HitResult;
 
     /**
      * @brief Test intersection between a ray and an axis-aligned rectangle
