@@ -85,17 +85,17 @@ cmake/release: ## Generate CMake build files for Release configuration
 .PHONY: build
 build: cmake
 build: ## Build the project using CMake
-	cd build && cmake --build . -j 8 --verbose
+	cd build && cmake --build . -j 8
 
 .PHONY: build/debug
 build/debug: cmake/debug
 build/debug: ## Build the project in Debug configuration
-	cd build && cmake --build . -j 8 --verbose
+	cd build && cmake --build . -j 8
 
 .PHONY: build/release
 build/release: cmake/release
 build/release: ## Build the project in Release configuration
-	cd build && cmake --build . -j 8 --verbose
+	cd build && cmake --build . -j 8
 
 .PHONY: clean
 clean: ## Clean the build directory

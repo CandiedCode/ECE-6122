@@ -45,6 +45,19 @@ auto renderModeToString(RenderMode mode) -> std::string
     }
 }
 
+// @brief Convert string representation of render mode to RenderMode enum
+auto renderModeFromString(const std::string &mode) -> RenderMode
+{
+    if (mode == "Single-Threaded")
+        return RenderMode::SingleThreaded;
+    else if (mode == "OpenMP")
+        return RenderMode::OpenMP;
+    else if (mode == "StdThread")
+        return RenderMode::StdThread;
+    else
+        return RenderMode::SingleThreaded; // Default case
+}
+
 /** @brief Load a font from the specified file path
  * @param fontPath Path to the font file
  * @param executableDir Directory of the executable
@@ -192,11 +205,31 @@ auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, in
     return std::nullopt;
 }
 
+/**
+ * @brief Parse command line arguments to configure rendering mode, number of rays, and number of threads
+ * @param argc Argument count * @param argv Argument vector
+ * @param mode Reference to string to store the rendering mode
+ * @param numRays Reference to integer to store the number of rays
+ * @param numThreads Reference to integer to store the number of threads
+ */
+void parseArgs(int argc, const char *argv[], RenderMode &mode, int &numThreads, int &numRays)
+{
+    // To process arguments, we expect two integers for height and width. If not provided, we use defaults.
+    if (argc != 4 && argc > 1)
+    {
+        std::cout << "Usage: " << argv[0] << " <mode> <threads> <numRays> <numThreads>\n";
+        return;
+    }
+    std::string modeStr = argv[1];
+    mode = renderModeFromString(modeStr);
+    numThreads = std::stoi(argv[2]);
+    numRays = std::stoi(argv[3]);
+}
+
 auto main(int argc, const char *argv[]) -> int
 {
     // Get the maximum number of threads available on the hardware
     const int maxThreads = calculateThreads();
-    int currentThreadCount = 2; // Default to 2 threads for parallel modes
     const int rayCountIncrement = 3600;
 
     // Track timing data for the last 60 iterations
@@ -214,9 +247,12 @@ auto main(int argc, const char *argv[]) -> int
     sf::RenderWindow window(sf::VideoMode({WINDOW_WIDTH, WINDOW_HEIGHT}), "Ray Tracer");
     window.setFramerateLimit(60);
 
-    RayTracer rayTracer;             // Create an instance of the RayTracer class to perform ray tracing operations
-    int numRays = rayCountIncrement; // 3600 rays for 1 degree resolution
+    RenderMode mode = RenderMode::SingleThreaded; // Default to single-threaded mode
+    int numRays = rayCountIncrement;              // Default to 3600 rays for 1 degree resolution
+    int currentThreadCount = 2;
+    parseArgs(argc, argv, mode, currentThreadCount, numRays);
 
+    RayTracer rayTracer; // Create an instance of the RayTracer class to perform ray tracing operations
     // Load font for text rendering
     sf::Font font = loadFont("fonts/KOMIKAP_.ttf", argv[0]);
 
@@ -226,9 +262,6 @@ auto main(int argc, const char *argv[]) -> int
     sf::RectangleShape pane(sf::Vector2f(DRAWABLE_WIDTH, PANE_HEIGHT));
     pane.setPosition(0, DRAWABLE_HEIGHT);
     pane.setFillColor(sf::Color(50, 50, 50, 200)); // Dark semi-transparent
-
-    // Start in single-threaded mode
-    RenderMode mode = RenderMode::SingleThreaded;
 
     while (window.isOpen())
     {
