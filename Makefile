@@ -70,6 +70,10 @@ cmake: ## Generate CMake build files using the default preset
 	@echo "Generating CMake build files..."
 	cd build && cmake .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_PREFIX_PATH=/opt/homebrew/opt/libomp
 
+.PHONY: cmake/benchmark
+cmake/benchmark: ## Generate CMake build files for Benchmark configuration
+	cmake --build build --config Benchmark --verbose
+
 .PHONY: cmake/debug
 cmake/debug: ## Generate CMake build files for Debug configuration
 	@$(MAKE) -B cmake BUILD_TYPE=Debug
