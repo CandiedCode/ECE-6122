@@ -26,6 +26,16 @@ lint/tidy: ## Run clang-tidy static analysis
 		-path ./node_modules -prune -o \
 		-path ./Homework_0 -prune -o \
 		-path ./Homework_1 -prune -o \
+		\( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy -p build
+	@echo "✓ clang-tidy analysis complete"
+
+.PHONY: lint/tidy-fix
+lint/tidy-fix: ## Run clang-tidy static analysis and apply fixes
+	@echo "Running clang-tidy..."
+	@find . -path ./build -prune -o \
+		-path ./node_modules -prune -o \
+		-path ./Homework_0 -prune -o \
+		-path ./Homework_1 -prune -o \
 		\( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy -p build --fix --fix-errors
 	@echo "✓ clang-tidy analysis complete"
 
@@ -71,17 +81,17 @@ cmake/release: ## Generate CMake build files for Release configuration
 .PHONY: build
 build: cmake
 build: ## Build the project using CMake
-	cd build && cmake --build . -j 8
+	cd build && cmake --build . -j 8 --verbose
 
 .PHONY: build/debug
 build/debug: cmake/debug
 build/debug: ## Build the project in Debug configuration
-	cd build && cmake --build . -j 8
+	cd build && cmake --build . -j 8 --verbose
 
 .PHONY: build/release
 build/release: cmake/release
 build/release: ## Build the project in Release configuration
-	cd build && cmake --build . -j 8
+	cd build && cmake --build . -j 8 --verbose
 
 .PHONY: clean
 clean: ## Clean the build directory
