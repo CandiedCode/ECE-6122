@@ -2,10 +2,15 @@
 #include "Scene.h"
 #include <SFML/Graphics.hpp>
 #include <algorithm>
+#include <chrono>
+#include <cstdint>
 #include <cstdio>
+#include <deque>
 #include <fcntl.h>
 #include <filesystem>
 #include <iostream>
+#include <numeric>
+#include <optional>
 #include <string>
 #include <thread>
 #include <vector>
@@ -132,6 +137,61 @@ auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitRes
     return lines;
 }
 
+/** @brief Execute ray tracing based on the current rendering mode
+ *  @param mode The current rendering mode (SingleThreaded, OpenMP, StdThread)
+ *  @param rayTracer Reference to the RayTracer instance
+ *  @param scene Reference to the Scene
+ *  @param mousePos Position of the light source
+ *  @param numRays Number of rays to cast
+ *  @param currentThreadCount Number of threads to use for parallel modes
+ *  @param results Vector to store ray intersection results
+ *  @return Elapsed time in microseconds for the ray tracing operation
+ */
+auto executeRayTracing(RenderMode mode, RayTracer &rayTracer, const Scene &scene, const sf::Vector2f &mousePos, int numRays,
+                       int currentThreadCount, std::vector<HitResult> &results) -> int32_t
+{
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    switch (mode)
+    {
+    case RenderMode::SingleThreaded:
+        rayTracer.castRaysSingleThreaded(mousePos, numRays, scene, results);
+        break;
+    case RenderMode::OpenMP:
+        rayTracer.castRaysOpenMP(mousePos, numRays, scene, results, currentThreadCount);
+        break;
+    case RenderMode::StdThread:
+        rayTracer.castRaysStdThread(mousePos, numRays, scene, results, currentThreadCount);
+        break;
+    }
+
+    auto stopTime = std::chrono::high_resolution_clock::now();
+    return static_cast<int32_t>(std::chrono::duration_cast<std::chrono::microseconds>(stopTime - startTime).count());
+}
+
+/** @brief Update timing history and calculate average when buffer is full
+ *  @param timings Deque to store the last N timing measurements
+ *  @param elapsed Elapsed time in microseconds for current iteration
+ *  @param maxSize Maximum number of iterations to track
+ *  @return Average time in microseconds if buffer is full, std::nullopt otherwise
+ */
+auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, int maxSize) -> std::optional<int32_t>
+{
+    timings.push_back(elapsed);
+    if (static_cast<int>(timings.size()) > maxSize)
+    {
+        timings.pop_front();
+    }
+
+    if (static_cast<int>(timings.size()) == maxSize)
+    {
+        int32_t sum = std::accumulate(timings.begin(), timings.end(), int32_t{0});
+        return sum / maxSize;
+    }
+
+    return std::nullopt;
+}
+
 auto main(int argc, const char *argv[]) -> int
 {
     // Get the maximum number of threads available on the hardware
@@ -139,8 +199,9 @@ auto main(int argc, const char *argv[]) -> int
     int currentThreadCount = 2; // Default to 2 threads for parallel modes
     const int rayCountIncrement = 3600;
 
-    int timeTaken = 0;
-    int iterationCount = 0;
+    // Track timing data for the last 60 iterations
+    std::deque<int32_t> timings;
+    const int MAX_ITERATIONS = 60;
 
     // Window and pane dimensions
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
@@ -183,6 +244,7 @@ auto main(int argc, const char *argv[]) -> int
                 switch (event.key.code)
                 {
                 case sf::Keyboard::Escape:
+                case sf::Keyboard::Q:
                     window.close();
                     break;
                 case sf::Keyboard::Equal:
@@ -198,6 +260,9 @@ auto main(int argc, const char *argv[]) -> int
                     std::cout << "Decreased rays: " << numRays << "\n";
                     break;
                 case sf::Keyboard::M:
+                    // Reset timing since we are switching modes
+                    timings.clear();
+
                     // Cycle through render modes
                     if (mode == RenderMode::SingleThreaded)
                     {
@@ -235,30 +300,16 @@ auto main(int argc, const char *argv[]) -> int
 
         sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
-        iterationCount++;
-        std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-        switch (mode)
+        // Execute ray tracing and measure elapsed time
+        int32_t elapsedMicroseconds = executeRayTracing(mode, rayTracer, scene, mousePos, numRays, currentThreadCount, results);
+        sf::Text timingText;
+        // Update timing history and get average if ready
+        if (auto average = updateTimingAndGetAverage(timings, elapsedMicroseconds, MAX_ITERATIONS))
         {
-        case RenderMode::SingleThreaded:
-            rayTracer.castRaysSingleThreaded(mousePos, numRays, scene, results);
-            break;
-        case RenderMode::OpenMP:
-            rayTracer.castRaysOpenMP(mousePos, numRays, scene, results, currentThreadCount);
-            break;
-        case RenderMode::StdThread:
-            rayTracer.castRaysStdThread(mousePos, numRays, scene, results, currentThreadCount);
-            break;
-        }
-
-        std::chrono::high_resolution_clock::time_point stoptime = std::chrono::high_resolution_clock::now();
-        iterationCount++;
-        timeTaken += std::chrono::duration_cast<std::chrono::microseconds>(stoptime - startTime).count();
-        if (iterationCount % 10 == 0) // Print average time every 10 iterations
-        {
-            std::cout << "Average time over last " << iterationCount << " iterations: " << (timeTaken / iterationCount)
-                      << " microseconds\n";
-            iterationCount = 0;
-            timeTaken = 0;
+            timingText.setString("Avg (" + std::to_string(MAX_ITERATIONS) + "): " + std::to_string(*average) + " microseconds");
+            timingText.setFont(font);
+            timingText.setCharacterSize(20);
+            timingText.setFillColor(sf::Color::White);
         }
 
         // Create vertex array for rays based on hit results
@@ -271,10 +322,23 @@ auto main(int argc, const char *argv[]) -> int
         window.draw(pane);
 
         // Draw RenderMode text on the left side of the pane
-        sf::Text modeText(renderModeToString(mode), font, 12);
+        sf::Text modeText("Current Mode: " + renderModeToString(mode), font, 20);
         modeText.setPosition(5, DRAWABLE_HEIGHT + 4);
         modeText.setFillColor(sf::Color::White);
+
+        sf::Text rayCount("Rays: " + std::to_string(numRays), font, 20);
+        rayCount.setPosition(modeText.getPosition().x + modeText.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
+        rayCount.setFillColor(sf::Color::White);
+
+        sf::Text threadCount("Threads: " + std::to_string(currentThreadCount), font, 20);
+        threadCount.setPosition(rayCount.getPosition().x + rayCount.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
+        threadCount.setFillColor(sf::Color::White);
+
+        timingText.setPosition(threadCount.getPosition().x + threadCount.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
         window.draw(modeText);
+        window.draw(timingText);
+        window.draw(rayCount);
+        window.draw(threadCount);
 
         // display window
         window.display();
