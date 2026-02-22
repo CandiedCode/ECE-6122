@@ -1,3 +1,15 @@
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-02-13
+ * Description:  Homework 2: Ray Tracing Visualization with Multiple Rendering Modes
+ *
+ *
+ * @file Geometry.h
+ * @brief Geometry calculations header file for ray tracing visualization. Determines ray intersections with line segments, rectangles, and
+ * circles.
+ */
+
 #ifndef HOMEWORK_2_GEOMETRY_H_
 #define HOMEWORK_2_GEOMETRY_H_
 

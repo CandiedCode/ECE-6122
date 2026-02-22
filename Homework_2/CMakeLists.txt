@@ -7,6 +7,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;Benchmark" CACHE STRING "" FORCE)
 set(CMAKE_CXX_FLAGS_BENCHMARK "-O2 -DNDEBUG" CACHE STRING "" FORCE)
 
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS "CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
+
 # Include FetchContent for downloading dependencies
 include(FetchContent)
 

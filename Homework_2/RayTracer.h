@@ -1,3 +1,15 @@
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-02-13
+ * Description:  Homework 2: Ray Tracing Visualization with Multiple Rendering Modes
+ *
+ *
+ * @file RayTracer.h
+ * @brief Ray tracing header file. Contains the RayTracer class with methods for casting rays in single-threaded, OpenMP, and std::thread
+ * modes.  These functions were provided as part of Homework 2 artifacts.
+ */
+
 #ifndef HOMEWORK_2_RAYTRACER_H_
 #define HOMEWORK_2_RAYTRACER_H_
 

@@ -1,3 +1,14 @@
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-02-13
+ * Description:  Homework 2: Ray Tracing Visualization with Multiple Rendering Modes
+ *
+ *
+ * @file Scene.cpp
+ * @brief Scene implementation file. Contains the Scene class with methods for creating and managing spheres and walls in the scene.
+ */
+
 #include "Scene.h"
 #include "Geometry.h"
 #include <SFML/Graphics.hpp>

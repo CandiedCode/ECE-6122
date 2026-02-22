@@ -1,3 +1,15 @@
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-02-13
+ * Description:  Homework 2: Ray Tracing Visualization with Multiple Rendering Modes
+ *
+ *
+ * @file RayTracer.cpp
+ * @brief Ray tracing calculations for visualization. Determines ray intersections with various shapes.  These functions were provided as
+ * part of Homework 2 artifacts.
+ */
+
 #include "RayTracer.h"
 #include "Scene.h"
 #include <algorithm>

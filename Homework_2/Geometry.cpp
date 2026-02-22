@@ -1,5 +1,15 @@
-#include "Geometry.h"
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-02-13
+ * Description:  Homework 2: Ray Tracing Visualization with Multiple Rendering Modes
+ *
+ *
+ * @file Geometry.cpp
+ * @brief Geometry calculations for ray tracing visualization. Determines ray intersections with line segments, rectangles, and circles.
+ */
 
+#include "Geometry.h"
 #include "RayTracer.h"
 #include <SFML/Graphics.hpp>
 #include <algorithm>

@@ -1,3 +1,14 @@
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-02-13
+ * Description:  Homework 2: Ray Tracing Visualization with Multiple Rendering Modes
+ *
+ *
+ * @file Scene.h
+ * @brief Scene header file. Contains the Scene class with methods for creating and managing spheres and walls in the scene.
+ */
+
 #ifndef HOMEWORK_2_SCENE_H_
 #define HOMEWORK_2_SCENE_H_
 

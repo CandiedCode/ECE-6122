@@ -1,3 +1,14 @@
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-02-13
+ * Description:  Homework 2: Ray Tracing Visualization with Multiple Rendering Modes
+ *
+ *
+ * @file Hw2.cpp
+ * @brief Main application for ray tracing visualization with multiple rendering modes
+ */
+
 #include "RayTracer.h"
 #include "Scene.h"
 #include <SFML/Graphics.hpp>
