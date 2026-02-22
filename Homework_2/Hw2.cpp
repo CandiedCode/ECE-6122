@@ -109,6 +109,12 @@ auto calculateThreads() -> int
     return maxThreads;
 }
 
+/** @brief Generate a VertexArray of lines representing rays from the light source to hit points
+ *  @param numRays The number of rays cast
+ *  @param mousePos The position of the light source (mouse cursor)
+ *  @param results The vector of HitResult for each ray
+ *  @return An sf::VertexArray containing line vertices for rendering rays
+ */
 auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitResult> &results) -> sf::VertexArray
 {
     sf::VertexArray lines(sf::Lines, 2 * numRays);
@@ -132,6 +138,9 @@ auto main(int argc, const char *argv[]) -> int
     const int maxThreads = calculateThreads();
     int currentThreadCount = 2; // Default to 2 threads for parallel modes
     const int rayCountIncrement = 3600;
+
+    int timeTaken = 0;
+    int iterationCount = 0;
 
     // Window and pane dimensions
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
@@ -169,7 +178,7 @@ auto main(int argc, const char *argv[]) -> int
             {
                 window.close();
             }
-            if (event.type == sf::Event::KeyPressed)
+            else if (event.type == sf::Event::KeyPressed)
             {
                 switch (event.key.code)
                 {
@@ -226,6 +235,8 @@ auto main(int argc, const char *argv[]) -> int
 
         sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
+        iterationCount++;
+        std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
         switch (mode)
         {
         case RenderMode::SingleThreaded:
@@ -237,6 +248,17 @@ auto main(int argc, const char *argv[]) -> int
         case RenderMode::StdThread:
             rayTracer.castRaysStdThread(mousePos, numRays, scene, results, currentThreadCount);
             break;
+        }
+
+        std::chrono::high_resolution_clock::time_point stoptime = std::chrono::high_resolution_clock::now();
+        iterationCount++;
+        timeTaken += std::chrono::duration_cast<std::chrono::microseconds>(stoptime - startTime).count();
+        if (iterationCount % 10 == 0) // Print average time every 10 iterations
+        {
+            std::cout << "Average time over last " << iterationCount << " iterations: " << (timeTaken / iterationCount)
+                      << " microseconds\n";
+            iterationCount = 0;
+            timeTaken = 0;
         }
 
         // Create vertex array for rays based on hit results
