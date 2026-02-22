@@ -44,17 +44,17 @@ void Scene::createSpheres()
 
     for (int i = 0; i < numSpheres; ++i)
     {
-        // Generate random radius and color for the sphere
-        // Random radius between 20 and 50
-        double radius = 40.0 + (rand_r(&seed) % 200);
+        // Generate random radius between 10 and 50 (diameter max 100 pixels)
+        double radius = 20.0 + (rand_r(&seed) % 100);
         // Random color with RGB components between 0 and 255
-        sf::Color color(rand_r(&seed) % 256, rand_r(&seed) % 256, rand_r(&seed) % 256);
-        // Create sphere using Geometry class
-        // sf::CircleShape sphere = Geometry::createSphere(radius, color);
-        // Set random position for the sphere
-        // sphere.setPosition(static_cast<float>(rand() % 1000), static_cast<float>(rand() % 600));
+        // sf::Color color(rand_r(&seed) % 256, rand_r(&seed) % 256, rand_r(&seed) % 256);
+        // Create sphere using helper method
+        sf::CircleShape sphere = createSphere(radius, sf::Color::Blue);
+        // Set random position within window bounds
+        sphere.setPosition(static_cast<float>(rand_r(&seed) % (windowWidth - 10 - static_cast<int>(2 * radius))),
+                           static_cast<float>(rand_r(&seed) % (windowHeight - 10 - static_cast<int>(2 * radius))));
         // Add sphere to the scene
-        // spheres.push_back(sphere);
+        spheres.push_back(sphere);
     }
 }
 
@@ -91,34 +91,34 @@ void Scene::createScene()
 
 void Scene::draw(sf::RenderWindow &window)
 {
-    // for (auto &sphere : spheres)
-    // {
-    //     window.draw(sphere);
-    // }
-
-    for (auto &wall : walls)
+    for (auto &sphere : spheres)
     {
-        window.draw(wall);
+        window.draw(sphere);
     }
+
+    // for (auto &wall : walls)
+    // {
+    //     window.draw(wall);
+    // }
 }
 
 HitResult Scene::closestIntersection(const Ray &ray) const
 {
     constexpr float MAX_RAY_DIST = 2000.0f;
-    HitResult result;
-    result.hit = false;
-    result.distance = std::numeric_limits<float>::max();
-    result.point = ray.origin + ray.direction * MAX_RAY_DIST; // Default far point if no hit
+    HitResult closest;
+    closest.hit = false;
+    closest.distance = std::numeric_limits<float>::max();
+    closest.point = ray.origin + ray.direction * MAX_RAY_DIST; // Default far point if no hit
 
     // Check intersection with all spheres
-    // for (const auto &sphere : spheres)
-    // {
-    //     HitResult hit = Geometry::intersectCircle(ray, sphere);
-    //     if (hit.hit && hit.distance < closest.distance)
-    //     {
-    //         closest = hit;
-    //     }
-    // }
+    for (const auto &sphere : spheres)
+    {
+        HitResult hit = Geometry::intersectCircle(ray, sphere);
+        if (hit.hit && hit.distance < closest.distance)
+        {
+            closest = hit;
+        }
+    }
 
     // // Check intersection with all walls
     // for (const auto &wall : walls)
@@ -130,5 +130,5 @@ HitResult Scene::closestIntersection(const Ray &ray) const
     //     }
     // }
 
-    return result;
+    return closest;
 }

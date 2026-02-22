@@ -17,7 +17,7 @@ auto main() -> int
     sf::RenderWindow window(sf::VideoMode({1000, 600}), "Ray Tracer");
     window.setFramerateLimit(60);
     RayTracer rayTracer;
-    int numRays = 3600; // 3600 rays for 1 degree resolution
+    int numRays = 360; // 3600; // 3600 rays for 1 degree resolution
 
     // Create scene
     // Scene scene(2, 4); // Example: 2 spheres and 4 planes
@@ -59,7 +59,6 @@ auto main() -> int
         }
 
         sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        std::cout << "Casting rays from: (" << mousePos.x << ", " << mousePos.y << ") with " << numRays << " rays.\n";
 
         switch (mode)
         {
@@ -90,7 +89,7 @@ auto main() -> int
         // Clear window and draw scene
         window.clear(sf::Color::Black);
         window.draw(lines);
-        // scene.draw(window);
+        scene.draw(window);
         window.display();
     }
 
