@@ -2,6 +2,8 @@
 #include "Geometry.h"
 #include <SFML/Graphics.hpp>
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <cstdlib>
 #include <limits>
 #include <random>
@@ -79,27 +81,68 @@ void Scene::createWalls()
         if (orientation == 0)
         {
             // Horizontal rectangle (wide, short)
-            width = std::min(300.0 + (rand_r(&seed) % (windowWidth - 10)), static_cast<double>(windowWidth - 10));
+            width = std::min(200.0 + (rand_r(&seed) % (windowWidth - 100)), static_cast<double>(windowWidth - 100));
             height = 5;
         }
         else
         {
             // Vertical rectangle (narrow, tall)
             width = 5;
-            height = std::min(300.0 + (rand_r(&seed) % (windowHeight - 10)), static_cast<double>(windowHeight - 10));
+            height = std::min(200.0 + (rand_r(&seed) % (windowHeight - 100)), static_cast<double>(windowHeight - 100));
         }
 
         // Random color with RGB components between 0 and 255
         sf::Color color(rand_r(&seed) % 256, rand_r(&seed) % 256, rand_r(&seed) % 256);
         // Create wall using helper method
         sf::RectangleShape wall = Scene::createWall(width, height, color);
-        // Set random position within window bounds, accounting for rectangle dimensions
-        int maxX = std::max(1, static_cast<int>(windowWidth - width));
-        int maxY = std::max(1, static_cast<int>(windowHeight - height));
-        wall.setPosition(static_cast<float>(rand_r(&seed) % maxX), static_cast<float>(rand_r(&seed) % maxY));
+
+        // Set fully random position within window bounds
+        wall.setPosition(static_cast<float>(rand_r(&seed) % windowWidth), static_cast<float>(rand_r(&seed) % windowHeight));
+
         // Apply random rotation for diagonal effect
         auto rotation = static_cast<float>(rand_r(&seed) % 360);
         wall.setRotation(rotation);
+
+        // Compute all 4 world-space corners of the rotated wall
+        sf::Vector2f pos = wall.getPosition();
+        sf::Vector2f size = wall.getSize();
+        float rot_rad = wall.getRotation() * 3.14159265F / 180.0F;
+        float cos_r = std::cos(rot_rad);
+        float sin_r = std::sin(rot_rad);
+
+        std::array<sf::Vector2f, 4> localCorners = {sf::Vector2f{0.f, 0.f}, {size.x, 0.f}, {size.x, size.y}, {0.f, size.y}};
+
+        float minX = std::numeric_limits<float>::max();
+        float maxX = -std::numeric_limits<float>::max();
+        float minY = std::numeric_limits<float>::max();
+        float maxY = -std::numeric_limits<float>::max();
+
+        for (const auto &c : localCorners)
+        {
+            float wx = c.x * cos_r - c.y * sin_r + pos.x;
+            float wy = c.x * sin_r + c.y * cos_r + pos.y;
+            minX = std::min(minX, wx);
+            maxX = std::max(maxX, wx);
+            minY = std::min(minY, wy);
+            maxY = std::max(maxY, wy);
+        }
+
+        // Compute and apply correction offset to shift the wall so all corners are within bounds
+        float offsetX = 0.f;
+        float offsetY = 0.f;
+
+        if (minX < 0.f)
+            offsetX = -minX;
+        else if (maxX > windowWidth)
+            offsetX = static_cast<float>(windowWidth) - maxX;
+
+        if (minY < 0.f)
+            offsetY = -minY;
+        else if (maxY > windowHeight)
+            offsetY = static_cast<float>(windowHeight) - maxY;
+
+        wall.setPosition(pos.x + offsetX, pos.y + offsetY);
+
         // Add wall to the scene
         walls.push_back(wall);
     }

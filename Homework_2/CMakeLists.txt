@@ -33,3 +33,4 @@ file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 # Create Homework_2 executable
 add_executable(Hw2 ${SOURCES})
 target_link_libraries(Hw2 PRIVATE sfml-graphics sfml-window sfml-system Threads::Threads OpenMP::OpenMP_CXX)
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts" DESTINATION "${COMMON_OUTPUT_DIR}/bin/")
