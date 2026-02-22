@@ -4,12 +4,14 @@
 #include <SFML/Graphics.hpp>
 #include <limits>
 
+// @brief Struct to represent a ray in 2D space
 struct Ray
 {
     sf::Vector2f origin{};
     sf::Vector2f direction{}; // unit vector
 };
 
+// @brief Struct to represent the result of a ray intersection test
 struct HitResult
 {
     bool hit = false;
@@ -17,27 +19,38 @@ struct HitResult
     sf::Vector2f point{};
 };
 
+/**
+ * @brief Geometry class containing static methods for ray-shape intersection tests
+ * This class provides methods to test intersection between rays and various shapes (line segments, rectangles, circles).
+ */
 class Geometry
 {
   private:
   public:
-    static HitResult intersectLineSegment(const Ray &ray, const sf::Vector2f &p1, const sf::Vector2f &p2);
-
-    /** @brief Test intersection between a ray and an axis-aligned rectangle
-     *  @param ray The ray to test
-     *  @param rectangle The rectangle shape to test against
-     *  @return HitResult containing intersection information
+    /**
+     * @brief Test intersection between a ray and a line segment defined by two points
+     * @param ray The ray to test
+     * @param p1 The first endpoint of the line segment
+     * @param p2 The second endpoint of the line segment
+     * @return HitResult containing intersection information
      */
-    static HitResult intersectRectangle(const Ray &ray, const sf::RectangleShape &rectangle);
+    static auto intersectLineSegment(const Ray &ray, const sf::Vector2f &p1, const sf::Vector2f &p2) -> HitResult;
 
-    /** @brief Test intersection between a ray and a circle (sphere in 2D)
-     *  @param ray The ray to test
-     *  @param circle The circle shape to test against
-     *  @return HitResult containing intersection information
+    /**
+     * @brief Test intersection between a ray and an axis-aligned rectangle
+     * @param ray The ray to test
+     * @param rectangle The rectangle shape to test against
+     * @return HitResult containing intersection information
      */
-    static HitResult intersectCircle(const Ray &ray, const sf::CircleShape &circle);
+    static auto intersectRectangle(const Ray &ray, const sf::RectangleShape &rectangle) -> HitResult;
 
-    HitResult closestIntersection(const Ray &ray) const;
+    /**
+     * @brief Test intersection between a ray and a circle (sphere in 2D)
+     * @param ray The ray to test
+     * @param circle The circle shape to test against
+     * @return HitResult containing intersection information
+     */
+    static auto intersectCircle(const Ray &ray, const sf::CircleShape &circle) -> HitResult;
 };
 
 #endif // HOMEWORK_2_GEOMETRY_H_

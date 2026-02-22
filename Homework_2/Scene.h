@@ -14,6 +14,7 @@ class RayTracer;
 class Scene
 {
   private:
+    // Scene properties
     int windowWidth;
     int windowHeight;
     int numSpheres;
@@ -25,21 +26,21 @@ class Scene
      *  @param radius The radius of the sphere
      *  @return An sf::CircleShape representing the sphere
      */
-    static sf::CircleShape createSphere(double radius);
+    static auto createSphere(double radius) -> sf::CircleShape;
 
     /** @brief Create a colored sphere (circle) with the specified radius and color
      *  @param radius The radius of the sphere
      *  @param color The fill color of the sphere
      *  @return An sf::CircleShape representing the colored sphere
      */
-    static sf::CircleShape createSphere(double radius, sf::Color color);
+    static auto createSphere(double radius, sf::Color color) -> sf::CircleShape;
 
     /** @brief Create a plane (rectangle) with the specified width and height
      *  @param width The width of the plane
      *  @param height The height of the plane
      *  @return An sf::RectangleShape representing the plane
      */
-    static sf::RectangleShape createWall(double width, double height);
+    static auto createWall(double width, double height) -> sf::RectangleShape;
 
     /** @brief Create a colored plane (rectangle) with the specified dimensions and color
      *  @param width The width of the plane
@@ -47,12 +48,12 @@ class Scene
      *  @param color The fill color of the plane
      *  @return An sf::RectangleShape representing the colored plane
      */
-    static sf::RectangleShape createWall(double width, double height, sf::Color color);
+    static auto createWall(double width, double height, sf::Color color) -> sf::RectangleShape;
 
     /** @brief Create spheres in the scene
      */
-    void createSpheres();
-    void createWalls();
+    auto createSpheres() -> void;
+    auto createWalls() -> void;
 
   public:
     /** @brief Construct a scene with specified number of spheres and walls
@@ -66,14 +67,14 @@ class Scene
     /** @brief Draw all scene objects to the render window
      *  @param window The render window to draw to
      */
-    void draw(sf::RenderWindow &window);
+    auto draw(sf::RenderWindow &window) -> void;
 
     /** @brief Find the closest intersection of a ray with scene geometry
      *  @param ray The ray to test
      *  @return HitResult containing the closest intersection, or no hit if nothing is intersected
      */
-    HitResult closestIntersection(const Ray &ray) const;
-    void createScene();
+    auto closestIntersection(const Ray &ray) const -> HitResult;
+    auto createScene() -> void;
 };
 
 #endif // HOMEWORK_2_SCENE_H_

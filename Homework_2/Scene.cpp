@@ -14,31 +14,31 @@ Scene::Scene(int windowWidth, int windowHeight, int numSpheres, int numWalls)
     createScene();
 }
 
-sf::CircleShape Scene::createSphere(double radius)
+auto Scene::createSphere(double radius) -> sf::CircleShape
 {
     return sf::CircleShape(radius);
 }
 
-sf::CircleShape Scene::createSphere(double radius, sf::Color color)
+auto Scene::createSphere(double radius, sf::Color color) -> sf::CircleShape
 {
     sf::CircleShape sphere = createSphere(radius);
     sphere.setFillColor(color);
     return sphere;
 }
 
-sf::RectangleShape Scene::createWall(double width, double height)
+auto Scene::createWall(double width, double height) -> sf::RectangleShape
 {
     return sf::RectangleShape(sf::Vector2f(width, height));
 }
 
-sf::RectangleShape Scene::createWall(double width, double height, sf::Color color)
+auto Scene::createWall(double width, double height, sf::Color color) -> sf::RectangleShape
 {
     sf::RectangleShape wall = createWall(width, height);
     wall.setFillColor(color);
     return wall;
 }
 
-void Scene::createSpheres()
+auto Scene::createSpheres() -> void
 {
     // Reserve space for spheres to improve performance
     spheres.clear();
@@ -62,7 +62,7 @@ void Scene::createSpheres()
     }
 }
 
-void Scene::createWalls()
+auto Scene::createWalls() -> void
 {
     // Reserve space for walls to improve performance
     walls.clear();
@@ -148,13 +148,13 @@ void Scene::createWalls()
     }
 }
 
-void Scene::createScene()
+auto Scene::createScene() -> void
 {
     createSpheres();
     createWalls();
 }
 
-void Scene::draw(sf::RenderWindow &window)
+auto Scene::draw(sf::RenderWindow &window) -> void
 {
     for (auto &sphere : spheres)
     {
@@ -167,7 +167,7 @@ void Scene::draw(sf::RenderWindow &window)
     }
 }
 
-HitResult Scene::closestIntersection(const Ray &ray) const
+auto Scene::closestIntersection(const Ray &ray) const -> HitResult
 {
     constexpr float MAX_RAY_DIST = 2000.0F;
     HitResult closest;

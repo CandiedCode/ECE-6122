@@ -10,30 +10,31 @@
 
 constexpr float PARALLEL_THRESHOLD = std::numeric_limits<float>::epsilon() * 100.0F;
 
-HitResult Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &p1, const sf::Vector2f &p2) // static in header
+auto Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &p1, const sf::Vector2f &p2) -> HitResult
 {
     HitResult result;
 
     // Ray: R(t) = ray.origin + t * ray.direction  (t ≥ 0)
     // Segment: S(u) = p1 + u * (p2 - p1)          (0 ≤ u ≤ 1)
 
-    sf::Vector2f segment_dir = p2 - p1;
+    sf::Vector2f segment_direction = p2 - p1;
     sf::Vector2f oc = p1 - ray.origin;
 
     // Calculate the 2D cross product (returns scalar)
     // A × B = A.x * B.y - A.y * B.x
-    float denom = (ray.direction.x * segment_dir.y) - (ray.direction.y * segment_dir.x);
+    float denom = (ray.direction.x * segment_direction.y) - (ray.direction.y * segment_direction.x);
 
     // Check if ray and segment are parallel
     if (std::abs(denom) < PARALLEL_THRESHOLD)
     {
-        return result; // Ray and segment are parallel, no intersection
+        // Ray and segment are parallel, no intersection
+        return result;
     }
 
     // Solve for t and u using the parametric equations
     // t·d - u·s = oc
     // Using cross products:
-    float t = (oc.x * segment_dir.y - oc.y * segment_dir.x) / denom;
+    float t = (oc.x * segment_direction.y - oc.y * segment_direction.x) / denom;
     float u = (oc.x * ray.direction.y - oc.y * ray.direction.x) / denom;
 
     // Valid intersection when:
@@ -49,7 +50,7 @@ HitResult Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &p1,
     return result;
 }
 
-HitResult Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall)
+auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall) -> HitResult
 {
     HitResult closest_result;
     closest_result.hit = false;
@@ -61,20 +62,27 @@ HitResult Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape 
     float rotation_degrees = wall.getRotation();
     float rotation_radians = rotation_degrees * 3.14159265F / 180.0F;
 
-    // Calculate the four corners of the unrotated rectangle
+    // Calculate the four corners of the rectangle
     // Corners relative to position (0,0)
-    std::vector<sf::Vector2f> corners = {{0.0F, 0.0F}, {size.x, 0.0F}, {size.x, size.y}, {0.0F, size.y}};
+    std::vector<sf::Vector2f> corners = {// Top-left
+                                         {0.0F, 0.0F},
+                                         // Top-right
+                                         {size.x, 0.0F},
+                                         // Bottom-right
+                                         {size.x, size.y},
+                                         // Bottom-left
+                                         {0.0F, size.y}};
 
     // Rotate and translate corners to world space
-    float cos_rot = std::cos(rotation_radians);
-    float sin_rot = std::sin(rotation_radians);
+    float cos_rotate = std::cos(rotation_radians);
+    float sin_rotate = std::sin(rotation_radians);
 
     std::vector<sf::Vector2f> rotated_corners;
     for (const auto &corner : corners)
     {
         // Rotate the corner around the origin
-        float rotated_x = corner.x * cos_rot - corner.y * sin_rot;
-        float rotated_y = corner.x * sin_rot + corner.y * cos_rot;
+        float rotated_x = corner.x * cos_rotate - corner.y * sin_rotate;
+        float rotated_y = corner.x * sin_rotate + corner.y * cos_rotate;
 
         // Translate to the rectangle's position
         rotated_corners.push_back({rotated_x + pos.x, rotated_y + pos.y});
@@ -86,6 +94,7 @@ HitResult Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape 
         int next = (i + 1) % 4;
         HitResult edge_hit = intersectLineSegment(ray, rotated_corners[i], rotated_corners[next]);
 
+        // Keep track of the closest valid hit
         if (edge_hit.hit && edge_hit.distance < closest_result.distance)
         {
             closest_result = edge_hit;
@@ -116,16 +125,18 @@ auto Geometry::intersectCircle(const Ray &ray, const sf::CircleShape &circle) ->
     // Discriminant
     float discriminant = (b * b) - (4.0F * a * c);
 
+    // discriminant < 0 there is no intersection.
     if (discriminant < 0.0F)
     {
-        return result; // No intersection
+        return result;
     }
 
-    // Find the two solutions
+    // discriminant ≥ 0, then t = (−b ± √discriminant) / 2a
     float sqrt_discriminant = std::sqrt(discriminant);
     float t1 = (-b - sqrt_discriminant) / (2.0F * a);
     float t2 = (-b + sqrt_discriminant) / (2.0F * a);
 
+    // take the smallest positive t
     // We want the closest intersection in front of the ray (t > 0)
     float t = -1.0F;
     if (t1 > 0.0F)
@@ -137,9 +148,10 @@ auto Geometry::intersectCircle(const Ray &ray, const sf::CircleShape &circle) ->
         t = t2;
     }
 
+    // No valid intersection
     if (t < 0.0F)
     {
-        return result; // No valid intersection
+        return result;
     }
 
     result.hit = true;

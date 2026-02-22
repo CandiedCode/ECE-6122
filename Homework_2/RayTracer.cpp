@@ -7,13 +7,8 @@
 #include <thread>
 #include <vector>
 
-/** @brief Cast rays from a light source in a single thread
- * @param lightPos The position of the light source
- * @param numRays The number of rays to cast
- * @param scene The scene to trace rays in
- * @param results Vector to store HitResult for each ray
- */
-void RayTracer::castRaysSingleThreaded(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results)
+auto RayTracer::castRaysSingleThreaded(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results)
+    -> void
 {
     results.resize(numRays);
     for (int i = 0; i < numRays; ++i)
@@ -26,15 +21,8 @@ void RayTracer::castRaysSingleThreaded(const sf::Vector2f &lightPos, int numRays
     }
 }
 
-/** @brief Cast rays from a light source using OpenMP parallelization
- * @param lightPos The position of the light source
- * @param numRays The number of rays to cast
- * @param scene The scene to trace rays in
- * @param results Vector to store HitResult for each ray
- * @param numThreads Number of threads to use
- */
-void RayTracer::castRaysOpenMP(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results,
-                               int numThreads)
+auto RayTracer::castRaysOpenMP(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results,
+                               int numThreads) -> void
 {
     results.resize(numRays);
     omp_set_num_threads(numThreads);
@@ -49,15 +37,8 @@ void RayTracer::castRaysOpenMP(const sf::Vector2f &lightPos, int numRays, const 
     }
 }
 
-/** @brief Cast rays from a light source using std::thread parallelization
- * @param lightPos The position of the light source
- * @param numRays The number of rays to cast
- * @param scene The scene to trace rays in
- * @param results Vector to store HitResult for each ray
- * @param numThreads Number of threads to use
- */
-void RayTracer::castRaysStdThread(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results,
-                                  int numThreads)
+auto RayTracer::castRaysStdThread(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results,
+                                  int numThreads) -> void
 {
     results.resize(numRays);
     std::vector<std::thread> threads;
