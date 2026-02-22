@@ -79,14 +79,14 @@ void Scene::createWalls()
         if (orientation == 0)
         {
             // Horizontal rectangle (wide, short)
-            width = 100.0 + (rand_r(&seed) % (windowWidth - 10));
+            width = std::min(300.0 + (rand_r(&seed) % (windowWidth - 10)), static_cast<double>(windowWidth - 10));
             height = 5;
         }
         else
         {
             // Vertical rectangle (narrow, tall)
             width = 5;
-            height = 100.0 + (rand_r(&seed) % (windowHeight - 10));
+            height = std::min(300.0 + (rand_r(&seed) % (windowHeight - 10)), static_cast<double>(windowHeight - 10));
         }
 
         // Random color with RGB components between 0 and 255

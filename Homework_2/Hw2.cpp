@@ -3,8 +3,10 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <iostream>
+#include <thread>
 #include <vector>
 
+// @brief Enum to represent different rendering modes
 enum class RenderMode
 {
     SingleThreaded,
@@ -14,6 +16,15 @@ enum class RenderMode
 
 auto main() -> int
 {
+    // Get the maximum number of threads available on the hardware
+    int maxThreads = std::thread::hardware_concurrency();
+    if (maxThreads == 0)
+    {
+        maxThreads = 1; // Fallback if hardware_concurrency() returns 0
+    }
+    std::cout << "Available CPU threads: " << maxThreads << "\n";
+    int currentThreadCount = 2; // Default to 2 threads for parallel modes
+
     sf::RenderWindow window(sf::VideoMode({1000, 600}), "Ray Tracer");
     window.setFramerateLimit(60);
     RayTracer rayTracer;
@@ -58,6 +69,16 @@ auto main() -> int
                     scene.createScene(); // Regenerate scene with new random objects
                     std::cout << "Scene randomized\n";
                     break;
+                case sf::Keyboard::W:
+                case sf::Keyboard::Up:
+                    currentThreadCount = std::min(maxThreads, currentThreadCount + 1);
+                    std::cout << "Increased threads: " << currentThreadCount << "\n";
+                    break;
+                case sf::Keyboard::S:
+                case sf::Keyboard::Down:
+                    currentThreadCount = std::max(2, currentThreadCount - 1);
+                    std::cout << "Decreased threads: " << currentThreadCount << "\n";
+                    break;
                 default:
                     break;
                 }
@@ -72,10 +93,10 @@ auto main() -> int
             rayTracer.castRaysSingleThreaded(mousePos, numRays, scene, results);
             break;
         case RenderMode::OpenMP:
-            rayTracer.castRaysOpenMP(mousePos, numRays, scene, results, 4); // Example: use 4 threads
+            rayTracer.castRaysOpenMP(mousePos, numRays, scene, results, currentThreadCount);
             break;
         case RenderMode::StdThread:
-            rayTracer.castRaysStdThread(mousePos, numRays, scene, results, 4); // Example: use 4 threads
+            rayTracer.castRaysStdThread(mousePos, numRays, scene, results, currentThreadCount);
             break;
         }
 
