@@ -23,6 +23,22 @@ enum class RenderMode
     StdThread
 };
 
+// @brief Convert RenderMode enum to string representation
+std::string renderModeToString(RenderMode mode)
+{
+    switch (mode)
+    {
+    case RenderMode::SingleThreaded:
+        return "Single-Threaded";
+    case RenderMode::OpenMP:
+        return "OpenMP";
+    case RenderMode::StdThread:
+        return "StdThread";
+    default:
+        return "Unknown";
+    }
+}
+
 /** @brief Load a font from the specified file path
  * @param fontPath Path to the font file
  * @param executableDir Directory of the executable
@@ -78,41 +94,33 @@ sf::Font loadFont(const std::string &fontPath, const std::string &executableDir)
     return font;
 }
 
-// @brief Convert RenderMode enum to string representation
-std::string renderModeToString(RenderMode mode)
+int calculateThreads()
 {
-    switch (mode)
-    {
-    case RenderMode::SingleThreaded:
-        return "Single-Threaded";
-    case RenderMode::OpenMP:
-        return "OpenMP";
-    case RenderMode::StdThread:
-        return "StdThread";
-    default:
-        return "Unknown";
-    }
-}
-
-auto main(int argc, char *argv[]) -> int
-{
-    // Get the maximum number of threads available on the hardware
     int maxThreads = std::thread::hardware_concurrency();
     if (maxThreads == 0)
     {
         maxThreads = 1; // Fallback if hardware_concurrency() returns 0
     }
     std::cout << "Available CPU threads: " << maxThreads << "\n";
+    return maxThreads;
+}
+
+auto main(int argc, char *argv[]) -> int
+{
+    // Get the maximum number of threads available on the hardware
+    int maxThreads = calculateThreads();
     int currentThreadCount = 2; // Default to 2 threads for parallel modes
 
     // Window and pane dimensions
-    const int WINDOW_WIDTH = 1000;
-    const int WINDOW_HEIGHT = 600;
-    const int PANE_HEIGHT = 20;
-    const int DRAWABLE_WIDTH = WINDOW_WIDTH;
-    const int DRAWABLE_HEIGHT = WINDOW_HEIGHT - PANE_HEIGHT;
+    sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
+    const uint WINDOW_WIDTH = desktopMode.width > 0 ? desktopMode.width : 1000;   // Use desktop width or fallback to 1000
+    const uint WINDOW_HEIGHT = desktopMode.height > 0 ? desktopMode.height : 600; // Use desktop height or fallback to 600
+    const uint PANE_HEIGHT = 30;
+    const uint DRAWABLE_WIDTH = WINDOW_WIDTH;
+    const uint DRAWABLE_HEIGHT = WINDOW_HEIGHT - PANE_HEIGHT;
 
     sf::RenderWindow window(sf::VideoMode({WINDOW_WIDTH, WINDOW_HEIGHT}), "Ray Tracer");
+
     window.setFramerateLimit(60);
     RayTracer rayTracer;
     int numRays = 3600; // 3600; // 3600 rays for 1 degree resolution
