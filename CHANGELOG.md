@@ -1,3 +1,16 @@
+## [1.1.0](https://github.com/CandiedCode/ECE-6122/compare/v1.0.0...v1.1.0) (2026-02-23)
+
+### Features
+
+* add support for randomizing scene via 'r' key ([45b7f72](https://github.com/CandiedCode/ECE-6122/commit/45b7f72dc060446750627cac9742f2bdfe538e41))
+* add support for wall intersection ([2e2c1aa](https://github.com/CandiedCode/ECE-6122/commit/2e2c1aa2c536283f3b9bbf82259219d65c12e134))
+* display current mode, threat count, number of Rays, and ray computation time on window ([4d0cc28](https://github.com/CandiedCode/ECE-6122/commit/4d0cc28827cbc6ad57196f971ee977f2b7cb9f7d))
+* support increasing/decreasing thread count ([e10ffa2](https://github.com/CandiedCode/ECE-6122/commit/e10ffa27fb2ebd1a545ee68c66360c0df179eb70))
+
+### Bug Fixes
+
+* fix segfault bug issues ([7d56234](https://github.com/CandiedCode/ECE-6122/commit/7d56234bee979d9ec48e833e1b291fb1c028abf8))
+
 ## 1.0.0 (2026-02-19)
 
 ### Features
