@@ -25,7 +25,7 @@ auto RayTracer::castRaysSingleThreaded(const sf::Vector2f &lightPos, int numRays
     results.resize(numRays);
     for (int i = 0; i < numRays; ++i)
     {
-        float angle = (2.0f * M_PI * i) / numRays;
+        float angle = (2.0F * M_PI * i) / numRays;
         Ray ray;
         ray.origin = lightPos;
         ray.direction = {std::cos(angle), std::sin(angle)};
@@ -41,7 +41,7 @@ auto RayTracer::castRaysOpenMP(const sf::Vector2f &lightPos, int numRays, const 
 #pragma omp parallel for schedule(static)
     for (int i = 0; i < numRays; ++i)
     {
-        float angle = (2.0f * M_PI * i) / numRays;
+        float angle = (2.0F * M_PI * i) / numRays;
         Ray ray;
         ray.origin = lightPos;
         ray.direction = {std::cos(angle), std::sin(angle)};
@@ -59,10 +59,10 @@ auto RayTracer::castRaysStdThread(const sf::Vector2f &lightPos, int numRays, con
     {
         int start = t * chunkSize;
         int end = (t == numThreads - 1) ? numRays : start + chunkSize;
-        threads.emplace_back([&, start, end]() {
+        threads.emplace_back([&, start, end]() -> void {
             for (int i = start; i < end; ++i)
             {
-                float angle = (2.0f * M_PI * i) / numRays;
+                float angle = (2.0F * M_PI * i) / numRays;
                 Ray ray;
                 ray.origin = lightPos;
                 ray.direction = {std::cos(angle), std::sin(angle)};

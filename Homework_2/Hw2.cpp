@@ -94,13 +94,13 @@ auto loadFont(const std::string &fontPath, const std::string &executablePath) ->
     fflush(stderr);
 
 #ifdef _WIN32
-    int saved_stderr = _dup(2);            // Duplicate file descriptor 2 (stderr) and returns a new file descriptor number
-    int devnull = _open("NUL", _O_WRONLY); // Open the null device for writing
-    _dup2(devnull, 2);                     // Redirect file descriptor 2 (stderr) to point to the null device
+    int saved_stderr = _dup(2);               // Duplicate file descriptor 2 (stderr) and returns a new file descriptor number
+    int devnull = _open("NUL", _O_WRONLY, 0); // Open the null device for writing
+    _dup2(devnull, 2);                        // Redirect file descriptor 2 (stderr) to point to the null device
 #else
-    int saved_stderr = dup(2);                 // Duplicate file descriptor 2 (stderr) and returns a new file descriptor number
-    int devnull = open("/dev/null", O_WRONLY); // Open the null device for writing
-    dup2(devnull, 2);                          // Redirects file descriptor 2 (stderr) to point to the null device
+    int saved_stderr = dup(2);                    // Duplicate file descriptor 2 (stderr) and returns a new file descriptor number
+    int devnull = open("/dev/null", O_WRONLY, 0); // Open the null device for writing
+    dup2(devnull, 2);                             // Redirects file descriptor 2 (stderr) to point to the null device
 #endif
 
     bool loaded = font.loadFromFile(fontPath);
