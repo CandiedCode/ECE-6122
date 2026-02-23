@@ -55,5 +55,5 @@ CheckOptions:
   - key: modernize-use-transparent-functors.SafeMode
     value: '0'
 
-  - key: readability-identifier-length.IgnoredVariableNames                                                                                                                 
-    value: 'a|b|c|oc|t|t1|t2|u|x|y' 
+  - key: readability-identifier-length.IgnoredVariableNames
+    value: 'a|b|c|oc|t|t1|t2|u|x|y'

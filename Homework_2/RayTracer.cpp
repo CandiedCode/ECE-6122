@@ -14,6 +14,7 @@
 #include "Scene.h"
 #include <algorithm>
 #include <cmath>
+#include <math.h>
 #include <omp.h>
 #include <thread>
 #include <vector>
@@ -24,7 +25,7 @@ auto RayTracer::castRaysSingleThreaded(const sf::Vector2f &lightPos, int numRays
     results.resize(numRays);
     for (int i = 0; i < numRays; ++i)
     {
-        float angle = static_cast<float>((2.0f * M_PI * i) / numRays);
+        float angle = (2.0f * M_PI * i) / numRays;
         Ray ray;
         ray.origin = lightPos;
         ray.direction = {std::cos(angle), std::sin(angle)};
@@ -40,7 +41,7 @@ auto RayTracer::castRaysOpenMP(const sf::Vector2f &lightPos, int numRays, const 
 #pragma omp parallel for schedule(static)
     for (int i = 0; i < numRays; ++i)
     {
-        float angle = static_cast<float>((2.0f * M_PI * i) / numRays);
+        float angle = (2.0f * M_PI * i) / numRays;
         Ray ray;
         ray.origin = lightPos;
         ray.direction = {std::cos(angle), std::sin(angle)};

@@ -10,6 +10,7 @@
  */
 
 #include "Scene.h"
+
 #include "Geometry.h"
 #include <SFML/Graphics.hpp>
 #include <algorithm>
@@ -17,6 +18,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <limits>
+#include <math.h>
 #include <random>
 
 Scene::Scene(int windowWidth, int windowHeight, int numSpheres, int numWalls)
@@ -148,7 +150,7 @@ auto Scene::createWalls() -> void
         }
         else if (maxX > windowWidth)
         {
-            offsetX = static_cast<float>(windowWidth) - maxX;
+            offsetX = windowWidth - maxX;
         }
         if (minY < 0.F)
         {
@@ -156,7 +158,7 @@ auto Scene::createWalls() -> void
         }
         else if (maxY > windowHeight)
         {
-            offsetY = static_cast<float>(windowHeight) - maxY;
+            offsetY = windowHeight - maxY;
         }
 
         wall.setPosition(pos.x + offsetX, pos.y + offsetY);

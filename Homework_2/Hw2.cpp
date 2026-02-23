@@ -60,13 +60,19 @@ auto renderModeToString(RenderMode mode) -> std::string
 auto renderModeFromString(const std::string &mode) -> RenderMode
 {
     if (mode == "Single-Threaded")
+    {
         return RenderMode::SingleThreaded;
-    else if (mode == "OpenMP")
+    }
+    if (mode == "OpenMP")
+    {
         return RenderMode::OpenMP;
+    }
     else if (mode == "StdThread")
+    {
         return RenderMode::StdThread;
-    else
-        return RenderMode::SingleThreaded; // Default case
+    }
+
+    return RenderMode::SingleThreaded; // Default case
 }
 
 /** @brief Load a font from the specified file path
@@ -129,7 +135,7 @@ auto loadFont(const std::string &fontPath, const std::string &executablePath) ->
 // @brief Calculate the number of threads available on the hardware
 auto calculateThreads() -> int
 {
-    int maxThreads = static_cast<int>(std::thread::hardware_concurrency());
+    uint maxThreads = std::thread::hardware_concurrency();
     if (maxThreads == 0)
     {
         maxThreads = 1; // Fallback if hardware_concurrency() returns 0
@@ -154,7 +160,7 @@ auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitRes
         lines[2 * i].color = sf::Color(255, 200, 50, 180); // bright at source
 
         // End point is dim if hit, or far if no hit
-        lines[2 * i + 1].position = results[i].point;
+        lines[(2 * i) + 1].position = results[i].point;
         lines[(2 * i) + 1].color = sf::Color(255, 100, 0, 30); // dim at hit
     }
 

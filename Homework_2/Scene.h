@@ -16,9 +16,6 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
-// Forward declaration
-class RayTracer;
-
 /** @class Scene
  *  @brief Manages geometric objects (spheres and planes) in a ray tracing scene
  */
@@ -30,8 +27,8 @@ class Scene
     int windowHeight;
     int numSpheres;
     int numWalls;
-    std::vector<sf::CircleShape> spheres;
-    std::vector<sf::RectangleShape> walls;
+    std::vector<sf::CircleShape> spheres{};
+    std::vector<sf::RectangleShape> walls{};
 
     /** @brief Create a sphere (circle) with the specified radius
      *  @param radius The radius of the sphere
