@@ -117,7 +117,7 @@ auto Scene::createWalls() -> void
         // Compute all 4 world-space corners of the rotated wall
         sf::Vector2f pos = wall.getPosition();
         sf::Vector2f size = wall.getSize();
-        float rot_rad = wall.getRotation() * 3.14159265F / 180.0F;
+        float rot_rad = wall.getRotation() * M_PI / 180.0F;
         float cos_r = std::cos(rot_rad);
         float sin_r = std::sin(rot_rad);
 
