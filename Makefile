@@ -26,6 +26,16 @@ lint/tidy: ## Run clang-tidy static analysis
 		-path ./node_modules -prune -o \
 		-path ./Homework_0 -prune -o \
 		-path ./Homework_1 -prune -o \
+		\( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy -p build
+	@echo "✓ clang-tidy analysis complete"
+
+.PHONY: lint/tidy-fix
+lint/tidy-fix: ## Run clang-tidy static analysis and apply fixes
+	@echo "Running clang-tidy..."
+	@find . -path ./build -prune -o \
+		-path ./node_modules -prune -o \
+		-path ./Homework_0 -prune -o \
+		-path ./Homework_1 -prune -o \
 		\( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy -p build --fix --fix-errors
 	@echo "✓ clang-tidy analysis complete"
 
@@ -59,6 +69,10 @@ cmake: BUILD_TYPE ?= Debug
 cmake: ## Generate CMake build files using the default preset
 	@echo "Generating CMake build files..."
 	cd build && cmake .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_PREFIX_PATH=/opt/homebrew/opt/libomp
+
+.PHONY: cmake/benchmark
+cmake/benchmark: ## Generate CMake build files for Benchmark configuration
+	cmake --build build --config Benchmark --verbose
 
 .PHONY: cmake/debug
 cmake/debug: ## Generate CMake build files for Debug configuration

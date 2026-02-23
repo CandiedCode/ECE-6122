@@ -1,6 +1,16 @@
 
 project(Homework_2 VERSION 1.0)
 
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;Benchmark" CACHE STRING "" FORCE)
+set(CMAKE_CXX_FLAGS_BENCHMARK "-O2 -DNDEBUG" CACHE STRING "" FORCE)
+
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS "CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
+
 # Include FetchContent for downloading dependencies
 include(FetchContent)
 
@@ -15,6 +25,9 @@ set(SFML_BUILD_AUDIO OFF CACHE BOOL "")  # We only need graphics, window, and sy
 # Download and make dependencies available
 FetchContent_MakeAvailable(SFML)
 
+# Find threading library
+find_package(Threads REQUIRED)
+
 # Find OpenMP with proper error handling
 find_package(OpenMP REQUIRED COMPONENTS CXX)
 message(STATUS "OpenMP found: ${OPENMP_CXX_FOUND}")
@@ -25,4 +38,7 @@ file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 # Create Homework_2 executable
 add_executable(Hw2 ${SOURCES})
-target_link_libraries(Hw2 PRIVATE sfml-graphics sfml-window sfml-system OpenMP::OpenMP_CXX)
+
+# Link libraries
+target_link_libraries(Hw2 PRIVATE sfml-graphics sfml-window sfml-system Threads::Threads OpenMP::OpenMP_CXX)
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts" DESTINATION "${COMMON_OUTPUT_DIR}/bin/")

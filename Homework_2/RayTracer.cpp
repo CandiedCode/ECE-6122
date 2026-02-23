@@ -1,1 +1,75 @@
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-02-13
+ * Description:  Homework 2: Ray Tracing Visualization with Multiple Rendering Modes
+ *
+ *
+ * @file RayTracer.cpp
+ * @brief Ray tracing calculations for visualization. Determines ray intersections with various shapes.  These functions were provided as
+ * part of Homework 2 artifacts.
+ */
+
 #include "RayTracer.h"
+#include "Scene.h"
+#include <algorithm>
+#include <cmath>
+#include <math.h>
+#include <omp.h>
+#include <thread>
+#include <vector>
+
+auto RayTracer::castRaysSingleThreaded(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results)
+    -> void
+{
+    results.resize(numRays);
+    for (int i = 0; i < numRays; ++i)
+    {
+        float angle = (2.0F * M_PI * i) / numRays;
+        Ray ray;
+        ray.origin = lightPos;
+        ray.direction = {std::cos(angle), std::sin(angle)};
+        results[i] = scene.closestIntersection(ray);
+    }
+}
+
+auto RayTracer::castRaysOpenMP(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results,
+                               int numThreads) -> void
+{
+    results.resize(numRays);
+    omp_set_num_threads(numThreads);
+#pragma omp parallel for schedule(static)
+    for (int i = 0; i < numRays; ++i)
+    {
+        float angle = (2.0F * M_PI * i) / numRays;
+        Ray ray;
+        ray.origin = lightPos;
+        ray.direction = {std::cos(angle), std::sin(angle)};
+        results[i] = scene.closestIntersection(ray);
+    }
+}
+
+auto RayTracer::castRaysStdThread(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results,
+                                  int numThreads) -> void
+{
+    results.resize(numRays);
+    std::vector<std::thread> threads;
+    int chunkSize = numRays / numThreads;
+    for (int t = 0; t < numThreads; ++t)
+    {
+        int start = t * chunkSize;
+        int end = (t == numThreads - 1) ? numRays : start + chunkSize;
+        threads.emplace_back([&, start, end]() -> void {
+            for (int i = start; i < end; ++i)
+            {
+                float angle = (2.0F * M_PI * i) / numRays;
+                Ray ray;
+                ray.origin = lightPos;
+                ray.direction = {std::cos(angle), std::sin(angle)};
+                results[i] = scene.closestIntersection(ray);
+            }
+        });
+    }
+    for (auto &th : threads)
+        th.join();
+}
