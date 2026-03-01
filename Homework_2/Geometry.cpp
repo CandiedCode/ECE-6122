@@ -74,7 +74,7 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall
 
     // Calculate the four corners of the rectangle
     // Corners relative to position (0,0)
-    const std::array<sf::Vector2f, 4> corners = {{
+    std::array<sf::Vector2f, 4> corners = {{
         {0.0F, 0.0F},     // Top-left
         {size.x, 0.0F},   // Top-right
         {size.x, size.y}, // Bottom-right
