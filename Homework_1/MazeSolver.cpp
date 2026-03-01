@@ -15,6 +15,7 @@ The BreadthFirstSearch and AStarSearch classes inherit from MazeSolver and imple
 #include <algorithm>
 #include <limits>
 #include <list>
+#include <vector>
 
 // Define static constexpr members of MazeSolver
 constexpr int MazeSolver::DIRECTION_ROW[];

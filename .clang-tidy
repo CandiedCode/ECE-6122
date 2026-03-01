@@ -15,7 +15,7 @@ Checks: >
   -readability-magic-numbers,
 WarningsAsErrors: ''
 
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: '^(?!.*SFML/)'
 
 FormatStyle: none
 

@@ -22,7 +22,7 @@ repos:
         entry: cpplint
         language: python
         types: [c++]
-        exclude: ^build/
+        exclude: ^(build/|SFML/)
   - repo: https://github.com/pre-commit/mirrors-clang-format
     rev: v17.0.6
     hooks:
@@ -30,7 +30,7 @@ repos:
         name: clang-format
         description: Format C++ files with clang-format
         types: [c++]
-        exclude: ^build/
+        exclude: ^(build/|SFML/)
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
@@ -40,7 +40,7 @@ repos:
         entry: clang-tidy
         language: python
         types: [c++]
-        exclude: ^build/
+        exclude: ^(build/|SFML/)
         args:
           - "-p=build"
           - "--checks=-clang-diagnostic-error"
@@ -53,7 +53,7 @@ repos:
         entry: cppcheck
         language: python
         types: [c++]
-        exclude: ^build/
+        exclude: ^(build/|SFML/)
         args:
           - "--enable=all"
           - "--suppress=missingIncludeSystem"
