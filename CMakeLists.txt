@@ -27,6 +27,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
+# add_subdirectory(SFML)
 add_subdirectory(Homework_0)
 add_subdirectory(Homework_1)
 add_subdirectory(Homework_2)
