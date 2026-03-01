@@ -237,8 +237,7 @@ void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, const sf::Tim
 
     if (!solving || nodesExploredCount % 10 == 0)
     {
-        std::cout << "Nodes explored: " << nodesExploredCount << ", Elapsed time: " << elapsedTime.asMicroseconds()
-                  << " µs." << std::endl;
+        std::cout << "Nodes explored: " << nodesExploredCount << ", Elapsed time: " << elapsedTime.asMicroseconds() << " µs." << std::endl;
     }
 }
 
