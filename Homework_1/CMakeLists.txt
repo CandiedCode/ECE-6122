@@ -16,6 +16,10 @@ set(SFML_BUILD_AUDIO OFF CACHE BOOL "")  # We only need graphics, window, and sy
 # Download and make SFML available
 FetchContent_MakeAvailable(SFML)
 
+# # Uncomment this out for PACE Ice to include Local SFML directory (Make sure FetchContent block above is commented out
+# include_directories(${PROJECT_SOURCE_DIR}/../SFML/include)
+# link_directories(${PROJECT_SOURCE_DIR}/../SFML/lib)
+
 # Create library for Maze components
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 

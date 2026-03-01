@@ -212,7 +212,7 @@ sf::Text getText(sf::Font &font, const std::string &str, unsigned int size, sf::
  * @param deltaTime Time elapsed since last update
  * @param solving Reference to the boolean indicating if the solver is currently animating
  * @param solver Reference to the MazeSolver object to perform the next step
- * @param animationSpeed Reference to the animation speed
+ * @param animationSpeed Reference to the animation speed (time per step)
  * @param nodesExploredCount Reference to the nodes explored counter
  * @param elapsedTime Reference to the sf::Time object representing the elapsed time for solving the maze
  */
@@ -221,17 +221,23 @@ void update(sf::Time deltaTime, bool &solving, MazeSolver &solver, const sf::Tim
 {
     static sf::Time accumulated;
     accumulated += deltaTime;
-    if (accumulated >= animationSpeed && solving)
+
+    // Run multiple steps per frame based on accumulated time
+    while (accumulated >= animationSpeed && solving)
     {
-        accumulated = sf::Time::Zero;
+        accumulated -= animationSpeed;
         sf::Clock stepClock;
         if (solver.step(nodesExploredCount))
         {
             solving = false;
+            break; // Stop running steps if we've found the goal
         }
         elapsedTime += stepClock.getElapsedTime();
-        std::cout << "Step completed. Nodes explored: " << nodesExploredCount << ", Elapsed time: " << elapsedTime.asMicroseconds()
-                  << " µs." << std::endl;
+    }
+
+    if (!solving || nodesExploredCount % 10 == 0)
+    {
+        std::cout << "Nodes explored: " << nodesExploredCount << ", Elapsed time: " << elapsedTime.asMicroseconds() << " µs." << std::endl;
     }
 }
 

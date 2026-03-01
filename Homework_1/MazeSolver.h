@@ -132,7 +132,7 @@ class BreadthFirstSearch : public MazeSolver
 
   private:
     std::queue<Position> frontier;
-    std::unordered_map<Position, bool, PositionHash> visited;
+    std::vector<std::vector<bool>> visited;
 };
 
 // @class AStarSearch
@@ -166,8 +166,8 @@ class AStarSearch : public MazeSolver
 
   private:
     std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openSet;
-    std::unordered_map<Position, int, PositionHash> gScore;
-    std::unordered_map<Position, bool, PositionHash> inOpenSet;
+    std::vector<std::vector<int>> gScore;
+    std::vector<std::vector<bool>> inOpenSet;
 
     /** @brief Manhattan distance heuristic for A* search
      *  @param a First position

@@ -12,7 +12,10 @@ The BreadthFirstSearch and AStarSearch classes inherit from MazeSolver and imple
 
 #include "MazeSolver.h"
 #include "MazeGenerator.h"
+#include <algorithm>
+#include <limits>
 #include <list>
+#include <vector>
 
 // Define static constexpr members of MazeSolver
 constexpr int MazeSolver::DIRECTION_ROW[];
@@ -53,8 +56,10 @@ std::list<Position> MazeSolver::reconstructPath()
 
 BreadthFirstSearch::BreadthFirstSearch(Maze &maze) : MazeSolver(maze)
 {
+    // Initialize 2D visited array with maze dimensions, all false
+    visited.assign(maze.getHeight(), std::vector<bool>(maze.getWidth(), false));
     frontier.push(start);
-    visited[start] = true;
+    visited[start.row][start.col] = true;
 }
 
 void BreadthFirstSearch::reset()
@@ -64,11 +69,15 @@ void BreadthFirstSearch::reset()
     // Clear all data structures
     while (!frontier.empty())
         frontier.pop();
-    visited.clear();
+    // Reset visited array instead of clearing (more efficient)
+    for (auto &row : visited)
+    {
+        std::fill(row.begin(), row.end(), false);
+    }
 
     // Reinitialize with start position
     frontier.push(start);
-    visited[start] = true;
+    visited[start.row][start.col] = true;
 }
 
 std::list<Position> BreadthFirstSearch::solveMaze()
@@ -109,9 +118,9 @@ bool BreadthFirstSearch::step(int &nodesExploredCount)
         Position next = {current.row + DIRECTION_ROW[i], current.col + DIRECTION_COL[i]};
 
         // Only visit unvisited, passable cells
-        if (m_maze.isValidPath(next.row, next.col) && !visited[next])
+        if (m_maze.isValidPath(next.row, next.col) && !visited[next.row][next.col])
         {
-            visited[next] = true;
+            visited[next.row][next.col] = true;
             cameFrom[next] = current; // Track path for reconstruction
             frontier.push(next);      // Add to queue for future exploration
             nodesExploredCount++;
@@ -129,9 +138,15 @@ bool BreadthFirstSearch::step(int &nodesExploredCount)
 
 AStarSearch::AStarSearch(Maze &maze) : MazeSolver(maze)
 {
+    // Initialize 2D arrays with maze dimensions
+    int height = maze.getHeight();
+    int width = maze.getWidth();
+    gScore.assign(height, std::vector<int>(width, std::numeric_limits<int>::max()));
+    inOpenSet.assign(height, std::vector<bool>(width, false));
+
     openSet.push({start, manhattanDistance(start, end)});
-    gScore[start] = 0;
-    inOpenSet[start] = true;
+    gScore[start.row][start.col] = 0;
+    inOpenSet[start.row][start.col] = true;
 }
 
 void AStarSearch::reset()
@@ -140,12 +155,20 @@ void AStarSearch::reset()
 
     while (!openSet.empty())
         openSet.pop();
-    gScore.clear();
-    inOpenSet.clear();
 
-    gScore[start] = 0;
+    // Reset 2D arrays instead of clearing
+    for (auto &row : gScore)
+    {
+        std::fill(row.begin(), row.end(), std::numeric_limits<int>::max());
+    }
+    for (auto &row : inOpenSet)
+    {
+        std::fill(row.begin(), row.end(), false);
+    }
+
+    gScore[start.row][start.col] = 0;
     openSet.push({start, manhattanDistance(start, end)});
-    inOpenSet[start] = true;
+    inOpenSet[start.row][start.col] = true;
 }
 
 std::list<Position> AStarSearch::solveMaze()
@@ -175,7 +198,7 @@ bool AStarSearch::step(int &nodesExploredCount)
     // Priority queue gives us the cell with lowest f-score (best guess at shortest path)
     Node current = openSet.top();
     openSet.pop();
-    inOpenSet[current.pos] = false;
+    inOpenSet[current.pos.row][current.pos.col] = false;
 
     // Check if we've reached the goal
     if (current.pos == end)
@@ -195,24 +218,24 @@ bool AStarSearch::step(int &nodesExploredCount)
 
             // Calculate path cost
             // g-score: actual distance from start to next node
-            int tentativeG = gScore[current.pos] + 1;
+            int tentativeG = gScore[current.pos.row][current.pos.col] + 1;
 
             // Check if this is a new cell or if we found a better path to it
-            if (gScore.find(next) == gScore.end() || tentativeG < gScore[next])
+            if (gScore[next.row][next.col] == std::numeric_limits<int>::max() || tentativeG < gScore[next.row][next.col])
             {
                 // Record this as the best path to 'next' so far
                 cameFrom[next] = current.pos;
-                gScore[next] = tentativeG;
+                gScore[next.row][next.col] = tentativeG;
 
                 // Calculate heuristic
                 // f-score: estimated total cost = actual cost + Manhattan distance to goal
                 int fScore = tentativeG + manhattanDistance(next, end);
 
                 // Add to open set only if not already there
-                if (!inOpenSet[next])
+                if (!inOpenSet[next.row][next.col])
                 {
                     openSet.push({next, fScore});
-                    inOpenSet[next] = true;
+                    inOpenSet[next.row][next.col] = true;
 
                     // Mark explored cells (not start/end) as "visited" for UI animation
                     if (m_maze.getCell(next.row, next.col).type == CellType::Path)

@@ -10,13 +10,13 @@ lint/makefile: ## Lint Makefile using checkmake
 .PHONY: lint/format
 lint/format: ## Check code formatting using clang-format
 	@echo "Checking code formatting..."
-	@find . -path ./build -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-format -i --Werror
+	@find . -path ./build -prune -o -path ./SFML -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-format -i --Werror
 	@echo "✓ Code formatting check complete"
 
 .PHONY: lint/cpplint
 lint/cpplint: ## Lint C++ code using cpplint
 	@echo "Linting C++ code..."
-	@find . -path ./build -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs cpplint
+	@find . -path ./build -prune -o -path ./SFML -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs cpplint
 	@echo "✓ C++ linting complete"
 
 .PHONY: lint/tidy
@@ -24,6 +24,7 @@ lint/tidy: ## Run clang-tidy static analysis
 	@echo "Running clang-tidy..."
 	@find . -path ./build -prune -o \
 		-path ./node_modules -prune -o \
+		-path ./SFML -prune -o \
 		-path ./Homework_0 -prune -o \
 		-path ./Homework_1 -prune -o \
 		\( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy -p build
@@ -34,6 +35,7 @@ lint/tidy-fix: ## Run clang-tidy static analysis and apply fixes
 	@echo "Running clang-tidy..."
 	@find . -path ./build -prune -o \
 		-path ./node_modules -prune -o \
+		-path ./SFML -prune -o \
 		-path ./Homework_0 -prune -o \
 		-path ./Homework_1 -prune -o \
 		\( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy -p build --fix --fix-errors
@@ -49,6 +51,7 @@ lint/cppcheck: ## Run Cppcheck security analysis with MISRA rules
 		--std=c++17 \
 		-i build \
 		-i node_modules \
+		-i SFML \
 		.
 	@echo "✓ Cppcheck analysis complete"
 

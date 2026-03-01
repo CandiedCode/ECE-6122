@@ -161,6 +161,9 @@ void Maze::draw(sf::RenderWindow &window)
     int offsetY = MAZE_OFFSET;
     int cellSize = m_cell_size;
 
+    // Create rectangle shape once and reuse for all cells
+    sf::RectangleShape cellShape(sf::Vector2f(cellSize, cellSize));
+
     for (int y = 0; y < m_height; ++y)
     {
         for (int x = 0; x < m_width; ++x)
@@ -170,11 +173,7 @@ void Maze::draw(sf::RenderWindow &window)
             // Draw rectangles for walls based on cell.walls booleans
             float left = offsetX + x * cellSize;
             float top = offsetY + y * cellSize;
-            // These are not used
-            // float right = left + cellSize;
-            // float bottom = top + cellSize;
-
-            sf::RectangleShape cellShape(sf::Vector2f(cellSize, cellSize));
+            // Update position for this cell
             cellShape.setPosition(left, top);
 
             switch (cell.type)
