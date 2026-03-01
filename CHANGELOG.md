@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/CandiedCode/ECE-6122/compare/v1.1.0...v1.1.1) (2026-03-01)
+
+### Performance Improvements
+
+* Move RectangleShape outside your draw loop ([a92b737](https://github.com/CandiedCode/ECE-6122/commit/a92b7376e72f294a1ba9eee50f4ab9e375345bd5))
+* use 2d array for o(1) lookup ([7492028](https://github.com/CandiedCode/ECE-6122/commit/74920286229bdfedffe9ac60cc7c8ad040bbe7c2))
+* Use Delta Time to run multiple solver.step() calls per frame ([ec28b77](https://github.com/CandiedCode/ECE-6122/commit/ec28b7741c5accb64a4f5aaf2d7595bcaf8d5bdb))
+
 ## [1.1.0](https://github.com/CandiedCode/ECE-6122/compare/v1.0.0...v1.1.0) (2026-02-23)
 
 ### Features
