@@ -13,6 +13,7 @@
 #include "RayTracer.h"
 #include <SFML/Graphics.hpp>
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <limits>
 #include <utility>
@@ -85,6 +86,54 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall
     float cos_rotate = std::cos(rotation_radians);
     float sin_rotate = std::sin(rotation_radians);
 
+    std::array<sf::Vector2f, 4> rotated_corners;
+    for (size_t i = 0; i < corners.size(); ++i)
+    {
+        const auto &corner = corners[i];
+        // Rotate the corner around the origin
+        float rotated_x = corner.x * cos_rotate - corner.y * sin_rotate;
+        float rotated_y = corner.x * sin_rotate + corner.y * cos_rotate;
+
+        // Translate to the rectangle's position
+        rotated_corners[i] = {rotated_x + pos.x, rotated_y + pos.y};
+    }
+
+    // Test ray intersection against each edge of the rotated rectangle
+    for (int i = 0; i < 4; ++i)
+    {
+        int next = (i + 1) % 4;
+        HitResult edge_hit = intersectLineSegment(ray, rotated_corners[i], rotated_corners[next]);
+
+        // Keep track of the closest valid hit
+        if (edge_hit.hit && edge_hit.distance < closest_result.distance)
+        {
+            closest_result = edge_hit;
+        }
+    }
+
+    return closest_result;
+}
+
+auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall, float cos_rotate, float sin_rotate) -> HitResult
+{
+    HitResult closest_result;
+    closest_result.hit = false;
+    closest_result.distance = std::numeric_limits<float>::max();
+
+    // Get rectangle properties
+    sf::Vector2f pos = wall.getPosition();
+    sf::Vector2f size = wall.getSize();
+
+    // Calculate the four corners of the rectangle
+    // Corners relative to position (0,0)
+    const std::array<sf::Vector2f, 4> corners = {{
+        {0.0F, 0.0F},           // Top-left
+        {size.x, 0.0F},         // Top-right
+        {size.x, size.y},       // Bottom-right
+        {0.0F, size.y}          // Bottom-left
+    }};
+
+    // Rotate and translate corners to world space (using cached cos/sin)
     std::array<sf::Vector2f, 4> rotated_corners;
     for (size_t i = 0; i < corners.size(); ++i)
     {

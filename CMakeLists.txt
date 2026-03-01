@@ -22,9 +22,38 @@ elseif(UNIX)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${COMMON_OUTPUT_DIR}/lib")  # For static libraries
 endif()
 
-# Add compiler warnings globally
+# Add strict compiler warnings and checks globally
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    add_compile_options(-Wall -Wextra -pedantic)
+    add_compile_options(
+        -Wall                                    # Enable all standard warnings
+        -Wextra                                  # Enable extra warnings
+        -pedantic                                # Strict ISO C++ compliance
+        -Wshadow                                 # Warn about variable shadowing
+        # -Wconversion                             # Warn about implicit conversions
+        # -Wsign-conversion                        # Warn about sign conversions
+        -Wold-style-cast                         # Warn about C-style casts
+        -Woverloaded-virtual                     # Warn about overloaded virtuals
+        -Wnon-virtual-dtor                       # Warn about non-virtual destructors
+        -Wformat=2                               # Strict format checking
+        -Werror=format-security                  # Error on format security issues
+        -Werror=undef                            # Error on undefined macros
+    )
+endif()
+
+# Additional strict flags for GCC
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_compile_options(
+        -Wduplicated-branches                    # Warn about duplicate branches
+        -Wduplicated-cond                        # Warn about duplicate conditions
+        -Wlogical-op                             # Warn about suspicious logical operations
+    )
+endif()
+
+# Additional strict flags for Clang
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(
+        -Winconsistent-missing-override         # Warn about missing override
+    )
 endif()
 
 # add_subdirectory(SFML)
