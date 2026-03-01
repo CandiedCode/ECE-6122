@@ -1,5 +1,6 @@
 ---
 # Clang-tidy configuration for C++17 with modern best practices
+UseColor: true
 Checks: >
   -*,
   clang-analyzer-*,
@@ -13,6 +14,7 @@ Checks: >
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -readability-magic-numbers,
+  -clang-diagnostic-*,
 WarningsAsErrors: ''
 
 HeaderFilterRegex: '^(?!.*SFML/)'
