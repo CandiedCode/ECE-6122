@@ -4,15 +4,20 @@ repos:
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^(build/|SFML/)
       - id: end-of-file-fixer
+        exclude: ^(build/|SFML/)
       - id: check-toml
+        exclude: ^(build/|SFML/)
       - id: check-merge-conflict
+        exclude: ^(build/|SFML/)
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.38.0
     hooks:
       - id: yamllint
         args: [--strict]
         types_or: [yaml]
+        exclude: ^(build/|SFML/)
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
@@ -67,3 +72,4 @@ repos:
         name: markdownlint
         description: Lint Markdown files
         types: [markdown]
+        exclude: ^(build/|SFML/)
