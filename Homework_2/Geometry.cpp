@@ -74,28 +74,27 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall
 
     // Calculate the four corners of the rectangle
     // Corners relative to position (0,0)
-    std::vector<sf::Vector2f> corners = {// Top-left
-                                         {0.0F, 0.0F},
-                                         // Top-right
-                                         {size.x, 0.0F},
-                                         // Bottom-right
-                                         {size.x, size.y},
-                                         // Bottom-left
-                                         {0.0F, size.y}};
+    const std::array<sf::Vector2f, 4> corners = {{
+        {0.0F, 0.0F},     // Top-left
+        {size.x, 0.0F},   // Top-right
+        {size.x, size.y}, // Bottom-right
+        {0.0F, size.y}    // Bottom-left
+    }};
 
     // Rotate and translate corners to world space
     float cos_rotate = std::cos(rotation_radians);
     float sin_rotate = std::sin(rotation_radians);
 
-    std::vector<sf::Vector2f> rotated_corners;
-    for (const auto &corner : corners)
+    std::array<sf::Vector2f, 4> rotated_corners;
+    for (size_t i = 0; i < corners.size(); ++i)
     {
+        const auto &corner = corners[i];
         // Rotate the corner around the origin
         float rotated_x = corner.x * cos_rotate - corner.y * sin_rotate;
         float rotated_y = corner.x * sin_rotate + corner.y * cos_rotate;
 
         // Translate to the rectangle's position
-        rotated_corners.push_back({rotated_x + pos.x, rotated_y + pos.y});
+        rotated_corners[i] = {rotated_x + pos.x, rotated_y + pos.y};
     }
 
     // Test ray intersection against each edge of the rotated rectangle
