@@ -114,7 +114,7 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall
     return closest_result;
 }
 
-auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall, float cos_rotate, float sin_rotate) -> HitResult
+auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall, float cos_rotation, float sin_rotation) -> HitResult
 {
     HitResult closest_result;
     closest_result.hit = false;
@@ -127,10 +127,10 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall
     // Calculate the four corners of the rectangle
     // Corners relative to position (0,0)
     const std::array<sf::Vector2f, 4> corners = {{
-        {0.0F, 0.0F},           // Top-left
-        {size.x, 0.0F},         // Top-right
-        {size.x, size.y},       // Bottom-right
-        {0.0F, size.y}          // Bottom-left
+        {0.0F, 0.0F},     // Top-left
+        {size.x, 0.0F},   // Top-right
+        {size.x, size.y}, // Bottom-right
+        {0.0F, size.y}    // Bottom-left
     }};
 
     // Rotate and translate corners to world space (using cached cos/sin)
@@ -139,8 +139,8 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall
     {
         const auto &corner = corners[i];
         // Rotate the corner around the origin
-        float rotated_x = corner.x * cos_rotate - corner.y * sin_rotate;
-        float rotated_y = corner.x * sin_rotate + corner.y * cos_rotate;
+        float rotated_x = corner.x * cos_rotation - corner.y * sin_rotation;
+        float rotated_y = corner.x * sin_rotation + corner.y * cos_rotation;
 
         // Translate to the rectangle's position
         rotated_corners[i] = {rotated_x + pos.x, rotated_y + pos.y};

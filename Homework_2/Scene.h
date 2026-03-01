@@ -27,8 +27,9 @@ class Scene
     int windowHeight;
     int numSpheres;
     int numWalls;
-    std::vector<sf::CircleShape> spheres{};
-    std::vector<sf::RectangleShape> walls{};
+    std::vector<sf::CircleShape> spheres;
+    std::vector<sf::RectangleShape> walls;
+    std::vector<std::pair<float, float>> wallRotationCache; // pairs of (cos, sin)
 
     /** @brief Create a sphere (circle) with the specified radius
      *  @param radius The radius of the sphere
@@ -82,6 +83,15 @@ class Scene
      *  @return HitResult containing the closest intersection, or no hit if nothing is intersected
      */
     [[nodiscard]] auto closestIntersection(const Ray &ray) const -> HitResult;
+
+    /** @brief Get cached sin/cos values for walls
+     *  @return Reference to vector of cached (cos, sin) pairs for each wall
+     */
+    [[nodiscard]] auto getWallRotationCache() const -> const std::vector<std::pair<float, float>> &
+    {
+        return wallRotationCache;
+    }
+
     auto createScene() -> void;
 };
 

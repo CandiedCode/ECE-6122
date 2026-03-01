@@ -18,7 +18,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <limits>
-#include <math.h>
 #include <random>
 
 Scene::Scene(int windowWidth, int windowHeight, int numSpheres, int numWalls)
@@ -80,6 +79,8 @@ auto Scene::createWalls() -> void
     // Reserve space for walls to improve performance
     walls.clear();
     walls.reserve(numWalls);
+    wallRotationCache.clear();
+    wallRotationCache.reserve(numWalls);
 
     thread_local static unsigned int seed = std::random_device()();
 
@@ -163,8 +164,9 @@ auto Scene::createWalls() -> void
 
         wall.setPosition(pos.x + offsetX, pos.y + offsetY);
 
-        // Add wall to the scene
+        // Add wall to the scene and cache its sin/cos values for fast ray intersection
         walls.push_back(wall);
+        wallRotationCache.push_back({cos_r, sin_r});
     }
 }
 
@@ -205,10 +207,11 @@ auto Scene::closestIntersection(const Ray &ray) const -> HitResult
         }
     }
 
-    // Check intersection with all walls
-    for (const auto &wall : walls)
+    // Check intersection with all walls (using cached sin/cos for efficiency)
+    for (size_t i = 0; i < walls.size(); ++i)
     {
-        HitResult hit = Geometry::intersectRectangle(ray, wall);
+        const auto &[cos_cached, sin_cached] = wallRotationCache[i];
+        HitResult hit = Geometry::intersectRectangle(ray, walls[i], cos_cached, sin_cached);
         if (hit.hit && hit.distance < closest.distance)
         {
             closest = hit;
