@@ -61,17 +61,17 @@ auto Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &point1, 
     return result;
 }
 
-auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall) -> HitResult
+auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &rectangle) -> HitResult
 {
     HitResult closest_result;
     closest_result.hit = false;
     closest_result.distance = std::numeric_limits<float>::max();
 
     // Get rectangle properties
-    sf::Vector2f pos = wall.getPosition();
-    sf::Vector2f size = wall.getSize();
-    float rotation_degrees = wall.getRotation();
-    float rotation_radians = rotation_degrees * static_cast<float>(M_PI) / 180.0F;
+    sf::Vector2f pos = rectangle.getPosition();
+    sf::Vector2f size = rectangle.getSize();
+    float rotation_degrees = rectangle.getRotation();
+    auto rotation_radians = rotation_degrees * static_cast<float>(M_PI) / 180.0F;
 
     // Calculate the four corners of the rectangle
     // Corners relative to position (0,0)
@@ -83,16 +83,16 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall
     }};
 
     // Rotate and translate corners to world space
-    float cos_rotate = std::cos(rotation_radians);
-    float sin_rotate = std::sin(rotation_radians);
+    auto cos_rotate = std::cos(rotation_radians);
+    auto sin_rotate = std::sin(rotation_radians);
 
     std::array<sf::Vector2f, 4> rotated_corners;
     for (size_t i = 0; i < corners.size(); ++i)
     {
         const auto &corner = corners[i];
         // Rotate the corner around the origin
-        float rotated_x = corner.x * cos_rotate - corner.y * sin_rotate;
-        float rotated_y = corner.x * sin_rotate + corner.y * cos_rotate;
+        float rotated_x = (corner.x * cos_rotate) - (corner.y * sin_rotate);
+        float rotated_y = (corner.x * sin_rotate) + (corner.y * cos_rotate);
 
         // Translate to the rectangle's position
         rotated_corners[i] = {rotated_x + pos.x, rotated_y + pos.y};
@@ -114,15 +114,15 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall
     return closest_result;
 }
 
-auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall, float cos_rotation, float sin_rotation) -> HitResult
+auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &rectangle, float cos_rotation, float sin_rotation) -> HitResult
 {
     HitResult closest_result;
     closest_result.hit = false;
     closest_result.distance = std::numeric_limits<float>::max();
 
     // Get rectangle properties
-    sf::Vector2f pos = wall.getPosition();
-    sf::Vector2f size = wall.getSize();
+    sf::Vector2f pos = rectangle.getPosition();
+    sf::Vector2f size = rectangle.getSize();
 
     // Calculate the four corners of the rectangle
     // Corners relative to position (0,0)
@@ -139,8 +139,8 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &wall
     {
         const auto &corner = corners[i];
         // Rotate the corner around the origin
-        float rotated_x = corner.x * cos_rotation - corner.y * sin_rotation;
-        float rotated_y = corner.x * sin_rotation + corner.y * cos_rotation;
+        float rotated_x = (corner.x * cos_rotation) - (corner.y * sin_rotation);
+        float rotated_y = (corner.x * sin_rotation) + (corner.y * cos_rotation);
 
         // Translate to the rectangle's position
         rotated_corners[i] = {rotated_x + pos.x, rotated_y + pos.y};
@@ -190,7 +190,7 @@ auto Geometry::intersectCircle(const Ray &ray, const sf::CircleShape &circle) ->
     }
 
     // discriminant ≥ 0, then t = (−b ± √discriminant) / 2a
-    float sqrt_discriminant = std::sqrt(discriminant);
+    auto sqrt_discriminant = std::sqrt(discriminant);
     float t1 = (-b - sqrt_discriminant) / (2.0F * a);
     float t2 = (-b + sqrt_discriminant) / (2.0F * a);
 

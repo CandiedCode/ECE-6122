@@ -111,16 +111,16 @@ auto Scene::createWalls() -> void
         // Compute all 4 world-space corners of the rotated wall
         sf::Vector2f pos = wall.getPosition();
         sf::Vector2f size = wall.getSize();
-        float rot_rad = wall.getRotation() * M_PI / 180.0F;
-        float cos_r = std::cos(rot_rad);
-        float sin_r = std::sin(rot_rad);
+        auto rot_rad = wall.getRotation() * static_cast<float>(M_PI) / 180.0F;
+        auto cos_r = std::cos(rot_rad);
+        auto sin_r = std::sin(rot_rad);
 
         std::array<sf::Vector2f, 4> localCorners = {sf::Vector2f{0.f, 0.f}, {size.x, 0.f}, {size.x, size.y}, {0.f, size.y}};
 
-        float minX = std::numeric_limits<float>::max();
-        float maxX = -std::numeric_limits<float>::max();
-        float minY = std::numeric_limits<float>::max();
-        float maxY = -std::numeric_limits<float>::max();
+        auto minX = std::numeric_limits<float>::max();
+        auto maxX = -std::numeric_limits<float>::max();
+        auto minY = std::numeric_limits<float>::max();
+        auto maxY = -std::numeric_limits<float>::max();
 
         for (const auto &c : localCorners)
         {
@@ -140,17 +140,17 @@ auto Scene::createWalls() -> void
         {
             offsetX = -minX;
         }
-        else if (maxX > windowWidth)
+        else if (maxX > static_cast<float>(windowWidth))
         {
-            offsetX = windowWidth - maxX;
+            offsetX = static_cast<float>(windowWidth) - maxX;
         }
         if (minY < 0.F)
         {
             offsetY = -minY;
         }
-        else if (maxY > windowHeight)
+        else if (maxY > static_cast<float>(windowHeight))
         {
-            offsetY = windowHeight - maxY;
+            offsetY = static_cast<float>(windowHeight) - maxY;
         }
 
         wall.setPosition(pos.x + offsetX, pos.y + offsetY);

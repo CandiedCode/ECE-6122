@@ -27,8 +27,8 @@ class Scene
     int windowHeight;
     int numSpheres;
     int numWalls;
-    std::vector<sf::CircleShape> spheres;
-    std::vector<sf::RectangleShape> walls;
+    std::vector<sf::CircleShape> spheres{};
+    std::vector<sf::RectangleShape> walls{};
     std::vector<std::pair<float, float>> wallRotationCache; // pairs of (cos, sin)
 
     /** @brief Create a sphere (circle) with the specified radius
