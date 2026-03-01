@@ -21,7 +21,8 @@
 #include <random>
 
 Scene::Scene(int windowWidth, int windowHeight, int numSpheres, int numWalls)
-    : windowWidth(windowWidth), windowHeight(windowHeight), numSpheres(numSpheres), numWalls(numWalls)
+    : windowWidth(windowWidth), windowHeight(windowHeight), numSpheres(numSpheres), numWalls(numWalls), spheres(numSpheres),
+      walls(numWalls), wallRotationCache(numWalls)
 {
     createScene();
 }
@@ -52,10 +53,6 @@ auto Scene::createWall(double width, double height, sf::Color color) -> sf::Rect
 
 auto Scene::createSpheres() -> void
 {
-    // Reserve space for spheres to improve performance
-    spheres.clear();
-    spheres.reserve(numSpheres);
-
     thread_local static unsigned int seed = std::random_device()();
 
     for (int i = 0; i < numSpheres; ++i)
@@ -70,18 +67,12 @@ auto Scene::createSpheres() -> void
         sphere.setPosition(static_cast<float>(rand_r(&seed) % (windowWidth - 10 - static_cast<int>(2 * radius))),
                            static_cast<float>(rand_r(&seed) % (windowHeight - 10 - static_cast<int>(2 * radius))));
         // Add sphere to the scene
-        spheres.push_back(sphere);
+        spheres[i] = sphere;
     }
 }
 
 auto Scene::createWalls() -> void
 {
-    // Reserve space for walls to improve performance
-    walls.clear();
-    walls.reserve(numWalls);
-    wallRotationCache.clear();
-    wallRotationCache.reserve(numWalls);
-
     thread_local static unsigned int seed = std::random_device()();
 
     for (int i = 0; i < numWalls; ++i)
@@ -165,8 +156,8 @@ auto Scene::createWalls() -> void
         wall.setPosition(pos.x + offsetX, pos.y + offsetY);
 
         // Add wall to the scene and cache its sin/cos values for fast ray intersection
-        walls.push_back(wall);
-        wallRotationCache.push_back({cos_r, sin_r});
+        walls[i] = wall;
+        wallRotationCache[i] = {cos_r, sin_r};
     }
 }
 
