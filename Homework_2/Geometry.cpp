@@ -29,14 +29,14 @@ auto Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &point1, 
     // Segment: S(u) = p1 + u * (p2 - p1)          (0 ≤ u ≤ 1)
 
     sf::Vector2f segment_direction = point2 - point1;
-    sf::Vector2f oc = point1 - ray.origin;
+    sf::Vector2f oc = point1 - ray.origin; // Vector from ray origin to segment start
 
     // Calculate the 2D cross product (returns scalar)
     // A × B = A.x * B.y - A.y * B.x
-    float denom = (ray.direction.x * segment_direction.y) - (ray.direction.y * segment_direction.x);
+    float denominator = (ray.direction.x * segment_direction.y) - (ray.direction.y * segment_direction.x);
 
     // Check if ray and segment are parallel
-    if (std::abs(denom) < PARALLEL_THRESHOLD)
+    if (std::abs(denominator) < PARALLEL_THRESHOLD)
     {
         // Ray and segment are parallel, no intersection
         return result;
@@ -45,8 +45,8 @@ auto Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &point1, 
     // Solve for t and u using the parametric equations
     // t·d - u·s = oc
     // Using cross products:
-    float t = (oc.x * segment_direction.y - oc.y * segment_direction.x) / denom;
-    float u = (oc.x * ray.direction.y - oc.y * ray.direction.x) / denom;
+    float t = (oc.x * segment_direction.y - oc.y * segment_direction.x) / denominator;
+    float u = (oc.x * ray.direction.y - oc.y * ray.direction.x) / denominator;
 
     // Valid intersection when:
     // - t ≥ 0 (intersection is in front of ray)
