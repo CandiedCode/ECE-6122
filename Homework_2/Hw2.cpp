@@ -10,6 +10,7 @@
  */
 
 #include "RayTracer.h"
+#include "Report.h"
 #include "Scene.h"
 #include <SFML/Graphics.hpp>
 #include <algorithm>
@@ -156,13 +157,27 @@ auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitRes
     sf::VertexArray lines(sf::Lines, 2 * numRays);
     for (int i = 0; i < numRays; ++i)
     {
-        //  Starting Position (light source) is bright
-        lines[2 * i].position = mousePos;
-        lines[2 * i].color = sf::Color(255, 200, 50, 180); // bright at source
+        // //  Starting Position (light source) is bright
+        // lines[2 * i].position = mousePos;
+        // lines[2 * i].color = sf::Color(255, 100, 0, 30); // dim at hit
 
-        // End point is dim if hit, or far if no hit
-        lines[(2 * i) + 1].position = results[i].point;
-        lines[(2 * i) + 1].color = sf::Color(255, 100, 0, 30); // dim at hit
+        // // End point is dim if hit, or far if no hit
+        // lines[(2 * i) + 1].position = results[i].point;
+        // lines[(2 * i) + 1].color = sf::Color(255, 200, 50, 180); // bright at source
+        // Bright at source
+        lines[2 * i].position = mousePos;
+        lines[2 * i].color = sf::Color(255, 100, 0, 30);
+
+        // Brightness based on distance to hit point
+        auto hitPoint = results[i].point;
+        float distance = std::hypot(hitPoint.x - mousePos.x, hitPoint.y - mousePos.y);
+
+        // Inverse square law: brightness = 1 / (distance^2)
+        // Clamp to avoid division issues
+        float brightness = std::max(50.0f, std::min(255.0f, 10000.0f / (distance * distance)));
+
+        lines[(2 * i) + 1].position = hitPoint;
+        lines[(2 * i) + 1].color = sf::Color(255, 200, 50, static_cast<int>(brightness));
     }
 
     return lines;
@@ -204,10 +219,15 @@ auto executeRayTracing(RenderMode mode, RayTracer &rayTracer, const Scene &scene
  *  @param timings Deque to store the last N timing measurements
  *  @param elapsed Elapsed time in microseconds for current iteration
  *  @param maxSize Maximum number of iterations to track
+ *  @param report Report object for writing CSV data
+ *  @param renderMode The rendering mode as string (for CSV)
+ *  @param threadCount Number of threads used (for CSV)
+ *  @param rayCount Number of rays cast (for CSV)
  *  @return Average time in microseconds if buffer is full, std::nullopt otherwise
  */
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, int maxSize) -> std::optional<int32_t>
+auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, int maxSize, Report &report, const std::string &renderMode,
+                               int threadCount, int rayCount) -> std::optional<int32_t>
 {
     timings.push_back(elapsed);
     if (static_cast<int>(timings.size()) > maxSize)
@@ -217,6 +237,13 @@ auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, in
 
     if (static_cast<int>(timings.size()) == maxSize)
     {
+        // Write CSV row with the current (single) elapsed time when buffer reaches max
+        if (report.isOpenForWriting())
+        {
+            report.writeData(renderMode, threadCount, rayCount, elapsed);
+        }
+
+        // Still calculate and return average for on-screen display
         int32_t sum = std::accumulate(timings.begin(), timings.end(), int32_t{0});
         return sum / maxSize;
     }
@@ -225,16 +252,18 @@ auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, in
 }
 
 /**
- * @brief Parse command line arguments to configure rendering mode, number of rays, and number of threads
- * @param argc Argument count * @param argv Argument vector
- * @param mode Reference to string to store the rendering mode
- * @param numRays Reference to integer to store the number of rays
- * @param numThreads Reference to integer to store the number of threads
+ * @brief Parse command line arguments to configure rendering mode, number of rays, number of threads, and CSV flag
+ * @param argc Argument count
+ * @param argv Argument vector
+ * @param mode Reference to store the rendering mode
+ * @param numThreads Reference to store the number of threads
+ * @param numRays Reference to store the number of rays
+ * @param enableCSV Reference to store CSV flag
  */
-void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode, int &numThreads, int &numRays)
+void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode, int &numThreads, int &numRays, bool &enableCSV)
 {
-    // Parse command line arguments. If not exactly 4 arguments, use defaults.
-    if (argc != 4)
+    // Parse command line arguments. If not 4 or 5 arguments, use defaults.
+    if (argc < 4 || argc > 5)
     {
         return;
     }
@@ -242,6 +271,17 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
     mode = renderModeFromString(modeStr);
     numThreads = std::stoi(argv[2]);
     numRays = std::stoi(argv[3]);
+
+    // Check for CSV flag (4th argument)
+    if (argc == 5)
+    {
+        std::string csvArg = argv[4];
+        enableCSV = (csvArg == "--csv" || csvArg == "-csv");
+        if (enableCSV)
+        {
+            std::cout << "CSV output enabled\n";
+        }
+    }
 }
 
 auto main(int argc, const char *argv[]) -> int
@@ -268,7 +308,11 @@ auto main(int argc, const char *argv[]) -> int
     RenderMode mode = RenderMode::SingleThreaded; // Default to single-threaded mode
     int numRays = rayCountIncrement;              // Default to 3600 rays for 1 degree resolution
     int currentThreadCount = 2;
-    parseArgs(argc, std::vector<const char *>(argv, argv + argc), mode, currentThreadCount, numRays);
+    bool enableCSV = false;
+    parseArgs(argc, std::vector<const char *>(argv, argv + argc), mode, currentThreadCount, numRays, enableCSV);
+
+    // Create Report object for CSV reporting if enabled
+    Report report(enableCSV);
 
     RayTracer rayTracer; // Create an instance of the RayTracer class to perform ray tracing operations
     // Load font for text rendering
@@ -356,8 +400,9 @@ auto main(int argc, const char *argv[]) -> int
         // Execute ray tracing and measure elapsed time
         auto elapsedMicroseconds = executeRayTracing(mode, rayTracer, scene, mousePos, numRays, currentThreadCount, results);
         sf::Text timingText;
-        // Update timing history and get average if ready
-        if (auto average = updateTimingAndGetAverage(timings, elapsedMicroseconds, MAX_ITERATIONS))
+        // Update timing history and get average if ready, and write CSV if enabled
+        if (auto average = updateTimingAndGetAverage(timings, elapsedMicroseconds, MAX_ITERATIONS, report, renderModeToString(mode),
+                                                     currentThreadCount, numRays))
         {
             timingText.setString("Avg (" + std::to_string(MAX_ITERATIONS) + "): " + std::to_string(*average) + " microseconds");
             timingText.setFont(font);

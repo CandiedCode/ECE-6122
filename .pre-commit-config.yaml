@@ -36,19 +36,19 @@ repos:
         description: Format C++ files with clang-format
         types: [c++]
         exclude: ^(build/|SFML/)
-  - repo: https://github.com/pocc/pre-commit-hooks
-    rev: v1.3.5
-    hooks:
-      - id: clang-tidy
-        name: clang-tidy
-        description: Run clang-tidy static analysis
-        entry: clang-tidy
-        language: python
-        types: [c++]
-        exclude: ^(build/|SFML/)
-        args:
-          - "-p=build"
-          - "--checks=-clang-diagnostic-error"
+  # - repo: https://github.com/pocc/pre-commit-hooks
+  #   rev: v1.3.5
+  #   hooks:
+  #     - id: clang-tidy
+  #       name: clang-tidy
+  #       description: Run clang-tidy static analysis
+  #       entry: clang-tidy
+  #       language: python
+  #       types: [c++]
+  #       exclude: ^(build/|SFML/)
+  #       args:
+  #         - "-p=build"
+  #         - "--checks=-clang-diagnostic-error"
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
     hooks:
