@@ -1,6 +1,12 @@
 .PHONY: all
 all: build
 
+.PHONY: lint
+lint: lint/markdown
+lint: lint/format lint/cpplint lint/cppcheck
+lint: ## Run all linting tasks except lint/tidy (which can be very verbose)
+	@echo "✓ All linting tasks complete"
+
 .PHONY: lint/makefile
 lint/makefile: ## Lint Makefile using checkmake
 	@echo "Linting Makefile..."
