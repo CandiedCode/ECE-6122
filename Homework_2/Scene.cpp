@@ -200,6 +200,7 @@ auto Scene::closestIntersection(const Ray &ray) const -> HitResult
         if (hit.hit && hit.distance < closest.distance)
         {
             closest = hit;
+            closest.color = sphere.getOutlineColor();
         }
     }
 
@@ -211,6 +212,7 @@ auto Scene::closestIntersection(const Ray &ray) const -> HitResult
         if (hit.hit && hit.distance < closest.distance)
         {
             closest = hit;
+            closest.color = walls[i].getFillColor();
         }
     }
 

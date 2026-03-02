@@ -154,33 +154,29 @@ auto calculateThreads() -> int
  */
 auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitResult> &results) -> sf::VertexArray
 {
-    sf::VertexArray lines(sf::Lines, 2 * numRays);
+    sf::VertexArray rays(sf::Lines, 2 * numRays); // Need 2 vertices per line
     for (int i = 0; i < numRays; ++i)
     {
-        // //  Starting Position (light source) is bright
-        // lines[2 * i].position = mousePos;
-        // lines[2 * i].color = sf::Color(255, 100, 0, 30); // dim at hit
-
-        // // End point is dim if hit, or far if no hit
-        // lines[(2 * i) + 1].position = results[i].point;
-        // lines[(2 * i) + 1].color = sf::Color(255, 200, 50, 180); // bright at source
-        // Bright at source
-        lines[2 * i].position = mousePos;
-        lines[2 * i].color = sf::Color(255, 100, 0, 30);
+        // Even Vertices: start point (light source)
+        rays[2 * i].position = mousePos;
+        rays[2 * i].color = sf::Color(255, 100, 0, 30);
 
         // Brightness based on distance to hit point
         auto hitPoint = results[i].point;
-        float distance = std::hypot(hitPoint.x - mousePos.x, hitPoint.y - mousePos.y);
+        float distance{std::hypot(hitPoint.x - mousePos.x, hitPoint.y - mousePos.y)};
 
         // Inverse square law: brightness = 1 / (distance^2)
         // Clamp to avoid division issues
-        float brightness = std::max(50.0f, std::min(255.0f, 10000.0f / (distance * distance)));
+        float brightness{std::max(50.0f, std::min(255.0f, 10000.0f / (distance * distance)))};
 
-        lines[(2 * i) + 1].position = hitPoint;
-        lines[(2 * i) + 1].color = sf::Color(255, 200, 50, static_cast<int>(brightness));
+        // Odd Vertices: end point (hit point)
+        sf::Color hitColor = results[i].color;
+        hitColor.a = static_cast<sf::Uint8>(brightness); // Set alpha based on brightness
+        rays[(2 * i) + 1].position = hitPoint;
+        rays[(2 * i) + 1].color = hitColor; // sf::Color(255, 200, 50, static_cast<int>(brightness));
     }
 
-    return lines;
+    return rays;
 }
 
 /** @brief Execute ray tracing based on the current rendering mode
