@@ -23,11 +23,11 @@ auto RayTracer::castRaysSingleThreaded(const sf::Vector2f &lightPos, int numRays
     -> void
 {
     results.resize(numRays);
+    Ray ray;
+    ray.origin = lightPos;
     for (int i = 0; i < numRays; ++i)
     {
         auto angle = (2.0F * static_cast<float>(M_PI) * i) / numRays;
-        Ray ray;
-        ray.origin = lightPos;
         ray.direction = {std::cos(angle), std::sin(angle)};
         results[i] = scene.closestIntersection(ray);
     }
@@ -62,11 +62,11 @@ auto RayTracer::castRaysStdThread(const sf::Vector2f &lightPos, int numRays, con
         int start = threadIdx * chunkSize;
         int end = (threadIdx == numThreads - 1) ? numRays : start + chunkSize;
         threads.emplace_back([&, start, end]() -> void {
+            Ray ray;
+            ray.origin = lightPos;
             for (int i = start; i < end; ++i)
             {
                 auto angle = (2.0F * static_cast<float>(M_PI) * i) / numRays;
-                Ray ray;
-                ray.origin = lightPos;
                 ray.direction = {std::cos(angle), std::sin(angle)};
                 results[i] = scene.closestIntersection(ray);
             }
