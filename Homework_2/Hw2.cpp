@@ -33,6 +33,7 @@
 #endif
 
 // @brief Enum to represent different rendering modes
+// NOLINTNEXTLINE(performance-enum-size)
 enum class RenderMode : std::uint8_t
 {
     SingleThreaded,
@@ -67,7 +68,7 @@ auto renderModeFromString(const std::string &mode) -> RenderMode
     {
         return RenderMode::OpenMP;
     }
-    else if (mode == "StdThread")
+    if (mode == "StdThread")
     {
         return RenderMode::StdThread;
     }
@@ -205,6 +206,7 @@ auto executeRayTracing(RenderMode mode, RayTracer &rayTracer, const Scene &scene
  *  @param maxSize Maximum number of iterations to track
  *  @return Average time in microseconds if buffer is full, std::nullopt otherwise
  */
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, int maxSize) -> std::optional<int32_t>
 {
     timings.push_back(elapsed);
@@ -229,7 +231,7 @@ auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, in
  * @param numRays Reference to integer to store the number of rays
  * @param numThreads Reference to integer to store the number of threads
  */
-void parseArgs(int argc, const char *argv[], RenderMode &mode, int &numThreads, int &numRays)
+void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode, int &numThreads, int &numRays)
 {
     // Parse command line arguments. If not exactly 4 arguments, use defaults.
     if (argc != 4)
@@ -266,7 +268,7 @@ auto main(int argc, const char *argv[]) -> int
     RenderMode mode = RenderMode::SingleThreaded; // Default to single-threaded mode
     int numRays = rayCountIncrement;              // Default to 3600 rays for 1 degree resolution
     int currentThreadCount = 2;
-    parseArgs(argc, argv, mode, currentThreadCount, numRays);
+    parseArgs(argc, std::vector<const char *>(argv, argv + argc), mode, currentThreadCount, numRays);
 
     RayTracer rayTracer; // Create an instance of the RayTracer class to perform ray tracing operations
     // Load font for text rendering
@@ -290,6 +292,7 @@ auto main(int argc, const char *argv[]) -> int
             }
             else if (event.type == sf::Event::KeyPressed)
             {
+                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
                 switch (event.key.code)
                 {
                 case sf::Keyboard::Escape:
@@ -331,6 +334,7 @@ auto main(int argc, const char *argv[]) -> int
                     scene.createScene(); // Regenerate scene with new random objects
                     std::cout << "Scene randomized\n";
                     break;
+                // NOLINTNEXTLINE(bugprone-branch-clone)
                 case sf::Keyboard::W:
                 case sf::Keyboard::Up:
                     currentThreadCount = std::min(maxThreads, currentThreadCount + 1);
@@ -350,7 +354,7 @@ auto main(int argc, const char *argv[]) -> int
         sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
         // Execute ray tracing and measure elapsed time
-        int32_t elapsedMicroseconds = executeRayTracing(mode, rayTracer, scene, mousePos, numRays, currentThreadCount, results);
+        auto elapsedMicroseconds = executeRayTracing(mode, rayTracer, scene, mousePos, numRays, currentThreadCount, results);
         sf::Text timingText;
         // Update timing history and get average if ready
         if (auto average = updateTimingAndGetAverage(timings, elapsedMicroseconds, MAX_ITERATIONS))

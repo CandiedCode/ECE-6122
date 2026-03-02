@@ -180,6 +180,7 @@ auto Scene::draw(sf::RenderWindow &window) -> void
     }
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 auto Scene::closestIntersection(const Ray &ray) const -> HitResult
 {
     constexpr float MAX_RAY_DIST = 2000.0F;

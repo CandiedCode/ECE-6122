@@ -14,18 +14,18 @@
 #include "Scene.h"
 #include <algorithm>
 #include <cmath>
-#include <math.h>
 #include <omp.h>
 #include <thread>
 #include <vector>
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 auto RayTracer::castRaysSingleThreaded(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results)
     -> void
 {
     results.resize(numRays);
     for (int i = 0; i < numRays; ++i)
     {
-        float angle = (2.0F * M_PI * i) / numRays;
+        auto angle = (2.0F * static_cast<float>(M_PI) * i) / numRays;
         Ray ray;
         ray.origin = lightPos;
         ray.direction = {std::cos(angle), std::sin(angle)};
@@ -33,6 +33,7 @@ auto RayTracer::castRaysSingleThreaded(const sf::Vector2f &lightPos, int numRays
     }
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 auto RayTracer::castRaysOpenMP(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results,
                                int numThreads) -> void
 {
@@ -41,7 +42,7 @@ auto RayTracer::castRaysOpenMP(const sf::Vector2f &lightPos, int numRays, const 
 #pragma omp parallel for schedule(static)
     for (int i = 0; i < numRays; ++i)
     {
-        float angle = (2.0F * M_PI * i) / numRays;
+        auto angle = (2.0F * static_cast<float>(M_PI) * i) / numRays;
         Ray ray;
         ray.origin = lightPos;
         ray.direction = {std::cos(angle), std::sin(angle)};
@@ -49,20 +50,21 @@ auto RayTracer::castRaysOpenMP(const sf::Vector2f &lightPos, int numRays, const 
     }
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 auto RayTracer::castRaysStdThread(const sf::Vector2f &lightPos, int numRays, const Scene &scene, std::vector<HitResult> &results,
                                   int numThreads) -> void
 {
     results.resize(numRays);
     std::vector<std::thread> threads;
     int chunkSize = numRays / numThreads;
-    for (int t = 0; t < numThreads; ++t)
+    for (int threadIdx = 0; threadIdx < numThreads; ++threadIdx)
     {
-        int start = t * chunkSize;
-        int end = (t == numThreads - 1) ? numRays : start + chunkSize;
+        int start = threadIdx * chunkSize;
+        int end = (threadIdx == numThreads - 1) ? numRays : start + chunkSize;
         threads.emplace_back([&, start, end]() -> void {
             for (int i = start; i < end; ++i)
             {
-                float angle = (2.0F * M_PI * i) / numRays;
+                auto angle = (2.0F * static_cast<float>(M_PI) * i) / numRays;
                 Ray ray;
                 ray.origin = lightPos;
                 ray.direction = {std::cos(angle), std::sin(angle)};
