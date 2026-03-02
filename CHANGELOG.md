@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/CandiedCode/ECE-6122/compare/v1.1.1...v1.1.2) (2026-03-02)
+
+### Performance Improvements
+
+* replace vector with array for performance optimization ([3ec41f6](https://github.com/CandiedCode/ECE-6122/commit/3ec41f685cc03f79a59d6c2837ca7b9aea6b9631))
+* replace vector with array for performance optimization ([41caade](https://github.com/CandiedCode/ECE-6122/commit/41caade1d4d5fb9e73b691c6f30785279fb4cf03))
+
 ## [1.1.1](https://github.com/CandiedCode/ECE-6122/compare/v1.1.0...v1.1.1) (2026-03-01)
 
 ### Performance Improvements
