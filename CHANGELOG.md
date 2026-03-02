@@ -1,3 +1,9 @@
+## [1.1.3](https://github.com/CandiedCode/ECE-6122/compare/v1.1.2...v1.1.3) (2026-03-02)
+
+### Performance Improvements
+
+* reuse RAY object ([02809ab](https://github.com/CandiedCode/ECE-6122/commit/02809abd33033f1ead1a5eaef34cd76d6527b031))
+
 ## [1.1.2](https://github.com/CandiedCode/ECE-6122/compare/v1.1.1...v1.1.2) (2026-03-02)
 
 ### Performance Improvements
