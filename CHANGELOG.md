@@ -1,3 +1,9 @@
+## [1.1.4](https://github.com/CandiedCode/ECE-6122/compare/v1.1.3...v1.1.4) (2026-03-02)
+
+### Performance Improvements
+
+* create a static constexpr for RayTracer::TWO_PI ([0462c39](https://github.com/CandiedCode/ECE-6122/commit/0462c395a7220b37d820bdb3ed703b7b59987bcb))
+
 ## [1.1.3](https://github.com/CandiedCode/ECE-6122/compare/v1.1.2...v1.1.3) (2026-03-02)
 
 ### Performance Improvements
