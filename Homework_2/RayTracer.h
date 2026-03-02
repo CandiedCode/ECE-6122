@@ -14,6 +14,7 @@
 #define HOMEWORK_2_RAYTRACER_H_
 
 #include <SFML/Graphics.hpp>
+#include <cmath>
 #include <vector>
 
 // Forward declarations
@@ -25,6 +26,9 @@ class Scene;
 
 class RayTracer
 {
+  private:
+    static constexpr float TWO_PI = 2.0F * static_cast<float>(M_PI);
+
   public:
     /** @brief Cast rays from a light source in a single thread
      *  @param lightPos The position of the light source

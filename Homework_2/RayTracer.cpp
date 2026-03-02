@@ -27,7 +27,7 @@ auto RayTracer::castRaysSingleThreaded(const sf::Vector2f &lightPos, int numRays
     ray.origin = lightPos;
     for (int i = 0; i < numRays; ++i)
     {
-        auto angle = (2.0F * static_cast<float>(M_PI) * i) / numRays;
+        auto angle = (RayTracer::TWO_PI * static_cast<float>(i)) / static_cast<float>(numRays);
         ray.direction = {std::cos(angle), std::sin(angle)};
         results[i] = scene.closestIntersection(ray);
     }
@@ -42,7 +42,7 @@ auto RayTracer::castRaysOpenMP(const sf::Vector2f &lightPos, int numRays, const 
 #pragma omp parallel for schedule(static)
     for (int i = 0; i < numRays; ++i)
     {
-        auto angle = (2.0F * static_cast<float>(M_PI) * i) / numRays;
+        auto angle = (RayTracer::TWO_PI * static_cast<float>(i)) / static_cast<float>(numRays);
         Ray ray;
         ray.origin = lightPos;
         ray.direction = {std::cos(angle), std::sin(angle)};
@@ -66,7 +66,7 @@ auto RayTracer::castRaysStdThread(const sf::Vector2f &lightPos, int numRays, con
             ray.origin = lightPos;
             for (int i = start; i < end; ++i)
             {
-                auto angle = (2.0F * static_cast<float>(M_PI) * i) / numRays;
+                auto angle = (RayTracer::TWO_PI * static_cast<float>(i)) / static_cast<float>(numRays);
                 ray.direction = {std::cos(angle), std::sin(angle)};
                 results[i] = scene.closestIntersection(ray);
             }
