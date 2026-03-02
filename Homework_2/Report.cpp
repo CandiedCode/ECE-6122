@@ -77,7 +77,6 @@ Report::Report(bool enable) : isOpen(false)
     else
     {
         throw std::runtime_error("Failed to open " + filename + " for writing");
-        std::cerr << "Warning: Failed to open " << filename << " for writing\n";
     }
 }
 
