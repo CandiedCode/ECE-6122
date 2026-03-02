@@ -1,3 +1,10 @@
+## [1.2.0](https://github.com/CandiedCode/ECE-6122/compare/v1.1.4...v1.2.0) (2026-03-02)
+
+### Features
+
+* add inital Report.h file structure ([e6c69bd](https://github.com/CandiedCode/ECE-6122/commit/e6c69bdc51dfc895aafe8b6869d64f4325f2b6d3))
+* add support for BUILD_TYPE_RELEASE and BUILD_TYPE_DEBUG ([d5ed441](https://github.com/CandiedCode/ECE-6122/commit/d5ed4414e90e259c1984167a1edff3123e743d50))
+
 ## [1.1.4](https://github.com/CandiedCode/ECE-6122/compare/v1.1.3...v1.1.4) (2026-03-02)
 
 ### Performance Improvements
