@@ -19,8 +19,8 @@
 // @brief Struct to represent a ray in 2D space
 struct Ray
 {
-    sf::Vector2f origin{};
-    sf::Vector2f direction{}; // unit vector
+    sf::Vector2f origin;
+    sf::Vector2f direction; // unit vector
 };
 
 // @brief Struct to represent the result of a ray intersection test
@@ -28,7 +28,7 @@ struct HitResult
 {
     bool hit = false;
     float distance = std::numeric_limits<float>::max();
-    sf::Vector2f point{};
+    sf::Vector2f point;
 };
 
 /**
@@ -49,12 +49,23 @@ class Geometry
     static auto intersectLineSegment(const Ray &ray, const sf::Vector2f &point1, const sf::Vector2f &point2) -> HitResult;
 
     /**
-     * @brief Test intersection between a ray and an axis-aligned rectangle
+     * @brief Test intersection between a ray and a rectangle
      * @param ray The ray to test
      * @param rectangle The rectangle shape to test against
      * @return HitResult containing intersection information
      */
     static auto intersectRectangle(const Ray &ray, const sf::RectangleShape &rectangle) -> HitResult;
+
+    /**
+     * @brief Test intersection between a ray and a rectangle using cached sin/cos values
+     * @param ray The ray to test
+     * @param rectangle The rectangle shape to test against
+     * @param cos_rotation Pre-computed cosine of rotation angle
+     * @param sin_rotation Pre-computed sine of rotation angle
+     * @return HitResult containing intersection information
+     */
+    static auto intersectRectangle(const Ray &ray, const sf::RectangleShape &rectangle, float cos_rotation, float sin_rotation)
+        -> HitResult;
 
     /**
      * @brief Test intersection between a ray and a circle (sphere in 2D)

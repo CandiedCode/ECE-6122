@@ -5,6 +5,9 @@ project(ECE6122 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Generate compile_commands.json for clang-tidy
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Define a common output directory
 set(COMMON_OUTPUT_DIR "${CMAKE_BINARY_DIR}/output")
 if(WIN32)
@@ -20,11 +23,6 @@ elseif(UNIX)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${COMMON_OUTPUT_DIR}/bin")  # For executables
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${COMMON_OUTPUT_DIR}/lib")  # For shared libraries
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${COMMON_OUTPUT_DIR}/lib")  # For static libraries
-endif()
-
-# Add compiler warnings globally
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    add_compile_options(-Wall -Wextra -pedantic)
 endif()
 
 # add_subdirectory(SFML)

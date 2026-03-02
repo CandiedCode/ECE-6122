@@ -18,11 +18,11 @@
 #include <cmath>
 #include <cstdlib>
 #include <limits>
-#include <math.h>
 #include <random>
 
 Scene::Scene(int windowWidth, int windowHeight, int numSpheres, int numWalls)
-    : windowWidth(windowWidth), windowHeight(windowHeight), numSpheres(numSpheres), numWalls(numWalls)
+    : windowWidth(windowWidth), windowHeight(windowHeight), numSpheres(numSpheres), numWalls(numWalls), spheres(numSpheres),
+      walls(numWalls), wallRotationCache(numWalls)
 {
     createScene();
 }
@@ -53,10 +53,6 @@ auto Scene::createWall(double width, double height, sf::Color color) -> sf::Rect
 
 auto Scene::createSpheres() -> void
 {
-    // Reserve space for spheres to improve performance
-    spheres.clear();
-    spheres.reserve(numSpheres);
-
     thread_local static unsigned int seed = std::random_device()();
 
     for (int i = 0; i < numSpheres; ++i)
@@ -71,16 +67,12 @@ auto Scene::createSpheres() -> void
         sphere.setPosition(static_cast<float>(rand_r(&seed) % (windowWidth - 10 - static_cast<int>(2 * radius))),
                            static_cast<float>(rand_r(&seed) % (windowHeight - 10 - static_cast<int>(2 * radius))));
         // Add sphere to the scene
-        spheres.push_back(sphere);
+        spheres[i] = sphere;
     }
 }
 
 auto Scene::createWalls() -> void
 {
-    // Reserve space for walls to improve performance
-    walls.clear();
-    walls.reserve(numWalls);
-
     thread_local static unsigned int seed = std::random_device()();
 
     for (int i = 0; i < numWalls; ++i)
@@ -119,16 +111,16 @@ auto Scene::createWalls() -> void
         // Compute all 4 world-space corners of the rotated wall
         sf::Vector2f pos = wall.getPosition();
         sf::Vector2f size = wall.getSize();
-        float rot_rad = wall.getRotation() * M_PI / 180.0F;
-        float cos_r = std::cos(rot_rad);
-        float sin_r = std::sin(rot_rad);
+        auto rot_rad = wall.getRotation() * static_cast<float>(M_PI) / 180.0F;
+        auto cos_r = std::cos(rot_rad);
+        auto sin_r = std::sin(rot_rad);
 
         std::array<sf::Vector2f, 4> localCorners = {sf::Vector2f{0.f, 0.f}, {size.x, 0.f}, {size.x, size.y}, {0.f, size.y}};
 
-        float minX = std::numeric_limits<float>::max();
-        float maxX = -std::numeric_limits<float>::max();
-        float minY = std::numeric_limits<float>::max();
-        float maxY = -std::numeric_limits<float>::max();
+        auto minX = std::numeric_limits<float>::max();
+        auto maxX = -std::numeric_limits<float>::max();
+        auto minY = std::numeric_limits<float>::max();
+        auto maxY = -std::numeric_limits<float>::max();
 
         for (const auto &c : localCorners)
         {
@@ -148,23 +140,24 @@ auto Scene::createWalls() -> void
         {
             offsetX = -minX;
         }
-        else if (maxX > windowWidth)
+        else if (maxX > static_cast<float>(windowWidth))
         {
-            offsetX = windowWidth - maxX;
+            offsetX = static_cast<float>(windowWidth) - maxX;
         }
         if (minY < 0.F)
         {
             offsetY = -minY;
         }
-        else if (maxY > windowHeight)
+        else if (maxY > static_cast<float>(windowHeight))
         {
-            offsetY = windowHeight - maxY;
+            offsetY = static_cast<float>(windowHeight) - maxY;
         }
 
         wall.setPosition(pos.x + offsetX, pos.y + offsetY);
 
-        // Add wall to the scene
-        walls.push_back(wall);
+        // Add wall to the scene and cache its sin/cos values for fast ray intersection
+        walls[i] = wall;
+        wallRotationCache[i] = {cos_r, sin_r};
     }
 }
 
@@ -187,6 +180,7 @@ auto Scene::draw(sf::RenderWindow &window) -> void
     }
 }
 
+// NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 auto Scene::closestIntersection(const Ray &ray) const -> HitResult
 {
     constexpr float MAX_RAY_DIST = 2000.0F;
@@ -205,10 +199,11 @@ auto Scene::closestIntersection(const Ray &ray) const -> HitResult
         }
     }
 
-    // Check intersection with all walls
-    for (const auto &wall : walls)
+    // Check intersection with all walls (using cached sin/cos for efficiency)
+    for (size_t i = 0; i < walls.size(); ++i)
     {
-        HitResult hit = Geometry::intersectRectangle(ray, wall);
+        const auto &[cos_cached, sin_cached] = wallRotationCache[i];
+        HitResult hit = Geometry::intersectRectangle(ray, walls[i], cos_cached, sin_cached);
         if (hit.hit && hit.distance < closest.distance)
         {
             closest = hit;

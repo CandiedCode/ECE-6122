@@ -22,24 +22,14 @@ lint/cpplint: ## Lint C++ code using cpplint
 .PHONY: lint/tidy
 lint/tidy: ## Run clang-tidy static analysis
 	@echo "Running clang-tidy..."
-	@find . -path ./build -prune -o \
-		-path ./node_modules -prune -o \
-		-path ./SFML -prune -o \
-		-path ./Homework_0 -prune -o \
-		-path ./Homework_1 -prune -o \
-		\( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy -p build
+	run-clang-tidy -p build -j8 Homework_2
 	@echo "✓ clang-tidy analysis complete"
 
 .PHONY: lint/tidy-fix
 lint/tidy-fix: ## Run clang-tidy static analysis and apply fixes
-	@echo "Running clang-tidy..."
-	@find . -path ./build -prune -o \
-		-path ./node_modules -prune -o \
-		-path ./SFML -prune -o \
-		-path ./Homework_0 -prune -o \
-		-path ./Homework_1 -prune -o \
-		\( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-tidy -p build --fix --fix-errors
-	@echo "✓ clang-tidy analysis complete"
+	@echo "Running clang-tidy with fixes..."
+	run-clang-tidy -p build -j8 -fix Homework_2
+	@echo "✓ clang-tidy fixes applied"
 
 .PHONY: lint/cppcheck
 lint/cppcheck: ## Run Cppcheck security analysis with MISRA rules
