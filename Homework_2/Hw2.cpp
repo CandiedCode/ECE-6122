@@ -247,6 +247,20 @@ auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, in
     return std::nullopt;
 }
 
+/** @brief Display help message for command line arguments */
+void printHelp()
+{
+    std::cout << "Ray Tracer - Usage:\n"
+              << "  --mode <mode>           Rendering mode: Single-Threaded, OpenMP, or StdThread (default: Single-Threaded)\n"
+              << "  --num-threads <count>   Number of threads for parallel modes (default: 2)\n"
+              << "  --num-rays <count>      Number of rays (default: 3600)\n"
+              << "  --csv                   Enable CSV output for performance metrics\n"
+              << "  --help                  Display this help message\n"
+              << "\n"
+              << "Example:\n"
+              << "  Hw2 --mode OpenMP --num-threads 4 --num-rays 3600 --csv\n";
+}
+
 /**
  * @brief Parse command line arguments to configure rendering mode, number of rays, number of threads, and CSV flag
  * @param argc Argument count
@@ -258,24 +272,88 @@ auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, in
  */
 void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode, int &numThreads, int &numRays, bool &enableCSV)
 {
-    // Parse command line arguments. If not 4 or 5 arguments, use defaults.
-    if (argc < 4 || argc > 5)
+    for (int i = 1; i < argc; ++i)
     {
-        return;
-    }
-    std::string modeStr = argv[1];
-    mode = renderModeFromString(modeStr);
-    numThreads = std::stoi(argv[2]);
-    numRays = std::stoi(argv[3]);
+        std::string arg = argv[i];
 
-    // Check for CSV flag (4th argument)
-    if (argc == 5)
-    {
-        std::string csvArg = argv[4];
-        enableCSV = (csvArg == "--csv" || csvArg == "-csv");
-        if (enableCSV)
+        if (arg == "--help")
         {
+            printHelp();
+            exit(EXIT_SUCCESS);
+        }
+
+        if (arg == "--csv")
+        {
+            enableCSV = true;
             std::cout << "CSV output enabled\n";
+        }
+        else if (arg == "--mode")
+        {
+            // Ensure there is a next argument for the mode value
+            if (i + 1 < argc)
+            {
+                std::string modeStr = argv[++i];
+                mode = renderModeFromString(modeStr);
+                std::cout << "Mode set to: " << renderModeToString(mode) << "\n";
+            }
+            else
+            {
+                std::cerr << "Error: --mode requires a value\n";
+                printHelp();
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (arg == "--num-threads")
+        {
+            if (i + 1 < argc)
+            {
+                try
+                {
+                    numThreads = std::stoi(argv[++i]);
+                    std::cout << "Number of threads set to: " << numThreads << "\n";
+                }
+                catch (const std::invalid_argument &e)
+                {
+                    std::cerr << "Error: --num-threads requires a valid integer\n";
+                    printHelp();
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                std::cerr << "Error: --num-threads requires a value\n";
+                printHelp();
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (arg == "--num-rays")
+        {
+            if (i + 1 < argc)
+            {
+                try
+                {
+                    numRays = std::stoi(argv[++i]);
+                    std::cout << "Number of rays set to: " << numRays << "\n";
+                }
+                catch (const std::invalid_argument &e)
+                {
+                    std::cerr << "Error: --num-rays requires a valid integer\n";
+                    printHelp();
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                std::cerr << "Error: --num-rays requires a value\n";
+                printHelp();
+                exit(EXIT_FAILURE);
+            }
+        }
+        else
+        {
+            std::cerr << "Error: Unknown argument '" << arg << "'\n";
+            printHelp();
+            exit(EXIT_FAILURE);
         }
     }
 }

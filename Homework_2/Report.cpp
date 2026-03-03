@@ -72,7 +72,6 @@ Report::Report(bool enable) : isOpen(false)
         csvFile << "timestamp,renderMode,threadCount,rayCount,elapsedMicroseconds,buildMode\n";
         csvFile.flush();
         isOpen = true;
-        std::cout << "Writing performance data to: " << filename << "\n";
     }
     else
     {
