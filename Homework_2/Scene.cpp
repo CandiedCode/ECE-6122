@@ -29,13 +29,17 @@ Scene::Scene(int windowWidth, int windowHeight, int numSpheres, int numWalls)
 
 auto Scene::createSphere(double radius) -> sf::CircleShape
 {
-    return sf::CircleShape(radius);
+    sf::CircleShape sphere(radius);
+    sphere.setFillColor(sf::Color::Transparent);
+    sphere.setOutlineThickness(2.f);
+    sphere.setOutlineColor(sf::Color::White);
+    return sphere;
 }
 
 auto Scene::createSphere(double radius, sf::Color color) -> sf::CircleShape
 {
     sf::CircleShape sphere = createSphere(radius);
-    sphere.setFillColor(color);
+    sphere.setOutlineColor(color);
     return sphere;
 }
 
@@ -57,12 +61,12 @@ auto Scene::createSpheres() -> void
 
     for (int i = 0; i < numSpheres; ++i)
     {
-        // Generate random radius between 10 and 50 (diameter max 100 pixels)
-        double radius = 20.0 + (rand_r(&seed) % 100);
+        // Generate random radius between 50 and 150 (diameter max 300 pixels)
+        double radius = 50.0 + (rand_r(&seed) % 100);
         // Random color with RGB components between 0 and 255
         // sf::Color color(rand_r(&seed) % 256, rand_r(&seed) % 256, rand_r(&seed) % 256);
         // Create sphere using helper method
-        sf::CircleShape sphere = createSphere(radius, sf::Color::Blue);
+        sf::CircleShape sphere = createSphere(radius, sf::Color::Red);
         // Set random position within window bounds
         sphere.setPosition(static_cast<float>(rand_r(&seed) % (windowWidth - 10 - static_cast<int>(2 * radius))),
                            static_cast<float>(rand_r(&seed) % (windowHeight - 10 - static_cast<int>(2 * radius))));
@@ -196,6 +200,7 @@ auto Scene::closestIntersection(const Ray &ray) const -> HitResult
         if (hit.hit && hit.distance < closest.distance)
         {
             closest = hit;
+            closest.color = sphere.getOutlineColor();
         }
     }
 
@@ -207,6 +212,7 @@ auto Scene::closestIntersection(const Ray &ray) const -> HitResult
         if (hit.hit && hit.distance < closest.distance)
         {
             closest = hit;
+            closest.color = walls[i].getFillColor();
         }
     }
 

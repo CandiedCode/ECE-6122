@@ -154,33 +154,29 @@ auto calculateThreads() -> int
  */
 auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitResult> &results) -> sf::VertexArray
 {
-    sf::VertexArray lines(sf::Lines, 2 * numRays);
+    sf::VertexArray rays(sf::Lines, 2 * numRays); // Need 2 vertices per line
     for (int i = 0; i < numRays; ++i)
     {
-        // //  Starting Position (light source) is bright
-        // lines[2 * i].position = mousePos;
-        // lines[2 * i].color = sf::Color(255, 100, 0, 30); // dim at hit
-
-        // // End point is dim if hit, or far if no hit
-        // lines[(2 * i) + 1].position = results[i].point;
-        // lines[(2 * i) + 1].color = sf::Color(255, 200, 50, 180); // bright at source
-        // Bright at source
-        lines[2 * i].position = mousePos;
-        lines[2 * i].color = sf::Color(255, 100, 0, 30);
+        // Even Vertices: start point (light source)
+        rays[2 * i].position = mousePos;
+        rays[2 * i].color = sf::Color(255, 100, 0, 30);
 
         // Brightness based on distance to hit point
         auto hitPoint = results[i].point;
-        float distance = std::hypot(hitPoint.x - mousePos.x, hitPoint.y - mousePos.y);
+        float distance{std::hypot(hitPoint.x - mousePos.x, hitPoint.y - mousePos.y)};
 
         // Inverse square law: brightness = 1 / (distance^2)
         // Clamp to avoid division issues
-        float brightness = std::max(50.0f, std::min(255.0f, 10000.0f / (distance * distance)));
+        float brightness{std::max(50.0f, std::min(255.0f, 10000.0f / (distance * distance)))};
 
-        lines[(2 * i) + 1].position = hitPoint;
-        lines[(2 * i) + 1].color = sf::Color(255, 200, 50, static_cast<int>(brightness));
+        // Odd Vertices: end point (hit point)
+        sf::Color hitColor = results[i].color;
+        hitColor.a = static_cast<sf::Uint8>(brightness); // Set alpha based on brightness
+        rays[(2 * i) + 1].position = hitPoint;
+        rays[(2 * i) + 1].color = hitColor; // sf::Color(255, 200, 50, static_cast<int>(brightness));
     }
 
-    return lines;
+    return rays;
 }
 
 /** @brief Execute ray tracing based on the current rendering mode
@@ -298,7 +294,7 @@ auto main(int argc, const char *argv[]) -> int
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
     const uint WINDOW_WIDTH = desktopMode.width > 0 ? desktopMode.width - 100 : 1000;   // Use desktop width or fallback to 1000
     const uint WINDOW_HEIGHT = desktopMode.height > 0 ? desktopMode.height - 100 : 600; // Use desktop height or fallback to 600
-    const uint PANE_HEIGHT = 50;
+    const uint PANE_HEIGHT = 80;
     const uint DRAWABLE_WIDTH = WINDOW_WIDTH;
     const uint DRAWABLE_HEIGHT = WINDOW_HEIGHT - PANE_HEIGHT;
 
@@ -324,6 +320,10 @@ auto main(int argc, const char *argv[]) -> int
     sf::RectangleShape pane(sf::Vector2f(DRAWABLE_WIDTH, PANE_HEIGHT));
     pane.setPosition(0, DRAWABLE_HEIGHT);
     pane.setFillColor(sf::Color(50, 50, 50, 200)); // Dark semi-transparent
+
+    // Create keyboard controls help text
+    sf::Text controlsText("Q: Exit  +/-: Ray Count  M: RenderMode  R: New Scene  W/S: Thread Count", font, 20);
+    controlsText.setFillColor(sf::Color::White);
 
     while (window.isOpen())
     {
@@ -421,7 +421,7 @@ auto main(int argc, const char *argv[]) -> int
 
         // Draw RenderMode text on the left side of the pane
         sf::Text modeText("Current Mode: " + renderModeToString(mode), font, 20);
-        modeText.setPosition(5, DRAWABLE_HEIGHT + 4);
+        modeText.setPosition(10, DRAWABLE_HEIGHT + 4);
         modeText.setFillColor(sf::Color::White);
 
         sf::Text rayCount("Rays: " + std::to_string(numRays), font, 20);
@@ -433,10 +433,13 @@ auto main(int argc, const char *argv[]) -> int
         threadCount.setFillColor(sf::Color::White);
 
         timingText.setPosition(threadCount.getPosition().x + threadCount.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
+        controlsText.setPosition(10, DRAWABLE_HEIGHT + 44);
+
         window.draw(modeText);
         window.draw(timingText);
         window.draw(rayCount);
         window.draw(threadCount);
+        window.draw(controlsText);
 
         // display window
         window.display();

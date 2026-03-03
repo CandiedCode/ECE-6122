@@ -29,6 +29,7 @@ struct HitResult
     bool hit = false;
     float distance = std::numeric_limits<float>::max();
     sf::Vector2f point;
+    sf::Color color = sf::Color::White;
 };
 
 /**
