@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <unordered_map>
 
 /** @class Report
  *  @brief Manages performance data reporting to CSV files
@@ -23,13 +24,16 @@ class Report
   private:
     std::ofstream csvFile;
     std::string filename;
+    int sampleCount;
+    std::unordered_map<std::string, int> reportingCounts;
     bool isOpen;
 
   public:
     /** @brief Construct a Report object
      *  @param enable Whether to enable CSV reporting
+     *  @param sampleCount Number of samples per configuration
      */
-    explicit Report(bool enable = false);
+    explicit Report(bool enable = false, int sampleCount = 1000);
 
     /** @brief Destructor that closes the file if open
      */

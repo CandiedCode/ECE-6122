@@ -31,7 +31,7 @@ auto Scene::createSphere(double radius) -> sf::CircleShape
 {
     sf::CircleShape sphere(radius);
     sphere.setFillColor(sf::Color::Transparent);
-    sphere.setOutlineThickness(2.f);
+    sphere.setOutlineThickness(2.F);
     sphere.setOutlineColor(sf::Color::White);
     return sphere;
 }
