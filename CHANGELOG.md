@@ -1,3 +1,9 @@
+## [1.4.0](https://github.com/CandiedCode/ECE-6122/compare/v1.3.0...v1.4.0) (2026-03-03)
+
+### Features
+
+* add cli args to make parsing cli easier for capturing csv for reporting ([65ee57a](https://github.com/CandiedCode/ECE-6122/commit/65ee57a775cc7b063fb1665632ef3fa65155fc82))
+
 ## [1.3.0](https://github.com/CandiedCode/ECE-6122/compare/v1.2.0...v1.3.0) (2026-03-03)
 
 ### Features
