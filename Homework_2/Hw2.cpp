@@ -294,7 +294,7 @@ auto main(int argc, const char *argv[]) -> int
     sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
     const uint WINDOW_WIDTH = desktopMode.width > 0 ? desktopMode.width - 100 : 1000;   // Use desktop width or fallback to 1000
     const uint WINDOW_HEIGHT = desktopMode.height > 0 ? desktopMode.height - 100 : 600; // Use desktop height or fallback to 600
-    const uint PANE_HEIGHT = 50;
+    const uint PANE_HEIGHT = 80;
     const uint DRAWABLE_WIDTH = WINDOW_WIDTH;
     const uint DRAWABLE_HEIGHT = WINDOW_HEIGHT - PANE_HEIGHT;
 
@@ -320,6 +320,10 @@ auto main(int argc, const char *argv[]) -> int
     sf::RectangleShape pane(sf::Vector2f(DRAWABLE_WIDTH, PANE_HEIGHT));
     pane.setPosition(0, DRAWABLE_HEIGHT);
     pane.setFillColor(sf::Color(50, 50, 50, 200)); // Dark semi-transparent
+
+    // Create keyboard controls help text
+    sf::Text controlsText("Q: Exit  +/-: Ray Count  M: RenderMode  R: New Scene  W/S: Thread Count", font, 20);
+    controlsText.setFillColor(sf::Color::White);
 
     while (window.isOpen())
     {
@@ -417,7 +421,7 @@ auto main(int argc, const char *argv[]) -> int
 
         // Draw RenderMode text on the left side of the pane
         sf::Text modeText("Current Mode: " + renderModeToString(mode), font, 20);
-        modeText.setPosition(5, DRAWABLE_HEIGHT + 4);
+        modeText.setPosition(10, DRAWABLE_HEIGHT + 4);
         modeText.setFillColor(sf::Color::White);
 
         sf::Text rayCount("Rays: " + std::to_string(numRays), font, 20);
@@ -429,10 +433,13 @@ auto main(int argc, const char *argv[]) -> int
         threadCount.setFillColor(sf::Color::White);
 
         timingText.setPosition(threadCount.getPosition().x + threadCount.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
+        controlsText.setPosition(10, DRAWABLE_HEIGHT + 44);
+
         window.draw(modeText);
         window.draw(timingText);
         window.draw(rayCount);
         window.draw(threadCount);
+        window.draw(controlsText);
 
         // display window
         window.display();
