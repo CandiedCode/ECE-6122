@@ -1,3 +1,10 @@
+## [1.3.0](https://github.com/CandiedCode/ECE-6122/compare/v1.2.0...v1.3.0) (2026-03-03)
+
+### Features
+
+*  add keyboard control shortcut display ([219615a](https://github.com/CandiedCode/ECE-6122/commit/219615abd678ee54d4f943f4c98aeac52794d99e))
+* assign colors to rays based on which object they hit ([d5b63f3](https://github.com/CandiedCode/ECE-6122/commit/d5b63f3752fe815f22a17b57837ebc73810d1e96))
+
 ## [1.2.0](https://github.com/CandiedCode/ECE-6122/compare/v1.1.4...v1.2.0) (2026-03-02)
 
 ### Features
