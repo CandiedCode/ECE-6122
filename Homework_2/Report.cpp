@@ -104,6 +104,7 @@ auto Report::writeData(const std::string &renderMode, int threadCount, int rayCo
 
     if (reportingCounts[key] > sampleCount)
     {
+        std::cout << "Sample limit reached for " << key << ", skipping further entries.\n";
         return;
     }
 
