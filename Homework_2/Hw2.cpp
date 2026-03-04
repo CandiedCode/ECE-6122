@@ -266,8 +266,10 @@ void printHelp()
  * @param numThreads Reference to store the number of threads
  * @param numRays Reference to store the number of rays
  * @param enableCSV Reference to store CSV flag
+ * @param sampleCount Reference to store sample count for CSV reporting
  */
-void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode, int &numThreads, int &numRays, bool &enableCSV)
+void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode, int &numThreads, int &numRays, bool &enableCSV,
+               int &sampleCount)
 {
     for (int i = 1; i < argc; ++i)
     {
@@ -288,7 +290,7 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
             {
                 try
                 {
-                    int sampleCount{std::stoi(argv[++i])};
+                    sampleCount = std::stoi(argv[++i]);
                     std::cout << "Sample count set to: " << sampleCount << "\n";
                 }
                 catch (const std::invalid_argument &e)
@@ -396,9 +398,10 @@ auto main(int argc, const char *argv[]) -> int
     int currentThreadCount = 2;
     bool enableCSV = false;
     int sampleCount = 1000;
-    parseArgs(argc, std::vector<const char *>(argv, argv + argc), mode, currentThreadCount, numRays, enableCSV);
+    parseArgs(argc, std::vector<const char *>(argv, argv + argc), mode, currentThreadCount, numRays, enableCSV, sampleCount);
 
     // Create Report object for CSV reporting if enabled
+    std::cout << "Initializing report with CSV enabled: " << std::boolalpha << enableCSV << " and sample count: " << sampleCount << "\n";
     Report report(enableCSV, sampleCount);
 
     RayTracer rayTracer; // Create an instance of the RayTracer class to perform ray tracing operations

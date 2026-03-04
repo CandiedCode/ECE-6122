@@ -100,7 +100,6 @@ auto Report::writeData(const std::string &renderMode, int threadCount, int rayCo
     }
 
     std::string key = renderMode + "_" + std::to_string(threadCount) + "_" + std::to_string(rayCount);
-    reportingCounts[key]++;
 
     if (reportingCounts[key] > sampleCount)
     {
@@ -108,6 +107,7 @@ auto Report::writeData(const std::string &renderMode, int threadCount, int rayCo
         return;
     }
 
+    reportingCounts[key]++;
     std::string timestamp = generateRowTimestamp();
     csvFile << timestamp << "," << renderMode << "," << threadCount << "," << rayCount << "," << elapsedMicroseconds << ","
             << getBuildMode() << "\n";

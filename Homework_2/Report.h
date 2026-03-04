@@ -33,7 +33,7 @@ class Report
      *  @param enable Whether to enable CSV reporting
      *  @param sampleCount Number of samples per configuration
      */
-    explicit Report(bool enable = false, int sampleCount = 1000);
+    explicit Report(bool enable = false, int sampleCount = 100);
 
     /** @brief Destructor that closes the file if open
      */
