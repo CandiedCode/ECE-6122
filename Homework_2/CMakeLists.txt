@@ -11,19 +11,22 @@ message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 message(STATUS "CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
 message(STATUS "CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
 
-# Include FetchContent for downloading dependencies
-include(FetchContent)
+# # Include FetchContent for downloading dependencies
+# include(FetchContent)
 
-# Declare SFML from GitHub
-FetchContent_Declare(SFML
-    GIT_REPOSITORY https://github.com/SFML/SFML
-    GIT_TAG 2.6.2
-    GIT_SHALLOW ON
-)
-set(SFML_BUILD_AUDIO OFF CACHE BOOL "")  # We only need graphics, window, and system modules
+# # Declare SFML from GitHub
+# FetchContent_Declare(SFML
+#    GIT_REPOSITORY https://github.com/SFML/SFML
+#    GIT_TAG 2.6.2
+#    GIT_SHALLOW ON
+#)
+# set(SFML_BUILD_AUDIO OFF CACHE BOOL "")  # We only need graphics, window, and system modules
 
 # Download and make dependencies available
-FetchContent_MakeAvailable(SFML)
+# FetchContent_MakeAvailable(SFML)
+# Uncomment this out for PACE Ice to include Local SFML directory (Make sure FetchContent block above is commented out
+include_directories(${PROJECT_SOURCE_DIR}/../SFML/include)
+link_directories(${PROJECT_SOURCE_DIR}/../SFML/lib)
 
 # Find threading library
 find_package(Threads REQUIRED)

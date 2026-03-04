@@ -37,9 +37,9 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compile_definitions(BUILD_TYPE_RELEASE)
 endif()
 
-# add_subdirectory(SFML)
-add_subdirectory(Homework_0)
-add_subdirectory(Homework_1)
+add_subdirectory(SFML)
+# add_subdirectory(Homework_0)
+# add_subdirectory(Homework_1)
 add_subdirectory(Homework_2)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)

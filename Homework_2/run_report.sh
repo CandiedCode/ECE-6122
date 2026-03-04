@@ -9,7 +9,7 @@ set -e
 # Configuration
 RAY_COUNTS=(3600 10800 36000 108000)
 RENDER_MODES=("Single-Threaded" "StdThread" "OpenMP")
-SAMPLE_COUNT=100
+SAMPLE_COUNT=99
 
 # Color codes for output
 GREEN='\033[0;32m'
@@ -23,7 +23,7 @@ get_thread_counts() {
     if [[ "$mode" == "Single-Threaded" ]]; then
         echo "1"
     else
-        echo "2 4 8 16"
+        echo "2 4 8 16 32"
     fi
 }
 
@@ -36,7 +36,8 @@ run_test() {
     echo -e "${BLUE}Running: --mode $mode --num-threads $threads --num-rays $rays${NC} --csv $SAMPLE_COUNT"
 
     # Run the command and capture output, detecting "Sample limit reached"
-    /Users/jennifercwagenberg/Code/gaTech_v2/ECE-6122/build/output/bin/Hw2 --mode "$mode" --num-threads "$threads" --num-rays "$rays" --csv "$SAMPLE_COUNT" 2>&1 | while IFS= read -r line; do
+    # /Users/jennifercwagenberg/Code/gaTech_v2/ECE-6122/build/output/bin/Hw2
+    /home/hice1/jcwagenberg6/code/ECE-6122/build/output/bin/Hw2 --mode "$mode" --num-threads "$threads" --num-rays "$rays" --csv "$SAMPLE_COUNT" 2>&1 | while IFS= read -r line; do
         echo "$line"
         if [[ "$line" == *"Sample limit reached"* ]]; then
             echo -e "${GREEN}✓ Sample limit reached - test complete${NC}"
