@@ -198,8 +198,8 @@ auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitRes
  *  @param results Vector to store ray intersection results
  *  @return Elapsed time in microseconds for the ray tracing operation
  */
-auto executeRayTracing(RenderMode mode, RayTracer &rayTracer, const Scene &scene, const sf::Vector2f &mousePos, int numRays,
-                       int currentThreadCount, std::vector<HitResult> &results) -> int32_t
+auto executeRayTracing(RenderMode mode, const Scene &scene, const sf::Vector2f &mousePos, int numRays, int currentThreadCount,
+                       std::vector<HitResult> &results) -> int32_t
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -389,7 +389,6 @@ auto main(int argc, const char *argv[]) -> int
         // Get the maximum number of threads available on the hardware
         const int maxThreads = calculateThreads();
         const int rayCountIncrement = 3600;
-        int testUnusedVariable = 42; // Intentional: to test CI linting detection
 
         // Track timing data for the last 60 iterations
         std::deque<int32_t> timings;
@@ -419,7 +418,6 @@ auto main(int argc, const char *argv[]) -> int
                   << "\n";
         Report report(enableCSV, sampleCount);
 
-        RayTracer rayTracer; // Create an instance of the RayTracer class to perform ray tracing operations
         // Load font for text rendering
         sf::Font font = loadFont("fonts/KOMIKAP_.ttf", argv[0]);
 
@@ -507,7 +505,7 @@ auto main(int argc, const char *argv[]) -> int
             sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
             // Execute ray tracing and measure elapsed time
-            auto elapsedMicroseconds = executeRayTracing(mode, rayTracer, scene, mousePos, numRays, currentThreadCount, results);
+            auto elapsedMicroseconds = executeRayTracing(mode, scene, mousePos, numRays, currentThreadCount, results);
             sf::Text timingText;
             // Update timing history and get average if ready, and write CSV if enabled
             if (auto average = updateTimingAndGetAverage(timings, elapsedMicroseconds, MAX_ITERATIONS, report, renderModeToString(mode),

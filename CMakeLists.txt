@@ -8,6 +8,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Generate compile_commands.json for clang-tidy
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Enable strict compiler warnings
+if(MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
 # Option to use FetchContent for SFML or a local SFML directory
 set(SFML_LOCAL_DIR "${CMAKE_SOURCE_DIR}/SFML")
 
