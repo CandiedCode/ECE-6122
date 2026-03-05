@@ -14,6 +14,7 @@
 
 #include "Geometry.h"
 #include <SFML/Graphics.hpp>
+#include <random>
 #include <vector>
 
 /** @class Scene
@@ -30,6 +31,7 @@ class Scene
     std::vector<sf::CircleShape> spheres;
     std::vector<sf::RectangleShape> walls;
     std::vector<std::pair<float, float>> wallRotationCache; // pairs of (cos, sin)
+    mutable std::mt19937 rng;                               // Random number generator
 
     /** @brief Create a sphere (circle) with the specified radius
      *  @param radius The radius of the sphere
