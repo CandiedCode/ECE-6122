@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/CandiedCode/ECE-6122/compare/v1.4.0...v1.5.0) (2026-03-05)
+
+### Features
+
+* add support to set samplecount, so we can get unified number of records to compare to the different configurations ([b3c2810](https://github.com/CandiedCode/ECE-6122/commit/b3c2810bdc8c2e998da286d6e6b1c6de71bf06b2))
+
 ## [1.4.0](https://github.com/CandiedCode/ECE-6122/compare/v1.3.0...v1.4.0) (2026-03-03)
 
 ### Features
