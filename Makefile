@@ -161,3 +161,10 @@ semantic-release/publish: ## Publish a release using semantic-release
 	@echo "Publishing release..."
 	@npx semantic-release --branches main
 	@echo "✓ Release published"
+
+
+# pandoc report.md -o cwagenberg_report.pdf \
+#     --pdf-engine=xelatex \
+#     -V geometry:margin=0.75in \
+#     -V fontsize=10pt \
+#     -H header.tex

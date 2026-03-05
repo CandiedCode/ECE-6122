@@ -216,9 +216,9 @@ auto executeRayTracing(RenderMode mode, RayTracer &rayTracer, const Scene &scene
  *  @param elapsed Elapsed time in microseconds for current iteration
  *  @param maxSize Maximum number of iterations to track
  *  @param report Report object for writing CSV data
- *  @param renderMode The rendering mode as string (for CSV)
- *  @param threadCount Number of threads used (for CSV)
- *  @param rayCount Number of rays cast (for CSV)
+ *  @param renderMode The rendering mode as string
+ *  @param threadCount Number of threads
+ *  @param rayCount Number of rays cast
  *  @return Average time in microseconds if buffer is full, std::nullopt otherwise
  */
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -234,10 +234,7 @@ auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, in
     if (static_cast<int>(timings.size()) == maxSize)
     {
         // Write CSV row with the current (single) elapsed time when buffer reaches max
-        if (report.isOpenForWriting())
-        {
-            report.writeData(renderMode, threadCount, rayCount, elapsed);
-        }
+        report.writeData(renderMode, threadCount, rayCount, elapsed);
 
         // Still calculate and return average for on-screen display
         int32_t sum = std::accumulate(timings.begin(), timings.end(), int32_t{0});
@@ -251,11 +248,11 @@ auto updateTimingAndGetAverage(std::deque<int32_t> &timings, int32_t elapsed, in
 void printHelp()
 {
     std::cout << "Ray Tracer - Usage:\n"
-              << "  --mode <mode>           Rendering mode: Single-Threaded, OpenMP, or StdThread (default: Single-Threaded)\n"
-              << "  --num-threads <count>   Number of threads for parallel modes (default: 2)\n"
-              << "  --num-rays <count>      Number of rays (default: 3600)\n"
-              << "  --csv                   Enable CSV output for performance metrics\n"
-              << "  --help                  Display this help message\n"
+              << "  -m, --mode <mode>           Rendering mode: Single-Threaded, OpenMP, or StdThread (default: Single-Threaded)\n"
+              << "  -t, --num-threads <count>   Number of threads for parallel modes (default: 2)\n"
+              << "  -r, --num-rays <count>      Number of rays (default: 3600)\n"
+              << "  -c, --csv <sampleCount>     Enable CSV output for performance metrics with optional sample count\n"
+              << "  -h, --help                  Display this help message\n"
               << "\n"
               << "Example:\n"
               << "  Hw2 --mode OpenMP --num-threads 4 --num-rays 3600 --csv\n";
@@ -269,8 +266,10 @@ void printHelp()
  * @param numThreads Reference to store the number of threads
  * @param numRays Reference to store the number of rays
  * @param enableCSV Reference to store CSV flag
+ * @param sampleCount Reference to store sample count for CSV reporting
  */
-void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode, int &numThreads, int &numRays, bool &enableCSV)
+void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode, int &numThreads, int &numRays, bool &enableCSV,
+               int &sampleCount)
 {
     for (int i = 1; i < argc; ++i)
     {
@@ -286,8 +285,23 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
         {
             enableCSV = true;
             std::cout << "CSV output enabled\n";
+
+            if (i + 1 < argc && std::isdigit(argv[i + 1][0]))
+            {
+                try
+                {
+                    sampleCount = std::stoi(argv[++i]);
+                    std::cout << "Sample count set to: " << sampleCount << "\n";
+                }
+                catch (const std::invalid_argument &e)
+                {
+                    std::cerr << "Error: --csv requires a valid integer for sample count\n";
+                    printHelp();
+                    exit(EXIT_FAILURE);
+                }
+            }
         }
-        else if (arg == "--mode")
+        else if (arg == "--mode" || arg == "-m")
         {
             // Ensure there is a next argument for the mode value
             if (i + 1 < argc)
@@ -303,7 +317,7 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
                 exit(EXIT_FAILURE);
             }
         }
-        else if (arg == "--num-threads")
+        else if (arg == "--num-threads" || arg == "-t")
         {
             if (i + 1 < argc)
             {
@@ -326,7 +340,7 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
                 exit(EXIT_FAILURE);
             }
         }
-        else if (arg == "--num-rays")
+        else if (arg == "--num-rays" || arg == "-r")
         {
             if (i + 1 < argc)
             {
@@ -383,10 +397,12 @@ auto main(int argc, const char *argv[]) -> int
     int numRays = rayCountIncrement;              // Default to 3600 rays for 1 degree resolution
     int currentThreadCount = 2;
     bool enableCSV = false;
-    parseArgs(argc, std::vector<const char *>(argv, argv + argc), mode, currentThreadCount, numRays, enableCSV);
+    int sampleCount = 1000;
+    parseArgs(argc, std::vector<const char *>(argv, argv + argc), mode, currentThreadCount, numRays, enableCSV, sampleCount);
 
     // Create Report object for CSV reporting if enabled
-    Report report(enableCSV);
+    std::cout << "Initializing report with CSV enabled: " << std::boolalpha << enableCSV << " and sample count: " << sampleCount << "\n";
+    Report report(enableCSV, sampleCount);
 
     RayTracer rayTracer; // Create an instance of the RayTracer class to perform ray tracing operations
     // Load font for text rendering

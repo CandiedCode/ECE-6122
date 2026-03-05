@@ -55,7 +55,7 @@ auto Report::getBuildMode() -> std::string
 }
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-Report::Report(bool enable) : isOpen(false)
+Report::Report(bool enable, int sampleCount) : isOpen(false), sampleCount(sampleCount)
 {
     // If CSV reporting is not enabled, do not attempt to open a file
     if (!enable)
@@ -94,11 +94,20 @@ Report::~Report()
 // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
 auto Report::writeData(const std::string &renderMode, int threadCount, int rayCount, int32_t elapsedMicroseconds) -> void
 {
-    if (!csvFile.is_open())
+    if (!isOpenForWriting())
     {
         return;
     }
 
+    std::string key = renderMode + "_" + std::to_string(threadCount) + "_" + std::to_string(rayCount);
+
+    if (reportingCounts[key] > sampleCount)
+    {
+        std::cout << "Sample limit reached for " << key << ", skipping further entries.\n";
+        return;
+    }
+
+    reportingCounts[key]++;
     std::string timestamp = generateRowTimestamp();
     csvFile << timestamp << "," << renderMode << "," << threadCount << "," << rayCount << "," << elapsedMicroseconds << ","
             << getBuildMode() << "\n";
