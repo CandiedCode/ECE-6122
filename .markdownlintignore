@@ -1,3 +1,6 @@
 Homework_1/PathfindingNotes.md
 CHANGELOG.md
-SFML/
+SFML/**
+build/**
+node_modules/**
+.venv/**
