@@ -1,3 +1,9 @@
+## [1.5.1](https://github.com/CandiedCode/ECE-6122/compare/v1.5.0...v1.5.1) (2026-03-05)
+
+### Bug Fixes
+
+* fix clang-tidy on my mac finding missing sytem libaries ([56eb667](https://github.com/CandiedCode/ECE-6122/commit/56eb6677283d0a90e91e264f4d3fb98b9f04df34))
+
 ## [1.5.0](https://github.com/CandiedCode/ECE-6122/compare/v1.4.0...v1.5.0) (2026-03-05)
 
 ### Features
