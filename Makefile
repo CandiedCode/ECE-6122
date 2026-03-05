@@ -16,7 +16,7 @@ lint/makefile: ## Lint Makefile using checkmake
 .PHONY: lint/format
 lint/format: ## Check code formatting using clang-format
 	@echo "Checking code formatting..."
-	@find . -path ./build -prune -o -path ./SFML -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs clang-format -i --Werror
+	@find Homework_* -name '*.cpp' -o -name '*.h' | xargs clang-format -i
 	@echo "✓ Code formatting check complete"
 
 .PHONY: lint/cpplint
@@ -28,13 +28,19 @@ lint/cpplint: ## Lint C++ code using cpplint
 .PHONY: lint/tidy
 lint/tidy: ## Run clang-tidy static analysis
 	@echo "Running clang-tidy..."
-	run-clang-tidy -p build -j8 Homework_2
+	run-clang-tidy -p build \
+		-j $$(sysctl -n hw.ncpu) \
+		-header-filter='Homework_' \
+		'Homework_.*'
 	@echo "✓ clang-tidy analysis complete"
 
 .PHONY: lint/tidy-fix
 lint/tidy-fix: ## Run clang-tidy static analysis and apply fixes
 	@echo "Running clang-tidy with fixes..."
-	run-clang-tidy -p build -j8 -fix Homework_2
+	run-clang-tidy -p build \
+		-j $(sysctl -n hw.ncpu) \
+		-header-filter='Homework_' \
+		'Homework_.*' --fix
 	@echo "✓ clang-tidy fixes applied"
 
 .PHONY: lint/cppcheck
@@ -54,20 +60,20 @@ lint/cppcheck: ## Run Cppcheck security analysis with MISRA rules
 .PHONY: lint/markdown
 lint/markdown: ## Check markdown files using markdownlint v0.38.0
 	@echo "Linting markdown files..."
-	@find . -name "*.md" ! -path "./build/*" ! -path "./node_modules/*" -print | xargs markdownlint
+	@markdownlint .
 	@echo "✓ Markdown linting complete"
 
 .PHONY: lint/markdown-fix
 lint/markdown-fix: ## Fix markdown files using markdownlint v0.38.0
 	@echo "Fixing markdown files..."
-	@find . -name "*.md" ! -path "./build/*" ! -path "./node_modules/*" -print | xargs markdownlint --fix
+	@markdownlint . --fix
 	@echo "✓ Markdown files fixed"
 
 .PHONY: cmake
 cmake: BUILD_TYPE ?= Debug
 cmake: ## Generate CMake build files using the default preset
 	@echo "Generating CMake build files..."
-	cd build && cmake .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DCMAKE_PREFIX_PATH=/opt/homebrew/opt/libomp
+	cd build && cmake .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
 .PHONY: cmake/benchmark
 cmake/benchmark: ## Generate CMake build files for Benchmark configuration

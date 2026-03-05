@@ -16,6 +16,12 @@ set(SFML_LOCAL_DIR "${CMAKE_SOURCE_DIR}/SFML")
 if(NOT DEFINED USE_FETCHED_SFML)
     if(APPLE)
         set(USE_FETCHED_SFML ON CACHE BOOL "Fetch SFML via FetchContent instead of using local SFML/" FORCE)
+        execute_process(
+            COMMAND xcrun --show-sdk-path
+            OUTPUT_VARIABLE MACOS_SDK
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        set(CMAKE_OSX_SYSROOT "${MACOS_SDK}" CACHE PATH "macOS SDK path" FORCE)
     else()
         set(USE_FETCHED_SFML OFF CACHE BOOL "Fetch SFML via FetchContent instead of using local SFML/" FORCE)
     endif()

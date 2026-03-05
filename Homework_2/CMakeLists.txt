@@ -12,6 +12,21 @@ message(STATUS "CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
 message(STATUS "CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
 
 
+if(APPLE)
+    # If user didn't provide OpenMP_ROOT / CMAKE_PREFIX_PATH, try Homebrew.
+    if(NOT DEFINED OpenMP_ROOT AND NOT DEFINED CMAKE_PREFIX_PATH)
+        execute_process(
+            COMMAND brew --prefix libomp
+            OUTPUT_VARIABLE LIBOMP_PREFIX
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            RESULT_VARIABLE BREW_LIBOMP_RESULT
+        )
+        if(BREW_LIBOMP_RESULT EQUAL 0 AND EXISTS "${LIBOMP_PREFIX}")
+            set(OpenMP_ROOT "${LIBOMP_PREFIX}")
+        endif()
+    endif()
+endif()
+
 if(SFML_PROVIDED_BY_ROOT OR TARGET sfml-graphics)
     message(STATUS "Homework_2: SFML already available")
     include_directories(${PROJECT_SOURCE_DIR}/../SFML/include)
