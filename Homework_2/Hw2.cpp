@@ -389,6 +389,7 @@ auto main(int argc, const char *argv[]) -> int
         // Get the maximum number of threads available on the hardware
         const int maxThreads = calculateThreads();
         const int rayCountIncrement = 3600;
+        int testUnusedVariable = 42; // Intentional: to test CI linting detection
 
         // Track timing data for the last 60 iterations
         std::deque<int32_t> timings;
