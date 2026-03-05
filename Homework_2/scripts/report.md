@@ -276,7 +276,13 @@ time by the execution time of the respective parallel implementation.
 
 ![Mac Debug vs Release Build Speedup](../data/mac_debug_vs_release_comparison.svg)
 
-Comparing the performance of the Debug and Release builds on my MacBook, we can see that the Release build is significantly faster than the Debug build across all configurations. The speedup for the Release build compared to the Debug build ranges from approximately 5x to 17x for single-threaded execution, and similar speedups are observed for both OpenMP and StdThread implementations. This is expected, as the Release build typically includes optimizations that are not present in the Debug build, such as inlining, loop unrolling, and other compiler optimizations that can significantly improve performance.
+Comparing the performance of the Debug and Release builds on my MacBook, we can see that the
+Release build is significantly faster than the Debug build across all configurations. The speedup
+for the Release build compared to the Debug build ranges from approximately 5x to 17x for
+single-threaded execution, and similar speedups are observed for both OpenMP and StdThread
+implementations. This is expected, as the Release build typically includes optimizations that are
+not present in the Debug build, such as inlining, loop unrolling, and other compiler
+optimizations that can significantly improve performance.
 
 ### Average Elapsed Time Comparison
 
@@ -284,54 +290,118 @@ Comparing the performance of the Debug and Release builds on my MacBook, we can 
 
 ![Mac p9X Elapsed Time Plot](../data/mac_p95_p99_analysis.svg)
 
-I calculated p95 and p99 elapsed times for the OpenMP and StdThread implementations for release build to analyze the performance of both implementations under different ray counts. The p95 and p99 metrics provide insight into the distribution of elapsed times, allowing us to understand how consistent the performance is across multiple runs.  If we look at p95 elapsed times, OpenMP generally has lower p95 elapsed time compared to StdThread, indicating that OpenMP provides more consistent performance with fewer outliers. However, when we look at p99 elapsed times and ray count 36,000 and less, we see OpenMP has higher p99 times compared to StdThread, which suggests that there may be some outliers in the OpenMP implementation that are causing longer elapsed times in certain runs.  On my MacBook, we see that for ray count 3600, the p99 elapsed time for OpenMP is significantly higher than StdThread.
+I calculated p95 and p99 elapsed times for the OpenMP and StdThread implementations for
+release build to analyze the performance of both implementations under different ray counts. The
+p95 and p99 metrics provide insight into the distribution of elapsed times, allowing us to
+understand how consistent the performance is across multiple runs. If we look at p95 elapsed
+times, OpenMP generally has lower p95 elapsed time compared to StdThread, indicating that
+OpenMP provides more consistent performance with fewer outliers. However, when we look at p99
+elapsed times and ray count 36,000 and less, we see OpenMP has higher p99 times compared to
+StdThread, which suggests that there may be some outliers in the OpenMP implementation that are
+causing longer elapsed times in certain runs. On my MacBook, we see that for ray count 3600,
+the p99 elapsed time for OpenMP is significantly higher than StdThread.
 
 ### Speedup Comparison
 
 ![Speedup Plot](../data/release_speedup_comparison.svg)
 
-When we compare the speedup ration of OpenMP and StdThread compared to the single-threaded implementation, for ray count = 3600, we can see as the thread count increases, the speed up of both OpenMP and STDThread on my MacBook and pace ice, actually decrease.  I ran up to 32 threads on pace ice, as the hardware device said it could support 16 threads, and I wanted to get a datapoint that exceeding that limit. It isn't until Ray count 10,800 that we start to see significate speed up of thread count. We do see diminishing return for StdThread after 8 threads, while OpenMP continued to provide some speed up up to 16 threads.  For ray count 36,000, we see significant speed up for both OpenMP and StdThread as thread count increases. On my mac we see between 2x - 6x speed up for OpenMP and between 1.5x - 4.5x speed up for StdThread, while on pace ice we see between 1.5x - 3x speed up for OpenMP and StdThread for ray count 108,000.
+When we compare the speedup ration of OpenMP and StdThread compared to the single-threaded
+implementation, for ray count = 3600, we can see as the thread count increases, the speed up of
+both OpenMP and STDThread on my MacBook and pace ice, actually decrease. I ran up to 32 threads
+on pace ice, as the hardware device said it could support 16 threads, and I wanted to get a
+datapoint that exceeding that limit. It isn't until Ray count 10,800 that we start to see
+significate speed up of thread count. We do see diminishing return for StdThread after 8
+threads, while OpenMP continued to provide some speed up up to 16 threads. For ray count
+36,000, we see significant speed up for both OpenMP and StdThread as thread count increases.
+On my mac we see between 2x - 6x speed up for OpenMP and between 1.5x - 4.5x speed up for
+StdThread, while on pace ice we see between 1.5x - 3x speed up for OpenMP and StdThread for
+ray count 108,000.
 
 ### Efficiency Comparison
 
 ![Efficiency Plot](../data/efficiency_analysis_release.svg)
 
-The efficiency analysis plot shows how efficiently the OpenMP and StdThread implementations utilize the available threads as the ray count increases. Efficiency is calculated as the speedup divided by the number of threads, and it provides insight into how well the parallel implementation scales with increasing thread counts. In general, we can see that efficiency tends to decrease as the number of threads increases, which is a common observation due to factors including increased overhead from thread management and contention for shared resources. However, both implementations maintain relatively high efficiency for lower thread counts, indicating that they are effectively utilizing the available threads for smaller workloads. As the ray count increases, we can see that the efficiency scores are slightly higher then the previous ray count.  For example ray count 108,000 at thread count 8 has an efficiency score of 0.54 for OpenMP and 0.53 for StdThread, while ray count 36,000 at thread count 8 has an efficiency score of 0.21 for OpenMP and 0.23 for StdThread for my MacBook runs.
+The efficiency analysis plot shows how efficiently the OpenMP and StdThread implementations
+utilize the available threads as the ray count increases. Efficiency is calculated as the
+speedup divided by the number of threads, and it provides insight into how well the parallel
+implementation scales with increasing thread counts. In general, we can see that efficiency
+tends to decrease as the number of threads increases, which is a common observation due to
+factors including increased overhead from thread management and contention for shared resources.
+However, both implementations maintain relatively high efficiency for lower thread counts,
+indicating that they are effectively utilizing the available threads for smaller workloads. As
+the ray count increases, we can see that the efficiency scores are slightly higher then the
+previous ray count. For example ray count 108,000 at thread count 8 has an efficiency score of
+0.54 for OpenMP and 0.53 for StdThread, while ray count 36,000 at thread count 8 has an
+efficiency score of 0.21 for OpenMP and 0.23 for StdThread for my MacBook runs.
 
 ### Questions
 
->How does the performance of std::thread compare to OpenMP? Which is easier to implement?
-Which gives better performance for this workload, and why?
+> How does the performance of std::thread compare to OpenMP? Which is easier to implement?
+> Which gives better performance for this workload, and why?
 
+When we look at he speedup plot, we can see that both OpenMP and std::thread provide
+significant speedups compared to the single-threaded implementation, especially as the ray count
+increases. The performance for OpenMP vs StdThread for this application is pretty close. On
+Pace Ice for example, for ray count 10,800 We see that STDThread for threads less then 10 had
+a higher speedup then OpenMP, but on my Macbook, OpenMP had a higher speedup then STDThread
+for the same ray count. If we go back to the p95 and p99 elapsed time plot, at p95, OpenMP
+has a smaller execution time average compared to STDThread, but at p99, OpenMP has a higher
+execution time average compared to STDThread for ray counts 10,800 and less on Pace ice, and
+for ray count 3600 on my Macbook.
 
-When we look at he speedup plot, we can see that both OpenMP and std::thread provide significant speedups compared to the single-threaded implementation, especially as the ray count increases. The performance for OpenMP vs StdThread for this application is pretty close.  On Pace Ice for example, for ray count 10,800 We see that STDThread for threads less then 10 had a higher speedup then OpenMP, but on my Macbook, OpenMP had a higher speedup then STDThread for the same ray count.  If we go back to the p95 and p99 elapsed time plot, at p95, OpenMP has a smaller execution time average compared to STDThread, but at p99, OpenMP has a higher execution time average compared to STDThread for ray counts 10,800 and less on Pace ice, and for ray count 3600 on my Macbook.
+OpenMP is easier to implement. It provides a higher-level abstraction for multiprocessing
+allowing the compiler to optimize the code more efficiently, while std::thread requires more
+manual management of threads and synchronization, which can introduce additional overhead and
+complexity. For me, this would me more chance for bugs.
 
-OpenMP is easier to implement.  It provides a higher-level abstraction for multiprocessing allowing the compiler to optimize the code more efficiently, while std::thread requires more manual management of threads and synchronization, which can introduce additional overhead and complexity.  For me, this would me more chance for bugs.
+My plots showed the workload for OpenMP and std::thread is pretty close, but OpenMP has a
+slight edge in performance for this workload. Thus my preference, default for this workload
+would be OpenMP.
 
-My plots showed the workload for OpenMP and std::thread is pretty close, but OpenMP has a slight edge in performance for this workload.  Thus my preference, default for this workload would be OpenMP.
+> At what number of rays does parallelization become worthwhile (i.e., where does the
+> overhead of thread creation/management get amortized)?
 
->At what number of rays does parallelization become worthwhile (i.e., where does the overhead
-of thread creation/management get amortized)?
+Based on the performance data, parallelization becomes worthwhile at after 10,800 rays. For
+ray counts below this threshold, the speedup from parallelization is less significant, and in
+some cases, the single-threaded implementation may even outperform the parallel implementations
+due to the overhead of thread creation and management. However, as the ray count increases
+beyond this point, the speedup from parallelization becomes more pronounced, indicating that
+the overhead is being amortized and the benefits of parallel execution are outweighing the
+costs.
 
-
-Based on the performance data, parallelization becomes worthwhile at after 10,800 rays. For ray counts below this threshold, the speedup from parallelization is less significant, and in some cases, the single-threaded implementation may even outperform the parallel implementations due to the overhead of thread creation and management. However, as the ray count increases beyond this point, the speedup from parallelization becomes more pronounced, indicating that the overhead is being amortized and the benefits of parallel execution are outweighing the costs.
-
->What is the effect of increasing thread count beyond the number of physical cores? Explain in
-terms of hardware threading and context switching.
-
+> What is the effect of increasing thread count beyond the number of physical cores? Explain
+> in terms of hardware threading and context switching.
 
 I did do one run on pace ice, to show this.
 
-Increasing the thread count beyond the number of core context slots, the OS schedular performs context switching to manage the execution of threads. A context switch the OS must save and restore: the program counter, cpu registers, stack pointers, cpu flags, memory mapping, and other state information for each thread. This process introduces overhead, as the CPU must spend time saving the state of the currently running thread and loading the state of the next thread to run.
+Increasing the thread count beyond the number of core context slots, the OS schedular performs
+context switching to manage the execution of threads. A context switch the OS must save and
+restore: the program counter, cpu registers, stack pointers, cpu flags, memory mapping, and
+other state information for each thread. This process introduces overhead, as the CPU must
+spend time saving the state of the currently running thread and loading the state of the next
+thread to run.
 
-There are times when oversubscription can lead to better performance, such as when threads are frequently waiting for I/O operations or other blocking events. In these cases, having more threads than cores can help keep the CPU busy while some threads are waiting. However, in compute-bound workloads, such as in our ray tracing case, where threads are actively using the CPU, oversubscription can lead to performance degradation due to increased context switching overhead and contention for shared resources.
+There are times when oversubscription can lead to better performance, such as when threads are
+frequently waiting for I/O operations or other blocking events. In these cases, having more
+threads than cores can help keep the CPU busy while some threads are waiting. However, in
+compute-bound workloads, such as in our ray tracing case, where threads are actively using the
+CPU, oversubscription can lead to performance degradation due to increased context switching
+overhead and contention for shared resources.
 
 #### [False Sharing](https://en.wikipedia.org/wiki/False_sharing)
 
-False sharing occurs when multiple threads write to different data that is in the same cache block.  Even though the threads are writing to different data, they are still causing cache invalidation for each other, which can lead to performance degradation.
+False sharing occurs when multiple threads write to different data that is in the same cache
+block. Even though the threads are writing to different data, they are still causing cache
+invalidation for each other, which can lead to performance degradation.
 
-There are ways of mitigating the effects of false sharing. For instance, false sharing in CPU caches can be prevented by reordering variables or adding padding (unused bytes) between variables.
+There are ways of mitigating the effects of false sharing. For instance, false sharing in CPU
+caches can be prevented by reordering variables or adding padding (unused bytes) between
+variables.
 
-Cache blocks are typically 64 bytes in size.    In our ray tracing, when we chunk up the rays for parallel processing, if multiple threads are writing to data that is located within the same cache block, they can cause false sharing (less then 8 elements per thread).
+Cache blocks are typically 64 bytes in size. In our ray tracing, when we chunk up the rays for
+parallel processing, if multiple threads are writing to data that is located within the same
+cache block, they can cause false sharing (less then 8 elements per thread).
 
-We can run profiling tools to identify if false sharing is occurring in our application.  If we see a high number of cache misses or increased latency for certain threads, it may indicate that false sharing is happening.
+We can run profiling tools to identify if false sharing is occurring in our application. If we
+see a high number of cache misses or increased latency for certain threads, it may indicate
+that false sharing is happening.
