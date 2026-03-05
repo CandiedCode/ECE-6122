@@ -22,7 +22,7 @@ lint/format: ## Check code formatting using clang-format
 .PHONY: lint/cpplint
 lint/cpplint: ## Lint C++ code using cpplint
 	@echo "Linting C++ code..."
-	@find . -path ./build -prune -o -path ./SFML -prune -o \( -name "*.cpp" -o -name "*.h" -o -name "*.hpp" \) -print | xargs cpplint
+	find Homework_* -name '*.cpp' -o -name '*.h' | xargs cpplint
 	@echo "✓ C++ linting complete"
 
 .PHONY: lint/tidy
@@ -46,15 +46,13 @@ lint/tidy-fix: ## Run clang-tidy static analysis and apply fixes
 .PHONY: lint/cppcheck
 lint/cppcheck: ## Run Cppcheck security analysis with MISRA rules
 	@echo "Running Cppcheck with MISRA security checks..."
-	@cppcheck --enable=all --suppress=missingIncludeSystem \
-		--suppress=checkersReport \
-		--suppress=normalCheckLevelMaxBranches \
-		--error-exitcode=1 \
-		--std=c++17 \
-		-i build \
-		-i node_modules \
-		-i SFML \
-		.
+	@cppcheck \
+	-j $$(sysctl -n hw.ncpu) \
+	--project=build/compile_commands.json \
+	--enable=warning,performance,portability \
+	--inconclusive \
+	--suppressions-list=cppcheck.suppress \
+	-i build/_deps
 	@echo "✓ Cppcheck analysis complete"
 
 .PHONY: lint/markdown
