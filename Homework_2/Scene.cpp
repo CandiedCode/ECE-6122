@@ -22,14 +22,14 @@
 
 Scene::Scene(int windowWidth, int windowHeight, int numSpheres, int numWalls)
     : windowWidth(windowWidth), windowHeight(windowHeight), numSpheres(numSpheres), numWalls(numWalls), spheres(numSpheres),
-      walls(numWalls), wallRotationCache(numWalls)
+      walls(numWalls), wallRotationCache(numWalls), rng(std::random_device{}())
 {
     createScene();
 }
 
 auto Scene::createSphere(double radius) -> sf::CircleShape
 {
-    sf::CircleShape sphere(radius);
+    sf::CircleShape sphere(static_cast<float>(radius));
     sphere.setFillColor(sf::Color::Transparent);
     sphere.setOutlineThickness(2.F);
     sphere.setOutlineColor(sf::Color::White);
@@ -45,7 +45,7 @@ auto Scene::createSphere(double radius, sf::Color color) -> sf::CircleShape
 
 auto Scene::createWall(double width, double height) -> sf::RectangleShape
 {
-    return sf::RectangleShape(sf::Vector2f(width, height));
+    return sf::RectangleShape(sf::Vector2f(static_cast<float>(width), static_cast<float>(height)));
 }
 
 auto Scene::createWall(double width, double height, sf::Color color) -> sf::RectangleShape
@@ -57,59 +57,68 @@ auto Scene::createWall(double width, double height, sf::Color color) -> sf::Rect
 
 auto Scene::createSpheres() -> void
 {
-    thread_local static unsigned int seed = std::random_device()();
+    std::uniform_int_distribution<int> radiusDistribution(50, 149); // 50 to 150 (exclusive upper)
+    std::uniform_int_distribution<int> positionXDistribution(0, windowWidth - 1);
+    std::uniform_int_distribution<int> positionYDistribution(0, windowHeight - 1);
 
     for (int i = 0; i < numSpheres; ++i)
     {
         // Generate random radius between 50 and 150 (diameter max 300 pixels)
-        double radius = 50.0 + (rand_r(&seed) % 100);
-        // Random color with RGB components between 0 and 255
-        // sf::Color color(rand_r(&seed) % 256, rand_r(&seed) % 256, rand_r(&seed) % 256);
+        double radius = radiusDistribution(rng);
         // Create sphere using helper method
         sf::CircleShape sphere = createSphere(radius, sf::Color::Red);
         // Set random position within window bounds
-        sphere.setPosition(static_cast<float>(rand_r(&seed) % (windowWidth - 10 - static_cast<int>(2 * radius))),
-                           static_cast<float>(rand_r(&seed) % (windowHeight - 10 - static_cast<int>(2 * radius))));
+        int posX = positionXDistribution(rng);
+        int posY = positionYDistribution(rng);
+        posX = std::max(0, posX - static_cast<int>(2 * radius) + 10);
+        posY = std::max(0, posY - static_cast<int>(2 * radius) + 10);
+        sphere.setPosition(static_cast<float>(posX), static_cast<float>(posY));
         // Add sphere to the scene
-        spheres[i] = sphere;
+        spheres.at(i) = sphere;
     }
 }
 
 auto Scene::createWalls() -> void
 {
-    thread_local static unsigned int seed = std::random_device()();
+    std::uniform_int_distribution<int> orientationDist(0, 1);
+    std::uniform_int_distribution<int> widthDist(100, windowWidth - 100);
+    std::uniform_int_distribution<int> heightDist(100, windowHeight - 100);
+    std::uniform_int_distribution<int> colorDist(0, 255);
+    std::uniform_int_distribution<int> positionXDist(0, windowWidth - 1);
+    std::uniform_int_distribution<int> positionYDist(0, windowHeight - 1);
+    std::uniform_int_distribution<int> rotationDist(0, 359);
 
-    for (int i = 0; i < numWalls; ++i)
+    for (std::size_t i = 0; i < static_cast<std::size_t>(numWalls); ++i)
     {
         // One dimension is small (max 5 pixels), other is larger
         // Randomly choose which dimension is small
-        int orientation = rand_r(&seed) % 2;
+        int orientation = orientationDist(rng);
         double width{};
         double height{};
 
         if (orientation == 0)
         {
             // Horizontal rectangle (wide, short)
-            width = std::min(200.0 + (rand_r(&seed) % (windowWidth - 100)), static_cast<double>(windowWidth - 100));
+            width = 200.0 + widthDist(rng);
             height = 5;
         }
         else
         {
             // Vertical rectangle (narrow, tall)
             width = 5;
-            height = std::min(200.0 + (rand_r(&seed) % (windowHeight - 100)), static_cast<double>(windowHeight - 100));
+            height = 200.0 + heightDist(rng);
         }
 
         // Random color with RGB components between 0 and 255
-        sf::Color color(rand_r(&seed) % 256, rand_r(&seed) % 256, rand_r(&seed) % 256);
+        sf::Color color(colorDist(rng), colorDist(rng), colorDist(rng));
         // Create wall using helper method
         sf::RectangleShape wall = Scene::createWall(width, height, color);
 
         // Set fully random position within window bounds
-        wall.setPosition(static_cast<float>(rand_r(&seed) % windowWidth), static_cast<float>(rand_r(&seed) % windowHeight));
+        wall.setPosition(static_cast<float>(positionXDist(rng)), static_cast<float>(positionYDist(rng)));
 
         // Apply random rotation for diagonal effect
-        auto rotation = static_cast<float>(rand_r(&seed) % 360);
+        auto rotation = static_cast<float>(rotationDist(rng));
         wall.setRotation(rotation);
 
         // Compute all 4 world-space corners of the rotated wall
@@ -119,7 +128,7 @@ auto Scene::createWalls() -> void
         auto cos_r = std::cos(rot_rad);
         auto sin_r = std::sin(rot_rad);
 
-        std::array<sf::Vector2f, 4> localCorners = {sf::Vector2f{0.f, 0.f}, {size.x, 0.f}, {size.x, size.y}, {0.f, size.y}};
+        std::array<sf::Vector2f, 4> localCorners = {sf::Vector2f{0.F, 0.F}, {size.x, 0.F}, {size.x, size.y}, {0.F, size.y}};
 
         auto minX = std::numeric_limits<float>::max();
         auto maxX = -std::numeric_limits<float>::max();
@@ -128,8 +137,8 @@ auto Scene::createWalls() -> void
 
         for (const auto &c : localCorners)
         {
-            float wx = c.x * cos_r - c.y * sin_r + pos.x;
-            float wy = c.x * sin_r + c.y * cos_r + pos.y;
+            float wx = (c.x * cos_r) - (c.y * sin_r) + pos.x;
+            float wy = (c.x * sin_r) + (c.y * cos_r) + pos.y;
             minX = std::min(minX, wx);
             maxX = std::max(maxX, wx);
             minY = std::min(minY, wy);
@@ -160,8 +169,8 @@ auto Scene::createWalls() -> void
         wall.setPosition(pos.x + offsetX, pos.y + offsetY);
 
         // Add wall to the scene and cache its sin/cos values for fast ray intersection
-        walls[i] = wall;
-        wallRotationCache[i] = {cos_r, sin_r};
+        walls.at(i) = wall;
+        wallRotationCache.at(i) = {cos_r, sin_r};
     }
 }
 
@@ -207,12 +216,12 @@ auto Scene::closestIntersection(const Ray &ray) const -> HitResult
     // Check intersection with all walls (using cached sin/cos for efficiency)
     for (size_t i = 0; i < walls.size(); ++i)
     {
-        const auto &[cos_cached, sin_cached] = wallRotationCache[i];
-        HitResult hit = Geometry::intersectRectangle(ray, walls[i], cos_cached, sin_cached);
+        const auto &[cos_cached, sin_cached] = wallRotationCache.at(i);
+        HitResult hit = Geometry::intersectRectangle(ray, walls.at(i), cos_cached, sin_cached);
         if (hit.hit && hit.distance < closest.distance)
         {
             closest = hit;
-            closest.color = walls[i].getFillColor();
+            closest.color = walls.at(i).getFillColor();
         }
     }
 

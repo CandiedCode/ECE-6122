@@ -45,8 +45,8 @@ auto Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &point1, 
     // Solve for t and u using the parametric equations
     // t·d - u·s = oc
     // Using cross products:
-    float t = (oc.x * segment_direction.y - oc.y * segment_direction.x) / denominator;
-    float u = (oc.x * ray.direction.y - oc.y * ray.direction.x) / denominator;
+    float t = ((oc.x * segment_direction.y) - (oc.y * segment_direction.x)) / denominator;
+    float u = ((oc.x * ray.direction.y) - (oc.y * ray.direction.x)) / denominator;
 
     // Valid intersection when:
     // - t ≥ 0 (intersection is in front of ray)
@@ -89,20 +89,20 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &rect
     std::array<sf::Vector2f, 4> rotated_corners;
     for (size_t i = 0; i < corners.size(); ++i)
     {
-        const auto &corner = corners[i];
+        const auto &corner = corners.at(i);
         // Rotate the corner around the origin
         float rotated_x = (corner.x * cos_rotate) - (corner.y * sin_rotate);
         float rotated_y = (corner.x * sin_rotate) + (corner.y * cos_rotate);
 
         // Translate to the rectangle's position
-        rotated_corners[i] = {rotated_x + pos.x, rotated_y + pos.y};
+        rotated_corners.at(i) = {rotated_x + pos.x, rotated_y + pos.y};
     }
 
     // Test ray intersection against each edge of the rotated rectangle
-    for (int i = 0; i < 4; ++i)
+    for (size_t i = 0; i < 4; ++i)
     {
-        int next = (i + 1) % 4;
-        HitResult edge_hit = intersectLineSegment(ray, rotated_corners[i], rotated_corners[next]);
+        size_t next = (i + 1) % 4;
+        HitResult edge_hit = intersectLineSegment(ray, rotated_corners.at(i), rotated_corners.at(next));
 
         // Keep track of the closest valid hit
         if (edge_hit.hit && edge_hit.distance < closest_result.distance)
@@ -137,20 +137,20 @@ auto Geometry::intersectRectangle(const Ray &ray, const sf::RectangleShape &rect
     std::array<sf::Vector2f, 4> rotated_corners;
     for (size_t i = 0; i < corners.size(); ++i)
     {
-        const auto &corner = corners[i];
+        const auto &corner = corners.at(i);
         // Rotate the corner around the origin
         float rotated_x = (corner.x * cos_rotation) - (corner.y * sin_rotation);
         float rotated_y = (corner.x * sin_rotation) + (corner.y * cos_rotation);
 
         // Translate to the rectangle's position
-        rotated_corners[i] = {rotated_x + pos.x, rotated_y + pos.y};
+        rotated_corners.at(i) = {rotated_x + pos.x, rotated_y + pos.y};
     }
 
     // Test ray intersection against each edge of the rotated rectangle
-    for (int i = 0; i < 4; ++i)
+    for (size_t i = 0; i < 4; ++i)
     {
-        int next = (i + 1) % 4;
-        HitResult edge_hit = intersectLineSegment(ray, rotated_corners[i], rotated_corners[next]);
+        size_t next = (i + 1) % 4;
+        HitResult edge_hit = intersectLineSegment(ray, rotated_corners.at(i), rotated_corners.at(next));
 
         // Keep track of the closest valid hit
         if (edge_hit.hit && edge_hit.distance < closest_result.distance)
@@ -177,8 +177,8 @@ auto Geometry::intersectCircle(const Ray &ray, const sf::CircleShape &circle) ->
     // Quadratic formula: t²(d·d) + 2t(oc·d) + (oc·oc - r²) = 0
     // Since direction is normalized: d·d = 1
     float a = 1.0F; // ray.direction · ray.direction
-    float b = 2.0F * (oc.x * ray.direction.x + oc.y * ray.direction.y);
-    float c = (oc.x * oc.x + oc.y * oc.y) - (radius * radius);
+    float b = 2.0F * ((oc.x * ray.direction.x) + (oc.y * ray.direction.y));
+    float c = ((oc.x * oc.x) + (oc.y * oc.y)) - (radius * radius);
 
     // Discriminant
     float discriminant = (b * b) - (4.0F * a * c);

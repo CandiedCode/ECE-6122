@@ -15,6 +15,7 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <deque>
@@ -127,7 +128,7 @@ auto loadFont(const std::string &fontPath, const std::string &executablePath) ->
 
     if (!loaded)
     {
-        std::cerr << "Failed to load font from " << fontPath << " or " << executableDir << "/" << fontPath << std::endl;
+        std::cerr << "Failed to load font from " << fontPath << " or " << executableDir << "/" << fontPath << '\n';
         exit(EXIT_FAILURE);
     }
 
@@ -143,7 +144,7 @@ auto calculateThreads() -> int
         maxThreads = 1; // Fallback if hardware_concurrency() returns 0
     }
     std::cout << "Available CPU threads: " << maxThreads << "\n";
-    return maxThreads;
+    return static_cast<int>(maxThreads);
 }
 
 /** @brief Generate a VertexArray of lines representing rays from the light source to hit points
@@ -151,28 +152,36 @@ auto calculateThreads() -> int
  *  @param mousePos The position of the light source (mouse cursor)
  *  @param results The vector of HitResult for each ray
  *  @return An sf::VertexArray containing line vertices for rendering rays
+ *
+ *  Note: We suppress bounds checking warnings for sf::VertexArray because SFML's VertexArray
+ *  only provides operator[] and not .at(). The indices are guaranteed safe because we
+ *  pre-allocate the array with 2*numRays elements and access only 2*i and 2*i+1.
  */
 auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitResult> &results) -> sf::VertexArray
 {
-    sf::VertexArray rays(sf::Lines, 2 * numRays); // Need 2 vertices per line
-    for (int i = 0; i < numRays; ++i)
+    sf::VertexArray rays(sf::Lines, static_cast<std::size_t>(2 * numRays)); // Need 2 vertices per line
+    for (std::size_t i = 0; i < static_cast<std::size_t>(numRays); ++i)
     {
         // Even Vertices: start point (light source)
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
         rays[2 * i].position = mousePos;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
         rays[2 * i].color = sf::Color(255, 100, 0, 30);
 
         // Brightness based on distance to hit point
-        auto hitPoint = results[i].point;
+        auto hitPoint = results.at(i).point;
         float distance{std::hypot(hitPoint.x - mousePos.x, hitPoint.y - mousePos.y)};
 
         // Inverse square law: brightness = 1 / (distance^2)
         // Clamp to avoid division issues
-        float brightness{std::max(50.0f, std::min(255.0f, 10000.0f / (distance * distance)))};
+        float brightness{std::max(50.0F, std::min(255.0F, 10000.0F / (distance * distance)))};
 
         // Odd Vertices: end point (hit point)
-        sf::Color hitColor = results[i].color;
+        sf::Color hitColor = results.at(i).color;
         hitColor.a = static_cast<sf::Uint8>(brightness); // Set alpha based on brightness
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
         rays[(2 * i) + 1].position = hitPoint;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
         rays[(2 * i) + 1].color = hitColor; // sf::Color(255, 200, 50, static_cast<int>(brightness));
     }
 
@@ -189,21 +198,21 @@ auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitRes
  *  @param results Vector to store ray intersection results
  *  @return Elapsed time in microseconds for the ray tracing operation
  */
-auto executeRayTracing(RenderMode mode, RayTracer &rayTracer, const Scene &scene, const sf::Vector2f &mousePos, int numRays,
-                       int currentThreadCount, std::vector<HitResult> &results) -> int32_t
+auto executeRayTracing(RenderMode mode, const Scene &scene, const sf::Vector2f &mousePos, int numRays, int currentThreadCount,
+                       std::vector<HitResult> &results) -> int32_t
 {
     auto startTime = std::chrono::high_resolution_clock::now();
 
     switch (mode)
     {
     case RenderMode::SingleThreaded:
-        rayTracer.castRaysSingleThreaded(mousePos, numRays, scene, results);
+        RayTracer::castRaysSingleThreaded(mousePos, numRays, scene, results);
         break;
     case RenderMode::OpenMP:
-        rayTracer.castRaysOpenMP(mousePos, numRays, scene, results, currentThreadCount);
+        RayTracer::castRaysOpenMP(mousePos, numRays, scene, results, currentThreadCount);
         break;
     case RenderMode::StdThread:
-        rayTracer.castRaysStdThread(mousePos, numRays, scene, results, currentThreadCount);
+        RayTracer::castRaysStdThread(mousePos, numRays, scene, results, currentThreadCount);
         break;
     }
 
@@ -268,12 +277,13 @@ void printHelp()
  * @param enableCSV Reference to store CSV flag
  * @param sampleCount Reference to store sample count for CSV reporting
  */
-void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode, int &numThreads, int &numRays, bool &enableCSV,
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
+void parseArgs(std::size_t argc, const std::vector<const char *> &argv, RenderMode &mode, int &numThreads, int &numRays, bool &enableCSV,
                int &sampleCount)
 {
-    for (int i = 1; i < argc; ++i)
+    for (std::size_t i = 1; i < argc; ++i)
     {
-        std::string arg = argv[i];
+        std::string arg = argv.at(i);
 
         if (arg == "--help")
         {
@@ -286,11 +296,11 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
             enableCSV = true;
             std::cout << "CSV output enabled\n";
 
-            if (i + 1 < argc && std::isdigit(argv[i + 1][0]))
+            if (i + 1 < argc && (std::isdigit(argv.at(i + 1)[0]) != 0))
             {
                 try
                 {
-                    sampleCount = std::stoi(argv[++i]);
+                    sampleCount = std::stoi(argv.at(++i));
                     std::cout << "Sample count set to: " << sampleCount << "\n";
                 }
                 catch (const std::invalid_argument &e)
@@ -306,7 +316,7 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
             // Ensure there is a next argument for the mode value
             if (i + 1 < argc)
             {
-                std::string modeStr = argv[++i];
+                std::string modeStr = argv.at(++i);
                 mode = renderModeFromString(modeStr);
                 std::cout << "Mode set to: " << renderModeToString(mode) << "\n";
             }
@@ -323,7 +333,7 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
             {
                 try
                 {
-                    numThreads = std::stoi(argv[++i]);
+                    numThreads = std::stoi(argv.at(++i));
                     std::cout << "Number of threads set to: " << numThreads << "\n";
                 }
                 catch (const std::invalid_argument &e)
@@ -346,7 +356,7 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
             {
                 try
                 {
-                    numRays = std::stoi(argv[++i]);
+                    numRays = std::stoi(argv.at(++i));
                     std::cout << "Number of rays set to: " << numRays << "\n";
                 }
                 catch (const std::invalid_argument &e)
@@ -374,170 +384,179 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
 
 auto main(int argc, const char *argv[]) -> int
 {
-    // Get the maximum number of threads available on the hardware
-    const int maxThreads = calculateThreads();
-    const int rayCountIncrement = 3600;
-
-    // Track timing data for the last 60 iterations
-    std::deque<int32_t> timings;
-    const int MAX_ITERATIONS = 60;
-
-    // Window and pane dimensions
-    sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
-    const uint WINDOW_WIDTH = desktopMode.width > 0 ? desktopMode.width - 100 : 1000;   // Use desktop width or fallback to 1000
-    const uint WINDOW_HEIGHT = desktopMode.height > 0 ? desktopMode.height - 100 : 600; // Use desktop height or fallback to 600
-    const uint PANE_HEIGHT = 80;
-    const uint DRAWABLE_WIDTH = WINDOW_WIDTH;
-    const uint DRAWABLE_HEIGHT = WINDOW_HEIGHT - PANE_HEIGHT;
-
-    sf::RenderWindow window(sf::VideoMode({WINDOW_WIDTH, WINDOW_HEIGHT}), "Ray Tracer");
-    window.setFramerateLimit(60);
-
-    RenderMode mode = RenderMode::SingleThreaded; // Default to single-threaded mode
-    int numRays = rayCountIncrement;              // Default to 3600 rays for 1 degree resolution
-    int currentThreadCount = 2;
-    bool enableCSV = false;
-    int sampleCount = 1000;
-    parseArgs(argc, std::vector<const char *>(argv, argv + argc), mode, currentThreadCount, numRays, enableCSV, sampleCount);
-
-    // Create Report object for CSV reporting if enabled
-    std::cout << "Initializing report with CSV enabled: " << std::boolalpha << enableCSV << " and sample count: " << sampleCount << "\n";
-    Report report(enableCSV, sampleCount);
-
-    RayTracer rayTracer; // Create an instance of the RayTracer class to perform ray tracing operations
-    // Load font for text rendering
-    sf::Font font = loadFont("fonts/KOMIKAP_.ttf", argv[0]);
-
-    // Create scene with adjusted drawable area (excluding pane)
-    Scene scene(DRAWABLE_WIDTH, DRAWABLE_HEIGHT, 2, 4);
-    std::vector<HitResult> results;
-    sf::RectangleShape pane(sf::Vector2f(DRAWABLE_WIDTH, PANE_HEIGHT));
-    pane.setPosition(0, DRAWABLE_HEIGHT);
-    pane.setFillColor(sf::Color(50, 50, 50, 200)); // Dark semi-transparent
-
-    // Create keyboard controls help text
-    sf::Text controlsText("Q: Exit  +/-: Ray Count  M: RenderMode  R: New Scene  W/S: Thread Count", font, 20);
-    controlsText.setFillColor(sf::Color::White);
-
-    while (window.isOpen())
+    try
     {
-        sf::Event event{};
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-            {
-                window.close();
-            }
-            else if (event.type == sf::Event::KeyPressed)
-            {
-                // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
-                switch (event.key.code)
-                {
-                case sf::Keyboard::Escape:
-                case sf::Keyboard::Q:
-                    window.close();
-                    break;
-                case sf::Keyboard::Equal:
-                case sf::Keyboard::Add:
-                    // Increase animation speed
-                    numRays += rayCountIncrement; // Increase rays by 3600 (1 degree resolution)
-                    std::cout << "Increased rays: " << numRays << "\n";
-                    break;
-                case sf::Keyboard::Hyphen:
-                case sf::Keyboard::Subtract:
-                    // Decrease animation speed
-                    numRays = std::max(rayCountIncrement, numRays - rayCountIncrement); // Decrease rays but not below 3600
-                    std::cout << "Decreased rays: " << numRays << "\n";
-                    break;
-                case sf::Keyboard::M:
-                    // Reset timing since we are switching modes
-                    timings.clear();
+        // Get the maximum number of threads available on the hardware
+        const int maxThreads = calculateThreads();
+        const int rayCountIncrement = 3600;
 
-                    // Cycle through render modes
-                    if (mode == RenderMode::SingleThreaded)
+        // Track timing data for the last 60 iterations
+        std::deque<int32_t> timings;
+        const int MAX_ITERATIONS = 60;
+
+        // Window and pane dimensions
+        sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
+        const unsigned int WINDOW_WIDTH = desktopMode.width > 0 ? desktopMode.width - 100 : 1000;   // Use desktop width or fallback to 1000
+        const unsigned int WINDOW_HEIGHT = desktopMode.height > 0 ? desktopMode.height - 100 : 600; // Use desktop height or fallback to 600
+        const float PANE_HEIGHT = 80.0F;
+        const auto DRAWABLE_WIDTH = static_cast<float>(WINDOW_WIDTH);
+        const auto DRAWABLE_HEIGHT = static_cast<float>(WINDOW_HEIGHT) - PANE_HEIGHT;
+
+        sf::RenderWindow window(sf::VideoMode({WINDOW_WIDTH, WINDOW_HEIGHT}), "Ray Tracer");
+        window.setFramerateLimit(60);
+
+        RenderMode mode = RenderMode::SingleThreaded; // Default to single-threaded mode
+        int numRays = rayCountIncrement;              // Default to 3600 rays for 1 degree resolution
+        int currentThreadCount = 2;
+        bool enableCSV = false;
+        int sampleCount = 1000;
+        parseArgs(static_cast<std::size_t>(argc), std::vector<const char *>(argv, argv + argc), mode, currentThreadCount, numRays,
+                  enableCSV, sampleCount);
+
+        // Create Report object for CSV reporting if enabled
+        std::cout << "Initializing report with CSV enabled: " << std::boolalpha << enableCSV << " and sample count: " << sampleCount
+                  << "\n";
+        Report report(enableCSV, sampleCount);
+
+        // Load font for text rendering
+        sf::Font font = loadFont("fonts/KOMIKAP_.ttf", argv[0]);
+
+        // Create scene with adjusted drawable area (excluding pane)
+        Scene scene(static_cast<int>(DRAWABLE_WIDTH), static_cast<int>(DRAWABLE_HEIGHT), 2, 4);
+        std::vector<HitResult> results;
+        sf::RectangleShape pane(sf::Vector2f(DRAWABLE_WIDTH, PANE_HEIGHT));
+        pane.setPosition(0, DRAWABLE_HEIGHT);
+        pane.setFillColor(sf::Color(50, 50, 50, 200)); // Dark semi-transparent
+
+        // Create keyboard controls help text
+        sf::Text controlsText("Q: Exit  +/-: Ray Count  M: RenderMode  R: New Scene  W/S: Thread Count", font, 20);
+        controlsText.setFillColor(sf::Color::White);
+
+        while (window.isOpen())
+        {
+            sf::Event event{};
+            while (window.pollEvent(event))
+            {
+                if (event.type == sf::Event::Closed)
+                {
+                    window.close();
+                }
+                else if (event.type == sf::Event::KeyPressed)
+                {
+                    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-union-access)
+                    switch (event.key.code)
                     {
-                        mode = RenderMode::OpenMP;
+                    case sf::Keyboard::Escape:
+                    case sf::Keyboard::Q:
+                        window.close();
+                        break;
+                    case sf::Keyboard::Equal:
+                    case sf::Keyboard::Add:
+                        // Increase animation speed
+                        numRays += rayCountIncrement; // Increase rays by 3600 (1 degree resolution)
+                        std::cout << "Increased rays: " << numRays << "\n";
+                        break;
+                    case sf::Keyboard::Hyphen:
+                    case sf::Keyboard::Subtract:
+                        // Decrease animation speed
+                        numRays = std::max(rayCountIncrement, numRays - rayCountIncrement); // Decrease rays but not below 3600
+                        std::cout << "Decreased rays: " << numRays << "\n";
+                        break;
+                    case sf::Keyboard::M:
+                        // Reset timing since we are switching modes
+                        timings.clear();
+
+                        // Cycle through render modes
+                        if (mode == RenderMode::SingleThreaded)
+                        {
+                            mode = RenderMode::OpenMP;
+                        }
+                        else if (mode == RenderMode::OpenMP)
+                        {
+                            mode = RenderMode::StdThread;
+                        }
+                        else
+                        {
+                            mode = RenderMode::SingleThreaded;
+                        }
+                        std::cout << "Switched to " << renderModeToString(mode) << " mode\n";
+                        break;
+                    case sf::Keyboard::R:
+                        scene.createScene(); // Regenerate scene with new random objects
+                        std::cout << "Scene randomized\n";
+                        break;
+                    // NOLINTNEXTLINE(bugprone-branch-clone)
+                    case sf::Keyboard::W:
+                    case sf::Keyboard::Up:
+                        currentThreadCount = std::min(maxThreads, currentThreadCount + 1);
+                        std::cout << "Increased threads: " << currentThreadCount << "\n";
+                        break;
+                    case sf::Keyboard::S:
+                    case sf::Keyboard::Down:
+                        currentThreadCount = std::max(2, currentThreadCount - 1);
+                        std::cout << "Decreased threads: " << currentThreadCount << "\n";
+                        break;
+                    default:
+                        break;
                     }
-                    else if (mode == RenderMode::OpenMP)
-                    {
-                        mode = RenderMode::StdThread;
-                    }
-                    else
-                    {
-                        mode = RenderMode::SingleThreaded;
-                    }
-                    std::cout << "Switched to " << renderModeToString(mode) << " mode\n";
-                    break;
-                case sf::Keyboard::R:
-                    scene.createScene(); // Regenerate scene with new random objects
-                    std::cout << "Scene randomized\n";
-                    break;
-                // NOLINTNEXTLINE(bugprone-branch-clone)
-                case sf::Keyboard::W:
-                case sf::Keyboard::Up:
-                    currentThreadCount = std::min(maxThreads, currentThreadCount + 1);
-                    std::cout << "Increased threads: " << currentThreadCount << "\n";
-                    break;
-                case sf::Keyboard::S:
-                case sf::Keyboard::Down:
-                    currentThreadCount = std::max(2, currentThreadCount - 1);
-                    std::cout << "Decreased threads: " << currentThreadCount << "\n";
-                    break;
-                default:
-                    break;
                 }
             }
+
+            sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+
+            // Execute ray tracing and measure elapsed time
+            auto elapsedMicroseconds = executeRayTracing(mode, scene, mousePos, numRays, currentThreadCount, results);
+            sf::Text timingText;
+            // Update timing history and get average if ready, and write CSV if enabled
+            if (auto average = updateTimingAndGetAverage(timings, elapsedMicroseconds, MAX_ITERATIONS, report, renderModeToString(mode),
+                                                         currentThreadCount, numRays))
+            {
+                timingText.setString("Avg (" + std::to_string(MAX_ITERATIONS) + "): " + std::to_string(*average) + " microseconds");
+                timingText.setFont(font);
+                timingText.setCharacterSize(20);
+                timingText.setFillColor(sf::Color::White);
+            }
+
+            // Create vertex array for rays based on hit results
+            sf::VertexArray lines = getRays(numRays, mousePos, results);
+
+            // Clear window and draw scene
+            window.clear(sf::Color::Black);
+            window.draw(lines);
+            scene.draw(window);
+            window.draw(pane);
+
+            // Draw RenderMode text on the left side of the pane
+            sf::Text modeText("Current Mode: " + renderModeToString(mode), font, 20);
+            modeText.setPosition(10.0F, DRAWABLE_HEIGHT + 4);
+            modeText.setFillColor(sf::Color::White);
+
+            sf::Text rayCount("Rays: " + std::to_string(numRays), font, 20);
+            rayCount.setPosition(modeText.getPosition().x + modeText.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
+            rayCount.setFillColor(sf::Color::White);
+
+            sf::Text threadCount("Threads: " + std::to_string(currentThreadCount), font, 20);
+            threadCount.setPosition(rayCount.getPosition().x + rayCount.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
+            threadCount.setFillColor(sf::Color::White);
+
+            timingText.setPosition(threadCount.getPosition().x + threadCount.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
+            controlsText.setPosition(10.0F, DRAWABLE_HEIGHT + 44);
+
+            window.draw(modeText);
+            window.draw(timingText);
+            window.draw(rayCount);
+            window.draw(threadCount);
+            window.draw(controlsText);
+
+            // display window
+            window.display();
         }
 
-        sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-
-        // Execute ray tracing and measure elapsed time
-        auto elapsedMicroseconds = executeRayTracing(mode, rayTracer, scene, mousePos, numRays, currentThreadCount, results);
-        sf::Text timingText;
-        // Update timing history and get average if ready, and write CSV if enabled
-        if (auto average = updateTimingAndGetAverage(timings, elapsedMicroseconds, MAX_ITERATIONS, report, renderModeToString(mode),
-                                                     currentThreadCount, numRays))
-        {
-            timingText.setString("Avg (" + std::to_string(MAX_ITERATIONS) + "): " + std::to_string(*average) + " microseconds");
-            timingText.setFont(font);
-            timingText.setCharacterSize(20);
-            timingText.setFillColor(sf::Color::White);
-        }
-
-        // Create vertex array for rays based on hit results
-        sf::VertexArray lines = getRays(numRays, mousePos, results);
-
-        // Clear window and draw scene
-        window.clear(sf::Color::Black);
-        window.draw(lines);
-        scene.draw(window);
-        window.draw(pane);
-
-        // Draw RenderMode text on the left side of the pane
-        sf::Text modeText("Current Mode: " + renderModeToString(mode), font, 20);
-        modeText.setPosition(10, DRAWABLE_HEIGHT + 4);
-        modeText.setFillColor(sf::Color::White);
-
-        sf::Text rayCount("Rays: " + std::to_string(numRays), font, 20);
-        rayCount.setPosition(modeText.getPosition().x + modeText.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
-        rayCount.setFillColor(sf::Color::White);
-
-        sf::Text threadCount("Threads: " + std::to_string(currentThreadCount), font, 20);
-        threadCount.setPosition(rayCount.getPosition().x + rayCount.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
-        threadCount.setFillColor(sf::Color::White);
-
-        timingText.setPosition(threadCount.getPosition().x + threadCount.getGlobalBounds().width + 25, DRAWABLE_HEIGHT + 4);
-        controlsText.setPosition(10, DRAWABLE_HEIGHT + 44);
-
-        window.draw(modeText);
-        window.draw(timingText);
-        window.draw(rayCount);
-        window.draw(threadCount);
-        window.draw(controlsText);
-
-        // display window
-        window.display();
+        return 0;
     }
-
-    return 0;
+    catch (const std::exception &e)
+    {
+        std::cerr << "An error occurred: " << e.what() << '\n';
+        return 1;
+    }
 }
