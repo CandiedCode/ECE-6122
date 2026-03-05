@@ -15,6 +15,7 @@
 #include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <deque>
@@ -127,7 +128,7 @@ auto loadFont(const std::string &fontPath, const std::string &executablePath) ->
 
     if (!loaded)
     {
-        std::cerr << "Failed to load font from " << fontPath << " or " << executableDir << "/" << fontPath << std::endl;
+        std::cerr << "Failed to load font from " << fontPath << " or " << executableDir << "/" << fontPath << '\n';
         exit(EXIT_FAILURE);
     }
 
@@ -154,12 +155,12 @@ auto calculateThreads() -> int
  */
 auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitResult> &results) -> sf::VertexArray
 {
-    sf::VertexArray rays(sf::Lines, 2 * numRays); // Need 2 vertices per line
+    sf::VertexArray rays(sf::Lines, static_cast<std::size_t>(2 * numRays)); // Need 2 vertices per line
     for (int i = 0; i < numRays; ++i)
     {
         // Even Vertices: start point (light source)
-        rays[2 * i].position = mousePos;
-        rays[2 * i].color = sf::Color(255, 100, 0, 30);
+        rays[static_cast<std::size_t>(2 * i)].position = mousePos;
+        rays[static_cast<std::size_t>(2 * i)].color = sf::Color(255, 100, 0, 30);
 
         // Brightness based on distance to hit point
         auto hitPoint = results[i].point;
@@ -167,7 +168,7 @@ auto getRays(int numRays, const sf::Vector2f &mousePos, const std::vector<HitRes
 
         // Inverse square law: brightness = 1 / (distance^2)
         // Clamp to avoid division issues
-        float brightness{std::max(50.0f, std::min(255.0f, 10000.0f / (distance * distance)))};
+        float brightness{std::max(50.0F, std::min(255.0F, 10000.0F / (distance * distance)))};
 
         // Odd Vertices: end point (hit point)
         sf::Color hitColor = results[i].color;
@@ -197,13 +198,13 @@ auto executeRayTracing(RenderMode mode, RayTracer &rayTracer, const Scene &scene
     switch (mode)
     {
     case RenderMode::SingleThreaded:
-        rayTracer.castRaysSingleThreaded(mousePos, numRays, scene, results);
+        RayTracer::castRaysSingleThreaded(mousePos, numRays, scene, results);
         break;
     case RenderMode::OpenMP:
-        rayTracer.castRaysOpenMP(mousePos, numRays, scene, results, currentThreadCount);
+        RayTracer::castRaysOpenMP(mousePos, numRays, scene, results, currentThreadCount);
         break;
     case RenderMode::StdThread:
-        rayTracer.castRaysStdThread(mousePos, numRays, scene, results, currentThreadCount);
+        RayTracer::castRaysStdThread(mousePos, numRays, scene, results, currentThreadCount);
         break;
     }
 
@@ -286,7 +287,7 @@ void parseArgs(int argc, const std::vector<const char *> &argv, RenderMode &mode
             enableCSV = true;
             std::cout << "CSV output enabled\n";
 
-            if (i + 1 < argc && std::isdigit(argv[i + 1][0]))
+            if (i + 1 < argc && (std::isdigit(argv[i + 1][0]) != 0))
             {
                 try
                 {

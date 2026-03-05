@@ -45,8 +45,8 @@ auto Geometry::intersectLineSegment(const Ray &ray, const sf::Vector2f &point1, 
     // Solve for t and u using the parametric equations
     // t·d - u·s = oc
     // Using cross products:
-    float t = (oc.x * segment_direction.y - oc.y * segment_direction.x) / denominator;
-    float u = (oc.x * ray.direction.y - oc.y * ray.direction.x) / denominator;
+    float t = ((oc.x * segment_direction.y) - (oc.y * segment_direction.x)) / denominator;
+    float u = ((oc.x * ray.direction.y) - (oc.y * ray.direction.x)) / denominator;
 
     // Valid intersection when:
     // - t ≥ 0 (intersection is in front of ray)
@@ -177,8 +177,8 @@ auto Geometry::intersectCircle(const Ray &ray, const sf::CircleShape &circle) ->
     // Quadratic formula: t²(d·d) + 2t(oc·d) + (oc·oc - r²) = 0
     // Since direction is normalized: d·d = 1
     float a = 1.0F; // ray.direction · ray.direction
-    float b = 2.0F * (oc.x * ray.direction.x + oc.y * ray.direction.y);
-    float c = (oc.x * oc.x + oc.y * oc.y) - (radius * radius);
+    float b = 2.0F * ((oc.x * ray.direction.x) + (oc.y * ray.direction.y));
+    float c = ((oc.x * oc.x) + (oc.y * oc.y)) - (radius * radius);
 
     // Discriminant
     float discriminant = (b * b) - (4.0F * a * c);

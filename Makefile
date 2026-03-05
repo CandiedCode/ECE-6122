@@ -38,9 +38,9 @@ lint/tidy: ## Run clang-tidy static analysis
 lint/tidy-fix: ## Run clang-tidy static analysis and apply fixes
 	@echo "Running clang-tidy with fixes..."
 	run-clang-tidy -p build \
-		-j $(sysctl -n hw.ncpu) \
+		-j $$(sysctl -n hw.ncpu) \
 		-header-filter='Homework_' \
-		'Homework_.*' --fix
+		'Homework_.*' -fix
 	@echo "✓ clang-tidy fixes applied"
 
 .PHONY: lint/cppcheck
@@ -55,7 +55,7 @@ lint/cppcheck: ## Run Cppcheck security analysis with MISRA rules
 	-i build/_deps
 	@echo "✓ Cppcheck analysis complete"
 
-.PHONY: lint/markdown
+.PHONY: lint/markdow
 lint/markdown: ## Check markdown files using markdownlint v0.38.0
 	@echo "Linting markdown files..."
 	@markdownlint .

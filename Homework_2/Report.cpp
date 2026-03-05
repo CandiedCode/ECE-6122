@@ -22,13 +22,13 @@ static auto generateFileTimestamp() -> std::string
 {
     auto now = std::chrono::system_clock::now();
     auto timeT = std::chrono::system_clock::to_time_t(now);
-    const std::tm *localTime = const_cast<const std::tm *>(std::localtime(&timeT));
+    const auto *localTime = const_cast<const std::tm *>(std::localtime(&timeT));
 
     std::array<char, 20> buffer{};
 
     // Use timestamp in the name to ensure uniqueness and prevent overwriting previous files
     std::strftime(buffer.data(), buffer.size(), "_%Y%m%d_%H%M%S", localTime);
-    return std::string(buffer.data());
+    return {buffer.data()};
 }
 
 /** @brief Generate a Unix epoch timestamp in milliseconds for CSV rows
@@ -55,7 +55,7 @@ auto Report::getBuildMode() -> std::string
 }
 
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-Report::Report(bool enable, int sampleCount) : isOpen(false), sampleCount(sampleCount)
+Report::Report(bool enable, int sampleCount) : sampleCount(sampleCount)
 {
     // If CSV reporting is not enabled, do not attempt to open a file
     if (!enable)

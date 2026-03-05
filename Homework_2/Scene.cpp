@@ -119,7 +119,7 @@ auto Scene::createWalls() -> void
         auto cos_r = std::cos(rot_rad);
         auto sin_r = std::sin(rot_rad);
 
-        std::array<sf::Vector2f, 4> localCorners = {sf::Vector2f{0.f, 0.f}, {size.x, 0.f}, {size.x, size.y}, {0.f, size.y}};
+        std::array<sf::Vector2f, 4> localCorners = {sf::Vector2f{0.F, 0.F}, {size.x, 0.F}, {size.x, size.y}, {0.F, size.y}};
 
         auto minX = std::numeric_limits<float>::max();
         auto maxX = -std::numeric_limits<float>::max();
@@ -128,8 +128,8 @@ auto Scene::createWalls() -> void
 
         for (const auto &c : localCorners)
         {
-            float wx = c.x * cos_r - c.y * sin_r + pos.x;
-            float wy = c.x * sin_r + c.y * cos_r + pos.y;
+            float wx = (c.x * cos_r) - (c.y * sin_r) + pos.x;
+            float wy = (c.x * sin_r) + (c.y * cos_r) + pos.y;
             minX = std::min(minX, wx);
             maxX = std::max(maxX, wx);
             minY = std::min(minY, wy);

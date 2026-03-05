@@ -73,5 +73,7 @@ auto RayTracer::castRaysStdThread(const sf::Vector2f &lightPos, int numRays, con
         });
     }
     for (auto &th : threads)
+    {
         th.join();
+    }
 }

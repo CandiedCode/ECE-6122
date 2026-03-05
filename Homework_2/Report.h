@@ -26,7 +26,7 @@ class Report
     std::string filename;
     int sampleCount;
     std::unordered_map<std::string, int> reportingCounts;
-    bool isOpen;
+    bool isOpen{false};
 
   public:
     /** @brief Construct a Report object
