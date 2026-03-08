@@ -80,9 +80,11 @@ else()
     endif()
 endif()
 
-# add_subdirectory(Homework_0)
-# add_subdirectory(Homework_1)
+add_subdirectory(Homework_0)
+add_subdirectory(Homework_1)
 add_subdirectory(Homework_2)
+add_subdirectory(Homework_3)
+
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 link_directories(${PROJECT_SOURCE_DIR}/lib)

@@ -1,0 +1,66 @@
+
+project(Homework_3 VERSION 1.0)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
+message(STATUS "CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
+
+
+if(APPLE)
+    # If user didn't provide OpenMP_ROOT / CMAKE_PREFIX_PATH, try Homebrew.
+    if(NOT DEFINED OpenMP_ROOT AND NOT DEFINED CMAKE_PREFIX_PATH)
+        execute_process(
+            COMMAND brew --prefix libomp
+            OUTPUT_VARIABLE LIBOMP_PREFIX
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            RESULT_VARIABLE BREW_LIBOMP_RESULT
+        )
+        if(BREW_LIBOMP_RESULT EQUAL 0 AND EXISTS "${LIBOMP_PREFIX}")
+            set(OpenMP_ROOT "${LIBOMP_PREFIX}")
+        endif()
+    endif()
+endif()
+
+if(SFML_PROVIDED_BY_ROOT OR TARGET sfml-graphics)
+    message(STATUS "Homework_2: SFML already available")
+    include_directories(${PROJECT_SOURCE_DIR}/../SFML/include)
+    link_directories(${PROJECT_SOURCE_DIR}/../SFML/lib)
+else()
+    message(STATUS "Homework_2: fetching SFML (root did not provide it)")
+    # Include FetchContent for downloading dependencies
+    include(FetchContent)
+
+    # Declare SFML from GitHub
+    FetchContent_Declare(SFML
+        GIT_REPOSITORY https://github.com/SFML/SFML
+        GIT_TAG 2.6.2
+        GIT_SHALLOW ON
+    )
+    set(SFML_BUILD_AUDIO OFF CACHE BOOL "") # We only need graphics, window, and system modules
+
+    # Download and make dependencies available
+    FetchContent_MakeAvailable(SFML)
+endif()
+
+
+
+# Find threading library
+find_package(Threads REQUIRED)
+
+# Find OpenMP with proper error handling
+find_package(OpenMP REQUIRED COMPONENTS CXX)
+message(STATUS "OpenMP found: ${OPENMP_CXX_FOUND}")
+message(STATUS "OpenMP libraries: ${OpenMP_CXX_LIBRARIES}")
+message(STATUS "OpenMP include dirs: ${OpenMP_CXX_INCLUDE_DIRS}")
+
+file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+
+# Create Homework_2 executable
+add_executable(Hw3 ${SOURCES})
+
+# Link libraries
+target_link_libraries(Hw3 PRIVATE sfml-graphics sfml-window sfml-system Threads::Threads OpenMP::OpenMP_CXX)
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts" DESTINATION "${COMMON_OUTPUT_DIR}/bin/")
