@@ -19,7 +19,7 @@ FetchContent_Declare(GLM
 FetchContent_MakeAvailable(GLM)
 
 # Find GLEW (OpenGL extension wrangler)
-find_package(GLEW 2.3.1 REQUIRED)
+find_package(GLEW REQUIRED)
 message(STATUS "GLEW found: ${GLEW_FOUND}")
 message(STATUS "GLEW include dirs: ${GLEW_INCLUDE_DIRS}")
 message(STATUS "GLEW libraries: ${GLEW_LIBRARIES}")
