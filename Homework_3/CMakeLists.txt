@@ -1,66 +1,60 @@
-
 project(Homework_3 VERSION 1.0)
 
-# Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 message(STATUS "CMAKE_CXX_FLAGS_RELEASE: ${CMAKE_CXX_FLAGS_RELEASE}")
 message(STATUS "CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
 
+# Fetch dependencies
+include(FetchContent)
 
-if(APPLE)
-    # If user didn't provide OpenMP_ROOT / CMAKE_PREFIX_PATH, try Homebrew.
-    if(NOT DEFINED OpenMP_ROOT AND NOT DEFINED CMAKE_PREFIX_PATH)
-        execute_process(
-            COMMAND brew --prefix libomp
-            OUTPUT_VARIABLE LIBOMP_PREFIX
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            RESULT_VARIABLE BREW_LIBOMP_RESULT
-        )
-        if(BREW_LIBOMP_RESULT EQUAL 0 AND EXISTS "${LIBOMP_PREFIX}")
-            set(OpenMP_ROOT "${LIBOMP_PREFIX}")
-        endif()
-    endif()
-endif()
+# Fetch GLM (header-only math library)
+FetchContent_Declare(GLM
+    GIT_REPOSITORY https://github.com/g-truc/glm
+    GIT_TAG 1.0.1
+    GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(GLM)
 
-if(SFML_PROVIDED_BY_ROOT OR TARGET sfml-graphics)
-    message(STATUS "Homework_2: SFML already available")
-    include_directories(${PROJECT_SOURCE_DIR}/../SFML/include)
-    link_directories(${PROJECT_SOURCE_DIR}/../SFML/lib)
-else()
-    message(STATUS "Homework_2: fetching SFML (root did not provide it)")
-    # Include FetchContent for downloading dependencies
-    include(FetchContent)
+# Find GLEW (OpenGL extension wrangler)
+find_package(GLEW 2.3.1 REQUIRED)
+message(STATUS "GLEW found: ${GLEW_FOUND}")
+message(STATUS "GLEW include dirs: ${GLEW_INCLUDE_DIRS}")
+message(STATUS "GLEW libraries: ${GLEW_LIBRARIES}")
 
-    # Declare SFML from GitHub
-    FetchContent_Declare(SFML
-        GIT_REPOSITORY https://github.com/SFML/SFML
-        GIT_TAG 2.6.2
-        GIT_SHALLOW ON
-    )
-    set(SFML_BUILD_AUDIO OFF CACHE BOOL "") # We only need graphics, window, and system modules
+# Find GLFW (window and context creation)
+find_package(glfw3 REQUIRED)
+message(STATUS "GLFW found: ${glfw3_FOUND}")
 
-    # Download and make dependencies available
-    FetchContent_MakeAvailable(SFML)
-endif()
+# Fetch Assimp (model loading library)
+FetchContent_Declare(Assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp
+    GIT_TAG v5.4.2
+    GIT_SHALLOW ON
+)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ZLIB OFF CACHE BOOL "" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(Assimp)
 
+# Find OpenGL
+find_package(OpenGL REQUIRED)
+message(STATUS "OpenGL found: ${OpenGL_FOUND}")
+message(STATUS "OpenGL version: ${OpenGL_VERSION}")
+message(STATUS "OpenGL libraries: ${OPENGL_LIBRARIES}")
+message(STATUS "OpenGL include directories: ${OPENGL_INCLUDE_DIR}")
 
+file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
-# Find threading library
-find_package(Threads REQUIRED)
-
-# Find OpenMP with proper error handling
-find_package(OpenMP REQUIRED COMPONENTS CXX)
-message(STATUS "OpenMP found: ${OPENMP_CXX_FOUND}")
-message(STATUS "OpenMP libraries: ${OpenMP_CXX_LIBRARIES}")
-message(STATUS "OpenMP include dirs: ${OpenMP_CXX_INCLUDE_DIRS}")
-
-file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-
-# Create Homework_2 executable
 add_executable(Hw3 ${SOURCES})
 
-# Link libraries
-target_link_libraries(Hw3 PRIVATE sfml-graphics sfml-window sfml-system Threads::Threads OpenMP::OpenMP_CXX)
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/fonts" DESTINATION "${COMMON_OUTPUT_DIR}/bin/")
+# Add include directories
+target_include_directories(Hw3 PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${GLEW_INCLUDE_DIRS}
+)
+
+target_link_libraries(Hw3 PRIVATE OpenGL::GL glm assimp ${GLEW_LIBRARIES} glfw)
