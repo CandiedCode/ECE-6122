@@ -29,7 +29,7 @@ jobs:
           cmake: true
           ninja: true
           vcpkg: true
-      - name: Install X11, SFML, and OpenMP dependencies
+      - name: Install X11, SFML, OpenGL, GLFW, GLEW, Assimp and OpenMP dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libx11-dev \
@@ -41,7 +41,10 @@ jobs:
             libgl1-mesa-dev \
             libglu1-mesa-dev \
             libfreetype6-dev \
-            libomp-dev
+            libomp-dev \
+            libglfw3-dev \
+            libglew-dev \
+            libassimp-dev
       - name: Create build directory
         run: mkdir -p build
       - name: Run CMake
