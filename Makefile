@@ -1,6 +1,11 @@
 .PHONY: all
 all: build
 
+
+.PHONY: print-cmake
+print-cmake: ## Print the CMake command being used
+	 cmake --version
+
 .PHONY: lint
 lint: lint/markdown
 lint: lint/format lint/cpplint lint/cppcheck
@@ -71,7 +76,7 @@ lint/markdown-fix: ## Fix markdown files using markdownlint v0.38.0
 cmake: BUILD_TYPE ?= Debug
 cmake: ## Generate CMake build files using the default preset
 	@echo "Generating CMake build files..."
-	cd build && cmake .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
+	cd build && cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
 .PHONY: cmake/benchmark
 cmake/benchmark: ## Generate CMake build files for Benchmark configuration

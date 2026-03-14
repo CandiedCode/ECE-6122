@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(ECE6122 LANGUAGES CXX)
+project(ECE6122 LANGUAGES CXX C)
 
 # Set C++ standard globally
 set(CMAKE_CXX_STANDARD 17)
@@ -83,7 +83,9 @@ endif()
 # add_subdirectory(Homework_0)
 # add_subdirectory(Homework_1)
 # add_subdirectory(Homework_2)
+# add_subdirectory(external)
 add_subdirectory(Homework_3)
+
 
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
