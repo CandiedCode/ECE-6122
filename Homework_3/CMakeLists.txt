@@ -28,7 +28,15 @@ endif()
 # Fetch dependencies
 include(FetchContent)
 
-# Only fetch if not using external libraries
+# GLAD is always fetched via FetchContent since external/ uses GLEW (not GLAD)
+# and the source code depends on glad/glad.h
+FetchContent_Declare(GLAD
+    GIT_REPOSITORY https://github.com/Dav1dde/glad
+    GIT_TAG v0.1.34
+    GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(GLAD)
+
 if(NOT USE_EXTERNAL_LIBS)
     # Fetch GLM (header-only math library)
     FetchContent_Declare(GLM
@@ -45,16 +53,11 @@ if(NOT USE_EXTERNAL_LIBS)
         GIT_SHALLOW ON
     )
     FetchContent_MakeAvailable(GLFW)
-
-    # Fetch GLAD (OpenGL loader)
-    FetchContent_Declare(GLAD
-        GIT_REPOSITORY https://github.com/Dav1dde/glad
-        GIT_TAG v0.1.34
-        GIT_SHALLOW ON
-    )
-    FetchContent_MakeAvailable(GLAD)
 else()
-    message(STATUS "Homework_3: Expecting GLM, GLFW, GLAD to be available from external/")
+    message(STATUS "Homework_3: Using GLM and GLFW from external/")
+    # GLM is header-only; create an interface target pointing at external/glm-0.9.7.1
+    add_library(glm INTERFACE)
+    target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm-0.9.7.1)
 endif()
 
 
@@ -93,7 +96,8 @@ add_executable(Hw3 ${SOURCES})
 if(USE_EXTERNAL_LIBS)
     target_include_directories(Hw3 PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_SOURCE_DIR}/external/include
+        ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/include
+        ${glad_SOURCE_DIR}/include
     )
 else()
     target_include_directories(Hw3 PRIVATE
