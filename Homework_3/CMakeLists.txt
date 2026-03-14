@@ -53,33 +53,24 @@ if(NOT USE_EXTERNAL_LIBS)
         GIT_SHALLOW ON
     )
     FetchContent_MakeAvailable(GLFW)
+
+    # Fetch Assimp (model loading library)
+    FetchContent_Declare(Assimp
+        GIT_REPOSITORY https://github.com/assimp/assimp
+        GIT_TAG v5.4.2
+        GIT_SHALLOW ON
+    )
+    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_ZLIB OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(Assimp)
 else()
-    message(STATUS "Homework_3: Using GLM and GLFW from external/")
+    message(STATUS "Homework_3: Using GLM, GLFW, and Assimp from external/")
     # GLM is header-only; create an interface target pointing at external/glm-0.9.7.1
     add_library(glm INTERFACE)
     target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm-0.9.7.1)
 endif()
-
-
-# # Fetch STB image (single header image loading)
-# FetchContent_Declare(STB
-#     GIT_REPOSITORY https://github.com/nothings/stb
-#     GIT_TAG master
-#     GIT_SHALLOW ON
-# )
-# FetchContent_MakeAvailable(STB)
-
-# # Fetch Assimp (model loading library)
-# FetchContent_Declare(Assimp
-#     GIT_REPOSITORY https://github.com/assimp/assimp
-#     GIT_TAG v5.4.2
-#     GIT_SHALLOW ON
-# )
-# set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-# set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-# set(ASSIMP_BUILD_ZLIB OFF CACHE BOOL "" FORCE)
-# set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
-# FetchContent_MakeAvailable(Assimp)
 
 # Find OpenGL
 find_package(OpenGL REQUIRED)
