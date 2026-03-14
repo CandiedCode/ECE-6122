@@ -1,6 +1,7 @@
 Homework_1/PathfindingNotes.md
 CHANGELOG.md
 SFML/**
+external/**
 build/**
 node_modules/**
 .venv/**
