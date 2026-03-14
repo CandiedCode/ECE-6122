@@ -1,6 +1,6 @@
 #include "model.h"
+#include "Shader.h"
 #include "mesh.h"
-#include "shader.h"
 
 Model::Model(const std::string &path)
 {

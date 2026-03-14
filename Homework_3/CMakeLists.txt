@@ -18,11 +18,21 @@ FetchContent_Declare(GLM
 )
 FetchContent_MakeAvailable(GLM)
 
-# Find GLEW (OpenGL extension wrangler)
-find_package(GLEW REQUIRED)
-message(STATUS "GLEW found: ${GLEW_FOUND}")
-message(STATUS "GLEW include dirs: ${GLEW_INCLUDE_DIRS}")
-message(STATUS "GLEW libraries: ${GLEW_LIBRARIES}")
+# Fetch GLAD (OpenGL loader)
+FetchContent_Declare(GLAD
+    GIT_REPOSITORY https://github.com/Dav1dde/glad
+    GIT_TAG v0.1.34
+    GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(GLAD)
+
+# Fetch STB image (single header image loading)
+FetchContent_Declare(STB
+    GIT_REPOSITORY https://github.com/nothings/stb
+    GIT_TAG master
+    GIT_SHALLOW ON
+)
+FetchContent_MakeAvailable(STB)
 
 # Find GLFW (window and context creation)
 find_package(glfw3 REQUIRED)
@@ -54,7 +64,12 @@ add_executable(Hw3 ${SOURCES})
 # Add include directories
 target_include_directories(Hw3 PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${GLEW_INCLUDE_DIRS}
+    ${glad_SOURCE_DIR}/include
+    ${stb_SOURCE_DIR}
 )
 
-target_link_libraries(Hw3 PRIVATE OpenGL::GL glm assimp ${GLEW_LIBRARIES} glfw)
+target_link_libraries(Hw3 PRIVATE OpenGL::GL glm assimp glfw glad)
+
+# Copy shaders and assets to output directory
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/shaders" DESTINATION "${COMMON_OUTPUT_DIR}/bin/")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/assets" DESTINATION "${COMMON_OUTPUT_DIR}/bin/" OPTIONAL)
