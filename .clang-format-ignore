@@ -2,5 +2,6 @@
 build/
 out/
 SFML/
+external
 node_modules/
 .venv/
