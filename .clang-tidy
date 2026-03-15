@@ -58,4 +58,4 @@ CheckOptions:
     value: '0'
 
   - key: readability-identifier-length.IgnoredVariableNames
-    value: 'a|b|c|oc|t|t1|t2|u|x|y'
+    value: 'a|b|c|oc|t|t1|t2|u|x|y|up'
