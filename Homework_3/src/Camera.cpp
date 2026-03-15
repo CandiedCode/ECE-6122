@@ -43,7 +43,7 @@ void Camera::ProcessKeyboard(int direction, float deltaTime)
         position_ += right_ * velocity;
         break;
     default:
-        break;  // No action for unknown direction
+        break; // No action for unknown direction
     }
 }
 
@@ -56,7 +56,8 @@ void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPi
     yaw_ += xOffset;
     pitch_ += yOffset;
 
-    if (constrainPitch) {
+    if (constrainPitch)
+    {
         pitch_ = std::clamp(pitch_, -89.0F, 89.0F);
     }
 

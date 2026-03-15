@@ -32,15 +32,27 @@ class Camera
     // @param world_up The world up vector (usually (0, 1, 0))
     // @param yaw The initial yaw angle (in degrees) for the camera's orientation
     // @param pitch The initial pitch angle (in degrees) for the camera's orientation
-    Camera(glm::vec3 position = glm::vec3(0.0F, 0.0F, 3.0F),
-           glm::vec3 world_up = glm::vec3(0.0F, 1.0F, 0.0F), float yaw = -90.0F, float pitch = 0.0F);
+    Camera(glm::vec3 position = glm::vec3(0.0F, 0.0F, 3.0F), glm::vec3 world_up = glm::vec3(0.0F, 1.0F, 0.0F), float yaw = -90.0F,
+           float pitch = 0.0F);
 
     // Getter methods for camera state (const-qualified)
     [[nodiscard]] auto GetViewMatrix() const -> glm::mat4;
-    [[nodiscard]] auto GetPosition() const -> glm::vec3 { return position_; }
-    [[nodiscard]] auto GetFront() const -> glm::vec3 { return front_; }
-    [[nodiscard]] auto GetUp() const -> glm::vec3 { return up_; }
-    [[nodiscard]] auto GetRight() const -> glm::vec3 { return right_; }
+    [[nodiscard]] auto GetPosition() const -> glm::vec3
+    {
+        return position_;
+    }
+    [[nodiscard]] auto GetFront() const -> glm::vec3
+    {
+        return front_;
+    }
+    [[nodiscard]] auto GetUp() const -> glm::vec3
+    {
+        return up_;
+    }
+    [[nodiscard]] auto GetRight() const -> glm::vec3
+    {
+        return right_;
+    }
 
     // @brief Process keyboard input to move the camera in the specified direction
     // @param direction The direction to move (FORWARD, BACKWARD, LEFT, RIGHT)
@@ -76,4 +88,4 @@ class Camera
     void UpdateCameraVectors();
 };
 
-#endif  // ECE_6122_CAMERA_H_
+#endif // ECE_6122_CAMERA_H_
