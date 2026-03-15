@@ -48,10 +48,10 @@ jobs:
       - name: Create build directory
         run: mkdir -p build
       - name: Run CMake
-        run: cd build && cmake ..
-      - name: Build with CMake
         env:
           USE_EXTERNAL_LIBS: "OFF"
+        run: cd build && cmake ..
+      - name: Build with CMake
         run: cd build && cmake --build . --config Release
       - name: Run cpplint
         uses: cpp-linter/cpp-linter-action@v2
