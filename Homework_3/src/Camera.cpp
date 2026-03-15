@@ -15,7 +15,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 Camera::Camera(glm::vec3 position, glm::vec3 world_up, float yaw, float pitch)
-    : position_(position), world_up_(world_up), yaw_(yaw), pitch_(pitch), movement_speed_(5.0F), front_(0.0F, 0.0F, -1.0F)
+    : position_(position), front_(0.0F, 0.0F, -1.0F), world_up_(world_up), yaw_(yaw), pitch_(pitch), movement_speed_(5.0F)
 {
     UpdateCameraVectors();
 }

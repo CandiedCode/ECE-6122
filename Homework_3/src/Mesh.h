@@ -9,8 +9,8 @@
  * @brief Header file for VAO (Vertex Array Object), VBO (Vertex Buffer Object), and EBO (Element Buffer Object) for one aiMesh
  */
 
-#ifndef ECE_6122_MESH_H_
-#define ECE_6122_MESH_H_
+#ifndef HOMEWORK_3_SRC_MESH_H_
+#define HOMEWORK_3_SRC_MESH_H_
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -58,8 +58,8 @@ class Mesh
     // to the destination Mesh, and then reset the source Mesh's VAO, VBO, EBO, and textureID to 0 to prevent accidental use or deletion of
     // resources that have been transferred.
     Mesh(Mesh &&other) noexcept
-        : vao_(other.vao_), vbo_(other.vbo_), ebo_(other.ebo_), vertices_(std::move(other.vertices_)),
-          indices_(std::move(other.indices_)), texture_id_(other.texture_id_)
+        : vao_(other.vao_), vbo_(other.vbo_), ebo_(other.ebo_), vertices_(std::move(other.vertices_)), indices_(std::move(other.indices_)),
+          texture_id_(other.texture_id_)
     {
         other.vao_ = 0;
         other.vbo_ = 0;
@@ -69,13 +69,16 @@ class Mesh
     auto operator=(Mesh &&other) noexcept -> Mesh &
     {
         // Cleanup old resources
-        if (vao_ != 0) {
+        if (vao_ != 0)
+        {
             glDeleteVertexArrays(1, &vao_);
         }
-        if (vbo_ != 0) {
+        if (vbo_ != 0)
+        {
             glDeleteBuffers(1, &vbo_);
         }
-        if (ebo_ != 0) {
+        if (ebo_ != 0)
+        {
             glDeleteBuffers(1, &ebo_);
         }
 
@@ -126,10 +129,12 @@ class Mesh
     }
 
   private:
-    // OpenGL buffer IDs and mesh data
+    // OpenGL buffer IDs
     GLuint vao_ = 0;
     GLuint vbo_ = 0;
     GLuint ebo_ = 0;
+
+    // Mesh data: list of vertices and indices, and texture ID
     std::vector<Vertex> vertices_;
     std::vector<unsigned int> indices_;
     GLuint texture_id_ = 0;
@@ -141,4 +146,4 @@ class Mesh
     void Setup();
 };
 
-#endif // ECE_6122_MESH_H_
+#endif // HOMEWORK_3_SRC_MESH_H_
