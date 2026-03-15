@@ -66,19 +66,19 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compile_definitions(BUILD_TYPE_RELEASE)
 endif()
 
-if(USE_FETCHED_SFML)
-    message(STATUS "SFML: FetchContent mode enabled (USE_FETCHED_SFML=ON)")
-    set(SFML_PROVIDED_BY_ROOT OFF CACHE INTERNAL "SFML provided by root")
-else()
-    if(EXISTS "${SFML_LOCAL_DIR}/CMakeLists.txt")
-        add_subdirectory(SFML)
-        set(SFML_PROVIDED_BY_ROOT ON CACHE INTERNAL "SFML provided by root")
-    else()
-        message(FATAL_ERROR
-            "SFML: local folder not found at ${SFML_LOCAL_DIR}. "
-            "Either add it, or configure with -DUSE_FETCHED_SFML=ON")
-    endif()
-endif()
+# if(USE_FETCHED_SFML)
+#     message(STATUS "SFML: FetchContent mode enabled (USE_FETCHED_SFML=ON)")
+#     set(SFML_PROVIDED_BY_ROOT OFF CACHE INTERNAL "SFML provided by root")
+# else()
+#     if(EXISTS "${SFML_LOCAL_DIR}/CMakeLists.txt")
+#         add_subdirectory(SFML)
+#         set(SFML_PROVIDED_BY_ROOT ON CACHE INTERNAL "SFML provided by root")
+#     else()
+#         message(FATAL_ERROR
+#             "SFML: local folder not found at ${SFML_LOCAL_DIR}. "
+#             "Either add it, or configure with -DUSE_FETCHED_SFML=ON")
+#     endif()
+# endif()
 
 # add_subdirectory(Homework_0)
 # add_subdirectory(Homework_1)
