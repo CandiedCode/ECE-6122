@@ -96,7 +96,7 @@ if(USE_EXTERNAL_LIBS)
     target_include_directories(Hw3 PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/include
-        ${CMAKE_SOURCE_DIR}/external/assimp-src/contrib/stb
+        ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/contrib/stb
     )
 else()
     target_include_directories(Hw3 PRIVATE
@@ -122,6 +122,21 @@ if(NOT USE_EXTERNAL_LIBS AND APPLE)
         "-framework CoreVideo"
         "-framework IOKit"
         "-framework AppKit"
+    )
+endif()
+
+# On Linux with FetchContent GLFW, GLFW 3.1.2 does not propagate its X11
+# transitive dependencies through CMake targets, so we link them explicitly.
+if(NOT USE_EXTERNAL_LIBS AND UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+    target_link_libraries(Hw3 PRIVATE
+        ${X11_LIBRARIES}
+        ${X11_Xrandr_LIB}
+        ${X11_Xinerama_LIB}
+        ${X11_Xi_LIB}
+        ${X11_Xcursor_LIB}
+        dl
+        pthread
     )
 endif()
 # target_link_libraries(Hw3 PRIVATE OpenGL::GL glm assimp glfw glad)
