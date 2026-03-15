@@ -1,3 +1,4 @@
+#include "camera.h"
 #include "model.h"
 #include "shader.h"
 #include <GLFW/glfw3.h>
@@ -11,6 +12,14 @@
 
 const int WINDOW_WIDTH = 1024;
 const int WINDOW_HEIGHT = 768;
+
+// Global camera and input state
+Camera *g_camera = nullptr;
+float g_lastX = WINDOW_WIDTH / 2.0f;
+float g_lastY = WINDOW_HEIGHT / 2.0f;
+bool g_firstMouse = true;
+float g_deltaTime = 0.0f;
+float g_lastFrame = 0.0f;
 
 // // @brief Check if OpenGL context can be created and print version info
 // // @return 0 on success, -1 on failure
@@ -42,6 +51,37 @@ const int WINDOW_HEIGHT = 768;
 //     return 0;
 // }
 
+// GLFW input callbacks
+void MouseCallback(GLFWwindow *window, double xpos, double ypos)
+{
+    if (g_firstMouse)
+    {
+        g_lastX = xpos;
+        g_lastY = ypos;
+        g_firstMouse = false;
+        return;
+    }
+
+    float xoffset = xpos - g_lastX;
+    float yoffset = g_lastY - ypos; // reversed: y increases downward in screen space
+
+    g_lastX = xpos;
+    g_lastY = ypos;
+
+    if (g_camera)
+    {
+        g_camera->ProcessMouseMovement(xoffset, yoffset);
+    }
+}
+
+void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    if (g_camera)
+    {
+        g_camera->ProcessMouseScroll(yoffset);
+    }
+}
+
 // @brief Initialize GLFW, create window, and setup OpenGL context
 // @details Code adapted from https://github.com/opengl-tutorials/ogl/blob/master/tutorial02_red_triangle/tutorial02.cpp
 // @return Pointer to GLFWwindow on success, nullptr on failure
@@ -72,7 +112,6 @@ GLFWwindow *initializeWindow()
 
 int main(void)
 {
-
     // Open a window and create its OpenGL context
     GLFWwindow *window = initializeWindow();
     if (window == nullptr)
@@ -83,6 +122,16 @@ int main(void)
         return -1;
     }
     glfwMakeContextCurrent(window);
+
+    // Create and initialize camera
+    g_camera = new Camera(glm::vec3(0.0f, 5.0f, 10.0f)); // Start position: slightly elevated, looking at origin
+
+    // Register input callbacks
+    glfwSetCursorPosCallback(window, MouseCallback);
+    glfwSetScrollCallback(window, ScrollCallback);
+
+    // Hide and capture mouse
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Initialize GLAD to load OpenGL function pointers
     // load all the OpenGL function addresses and check for any errors
@@ -115,6 +164,21 @@ int main(void)
     int frameCount = 0;
     while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0)
     {
+        // Delta time
+        float currentFrame = static_cast<float>(glfwGetTime());
+        g_deltaTime = currentFrame - g_lastFrame;
+        g_lastFrame = currentFrame;
+
+        // Handle keyboard input
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            g_camera->ProcessKeyboard(Camera::FORWARD, g_deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            g_camera->ProcessKeyboard(Camera::BACKWARD, g_deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            g_camera->ProcessKeyboard(Camera::LEFT, g_deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            g_camera->ProcessKeyboard(Camera::RIGHT, g_deltaTime);
+
         if (frameCount == 0)
         {
             std::cout << "Frame 0: Starting to render" << std::endl;
@@ -144,12 +208,10 @@ int main(void)
         model_mat = glm::translate(model_mat, glm::vec3(0.0f, 0.0f, 0.0f));
         model_mat = glm::rotate(model_mat, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate 90 degrees around Y
 
-        glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 5.0f, 50.0f), // camera position (zoomed out more)
-                                     glm::vec3(0.0f, 1.5f, 0.0f),  // look at (centered on model)
-                                     glm::vec3(0.0f, 1.0f, 0.0f)   // up
-        );
+        glm::mat4 view = g_camera->GetViewMatrix();
 
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection =
+            glm::perspective(glm::radians(45.0f), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1f, 100.0f);
 
         // Set uniforms
         shader.SetMat4("model", model_mat);
@@ -176,7 +238,7 @@ int main(void)
         shader.SetFloat("lantern.linear", 0.09f);
         shader.SetFloat("lantern.quadratic", 0.032f);
 
-        shader.SetVec3("viewPos", glm::vec3(0.0f, 0.5f, 1.5f));
+        shader.SetVec3("viewPos", g_camera->Position);
         shader.SetFloat("shininess", 32.0f);
         shader.SetInt("diffuseMap", 0);
 
@@ -215,6 +277,11 @@ int main(void)
     }
 
     // Cleanup
+    if (g_camera)
+    {
+        delete g_camera;
+        g_camera = nullptr;
+    }
     glfwTerminate();
 
     return 0;
