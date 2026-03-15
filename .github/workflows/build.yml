@@ -26,7 +26,7 @@ jobs:
         with:
           compiler: gcc
           vcvarsall: false
-          cmake: true
+          cmake: "3.27.1"
           ninja: true
           vcpkg: true
       - name: Install X11, SFML, OpenGL, GLFW, GLEW, Assimp and OpenMP dependencies
@@ -48,6 +48,8 @@ jobs:
       - name: Create build directory
         run: mkdir -p build
       - name: Run CMake
+        env:
+          USE_EXTERNAL_LIBS: "OFF"
         run: cd build && cmake ..
       - name: Build with CMake
         run: cd build && cmake --build . --config Release

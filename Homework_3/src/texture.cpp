@@ -1,7 +1,7 @@
-#include "Shader.h"
-#include <GL/glew.h>
+#include "shader.h"
 #include <GLFW/glfw3.h>
 #include <fstream>
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <iostream>
 #include <sstream>
