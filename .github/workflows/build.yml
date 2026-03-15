@@ -26,7 +26,7 @@ jobs:
         with:
           compiler: gcc
           vcvarsall: false
-          cmake: true
+          cmake: "3.27.1"
           ninja: true
           vcpkg: true
       - name: Install X11, SFML, OpenGL, GLFW, GLEW, Assimp and OpenMP dependencies
