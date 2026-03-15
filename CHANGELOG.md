@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/CandiedCode/ECE-6122/compare/v1.5.1...v1.5.2) (2026-03-15)
+
+### Bug Fixes
+
+* explicitly link X11 deps for GLFW 3.1.2 FetchContent on Linux ([8d8b3ad](https://github.com/CandiedCode/ECE-6122/commit/8d8b3ad05df13cd278bae7bde8b5790666447f3a))
+* move USE_EXTERNAL_LIBS=OFF to cmake step and fix assimp path ([bb22680](https://github.com/CandiedCode/ECE-6122/commit/bb226809fcb7c9d6aed50d68f211c9c7c8be4c82))
+
 ## [1.5.1](https://github.com/CandiedCode/ECE-6122/compare/v1.5.0...v1.5.1) (2026-03-05)
 
 ### Bug Fixes
