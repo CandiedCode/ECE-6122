@@ -21,4 +21,5 @@ class Model
     std::string directory;
     void ProcessNode(aiNode *, const aiScene *);
     Mesh ProcessMesh(aiMesh *, const aiScene *);
+    GLuint LoadTextureFromScene(const aiScene *, const aiMaterial *);
 };

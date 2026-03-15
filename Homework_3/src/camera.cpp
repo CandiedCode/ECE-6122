@@ -1,11 +1,10 @@
 #include "camera.h"
+#include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <algorithm>
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
-    : Position(position), WorldUp(up), Yaw(yaw), Pitch(pitch),
-      MovementSpeed(5.0f), Front(0.0f, 0.0f, -1.0f)
+    : Position(position), WorldUp(up), Yaw(yaw), Pitch(pitch), MovementSpeed(5.0f), Front(0.0f, 0.0f, -1.0f)
 {
     UpdateCameraVectors();
 }

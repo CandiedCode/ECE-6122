@@ -28,15 +28,6 @@ endif()
 # Fetch dependencies
 include(FetchContent)
 
-# GLAD is always fetched via FetchContent since external/ uses GLEW (not GLAD)
-# and the source code depends on glad/glad.h
-FetchContent_Declare(GLAD
-    GIT_REPOSITORY https://github.com/Dav1dde/glad
-    GIT_TAG v0.1.34
-    GIT_SHALLOW ON
-)
-FetchContent_MakeAvailable(GLAD)
-
 if(NOT USE_EXTERNAL_LIBS)
     # Fetch GLM (header-only math library)
     FetchContent_Declare(GLM
@@ -47,12 +38,19 @@ if(NOT USE_EXTERNAL_LIBS)
     FetchContent_MakeAvailable(GLM)
 
     # Fetch GLFW (window and context creation)
+    # Note: GLFW is already fetched above for GLAD extraction, so we just need to build it
     FetchContent_Declare(GLFW
         GIT_REPOSITORY https://github.com/glfw/glfw
         GIT_TAG 3.1.2
         GIT_SHALLOW ON
     )
-    FetchContent_MakeAvailable(GLFW)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(GLFW)  # This will use the already-fetched GLFW_SOURCE
+
+    add_library(glad ${GLFW_SOURCE_DIR}/deps/glad.c)
+    target_include_directories(glad PUBLIC ${GLFW_SOURCE_DIR}/deps)
+    message(STATUS "Using GLAD from GLFW FetchContent (${GLFW_SOURCE_DIR}/deps)")
 
     # Fetch Assimp (model loading library)
     FetchContent_Declare(Assimp
@@ -70,6 +68,9 @@ else()
     # GLM is header-only; create an interface target pointing at external/glm-0.9.7.1
     add_library(glm INTERFACE)
     target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm-0.9.7.1)
+    add_library(glad ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps/glad.c)
+    target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps)
+    message(STATUS "Using GLAD from external/glfw-3.1.2/deps (bundled with GLFW)")
 endif()
 
 # Find OpenGL
@@ -79,7 +80,14 @@ message(STATUS "OpenGL version: ${OpenGL_VERSION}")
 message(STATUS "OpenGL libraries: ${OPENGL_LIBRARIES}")
 message(STATUS "OpenGL include directories: ${OPENGL_INCLUDE_DIR}")
 
-file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/test.cpp)
+file(GLOB SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Hw3.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/shader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/mesh.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/model.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/texture.cpp
+)
 
 add_executable(Hw3 ${SOURCES})
 
@@ -88,13 +96,13 @@ if(USE_EXTERNAL_LIBS)
     target_include_directories(Hw3 PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/include
-        ${glad_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/external/assimp-src/contrib/stb
     )
 else()
     target_include_directories(Hw3 PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${glad_SOURCE_DIR}/include
-        ${glfw_SOURCE_DIR}/include
+        ${GLFW_SOURCE_DIR}/include
+        ${assimp_SOURCE_DIR}/contrib/stb
     )
 endif()
 
@@ -103,6 +111,7 @@ target_link_libraries(Hw3 PRIVATE
     glm
     glfw
     glad
+    assimp
 )
 
 # Add macOS frameworks only when using FetchContent GLFW
@@ -118,5 +127,5 @@ endif()
 # target_link_libraries(Hw3 PRIVATE OpenGL::GL glm assimp glfw glad)
 
 # Copy shaders and assets to output directory
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/assets" DESTINATION "${COMMON_OUTPUT_DIR}/bin/")
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/shaders" DESTINATION "${COMMON_OUTPUT_DIR}/bin/")
-# file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/assets" DESTINATION "${COMMON_OUTPUT_DIR}/bin/" OPTIONAL)

@@ -4,8 +4,11 @@
 #include <glm/glm.hpp>
 #include <string>
 
-class Shader {
-public:
+// GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path);
+
+class Shader
+{
+  public:
     GLuint ID;
 
     Shader(const char *vertPath, const char *fragPath);
@@ -17,5 +20,3 @@ public:
     void SetFloat(const std::string &name, float val) const;
     void SetInt(const std::string &name, int val) const;
 };
-
-#endif
