@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "Model.h"
+#include "SceneObject.h"
 #include "Shader.h"
 #include <GLFW/glfw3.h>
 #include <cmath>
@@ -8,35 +9,36 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-// #include <GL/glew.h>
+#include <vector>
 
 const int WINDOW_WIDTH = 1024;
 const int WINDOW_HEIGHT = 768;
 
 // Global camera and input state
-Camera *g_camera = nullptr;
-float g_lastX = WINDOW_WIDTH / 2.0F;
-float g_lastY = WINDOW_HEIGHT / 2.0F;
-bool g_firstMouse = true;
-float g_deltaTime = 0.0F;
-float g_lastFrame = 0.0F;
+Camera *g_camera = nullptr;           // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+float g_lastX = WINDOW_WIDTH / 2.0F;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+float g_lastY = WINDOW_HEIGHT / 2.0F; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+bool g_firstMouse = true;             // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+float g_deltaTime = 0.0F;             // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+float g_lastFrame = 0.0F;             // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 // GLFW input callbacks
-void MouseCallback(GLFWwindow *window, double xpos, double ypos)
+void MouseCallback(GLFWwindow *window, double xpos, double ypos) // NOLINT(readability-avoid-const-params-in-decls)
+                                                                 // window parameter unused but required by GLFW callback signature
 {
     if (g_firstMouse)
     {
-        g_lastX = xpos;
-        g_lastY = ypos;
+        g_lastX = static_cast<float>(xpos);
+        g_lastY = static_cast<float>(ypos);
         g_firstMouse = false;
         return;
     }
 
-    float xoffset = xpos - g_lastX;
-    float yoffset = g_lastY - ypos; // reversed: y increases downward in screen space
+    float xoffset = static_cast<float>(xpos) - g_lastX;
+    float yoffset = g_lastY - static_cast<float>(ypos); // reversed: y increases downward in screen space
 
-    g_lastX = xpos;
-    g_lastY = ypos;
+    g_lastX = static_cast<float>(xpos);
+    g_lastY = static_cast<float>(ypos);
 
     if (g_camera != nullptr)
     {
@@ -44,11 +46,11 @@ void MouseCallback(GLFWwindow *window, double xpos, double ypos)
     }
 }
 
-void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset) // NOLINT(readability-avoid-const-params-in-decls)
 {
     if (g_camera != nullptr)
     {
-        g_camera->ProcessMouseScroll(yoffset);
+        g_camera->ProcessMouseScroll(static_cast<float>(yoffset));
     }
 }
 
@@ -57,7 +59,7 @@ void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 // @return Pointer to GLFWwindow on success, nullptr on failure
 auto initializeWindow() -> GLFWwindow *
 {
-    if (!glfwInit())
+    if (glfwInit() == 0)
     {
         std::cerr << "Failed to initialize GLFW\n";
         return nullptr;
@@ -94,7 +96,8 @@ auto main() -> int
     glfwMakeContextCurrent(window);
 
     // Create and initialize camera
-    g_camera = new Camera(glm::vec3(0.0F, 5.0F, 10.0F)); // Start position: slightly elevated, looking at origin
+    g_camera = new Camera(glm::vec3(0.0F, 8.0F, 35.0F)); // NOLINT(cppcoreguidelines-owning-memory)
+    // Start position: elevated, looking at origin
 
     // Register input callbacks
     glfwSetCursorPosCallback(window, MouseCallback);
@@ -122,13 +125,29 @@ auto main() -> int
     Shader shader("./shaders/object.vert", "./shaders/object.frag");
     std::cout << "Shader ID: " << shader.ID << "\n";
 
-    // Load model
-    std::cout << "Loading model..."
+    // Load models
+    std::cout << "Loading models..."
               << "\n";
-    // Model model("./assets/batamax/batamax.obj");
-    Model model("./assets/toy_story_bullseye.glb");
-    std::cout << "Model loaded"
+    auto *model_bullseye = new Model("./assets/toy_story_bullseye.glb"); // NOLINT(cppcoreguidelines-owning-memory)
+    auto *model_buzz = new Model("./assets/buzz_lightyear.glb");         // NOLINT(cppcoreguidelines-owning-memory)
+    auto *model_woody = new Model("./assets/woody.glb");                 // NOLINT(cppcoreguidelines-owning-memory)
+    auto *model_slinky = new Model("./assets/slinky_dog_rigged.glb");    // NOLINT(cppcoreguidelines-owning-memory)
+    auto *model_hamm = new Model("./assets/hamm.glb");                   // NOLINT(cppcoreguidelines-owning-memory)
+    std::cout << "Models loaded"
               << "\n";
+
+    // Create scene objects with transforms
+    std::vector<SceneObject> scene_objects;
+    scene_objects.push_back(
+        SceneObject{model_bullseye, glm::vec3(0.0F, 0.0F, 0.0F), 0.0F, glm::vec3(0.0F, 1.0F, 0.0F), glm::vec3(1.0F, 1.0F, 1.0F), 32.0F});
+    scene_objects.push_back(
+        SceneObject{model_buzz, glm::vec3(3.0F, 8.0F, 20.0F), 180.0F, glm::vec3(0.0F, 1.0F, 0.0F), glm::vec3(1.5F, 1.5F, 1.5F), 32.0F});
+    scene_objects.push_back(
+        SceneObject{model_woody, glm::vec3(-15.0F, 0.0F, 15.0F), 90.0F, glm::vec3(0.0F, 1.0F, 0.0F), glm::vec3(0.5F, 1.0F, 0.8F), 32.0F});
+    scene_objects.push_back(
+        SceneObject{model_slinky, glm::vec3(-8.0F, 0.0F, 10.0F), 0.0F, glm::vec3(0.0F, 1.0F, 0.0F), glm::vec3(1.0F, 1.0F, 1.0F), 32.0F});
+    scene_objects.push_back(SceneObject{model_hamm, glm::vec3(10.0F, 0.0F, -10.0F), 180.0F, glm::vec3(0.0F, 1.0F, 0.0F),
+                                        glm::vec3(0.02F, 0.02F, 0.02F), 32.0F});
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
@@ -187,43 +206,32 @@ auto main() -> int
             std::cerr << "GL Error after shader.Use(): " << err << "\n";
         }
 
-        // Setup matrices
-        glm::mat4 model_mat = glm::mat4(1.0F);
-        model_mat = glm::translate(model_mat, glm::vec3(0.0F, 0.0F, 0.0F));
-        model_mat = glm::rotate(model_mat, glm::radians(90.0F), glm::vec3(0.0F, 1.0F, 0.0F)); // Rotate 90 degrees around Y
-
+        // Setup view and projection matrices (same for all objects)
         glm::mat4 view = g_camera->GetViewMatrix();
-
         glm::mat4 projection =
-            glm::perspective(glm::radians(45.0F), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1f, 100.0F);
+            glm::perspective(glm::radians(45.0F), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1F, 100.0F);
 
-        // Set uniforms
-        shader.SetMat4("model", model_mat);
+        // Set view and projection uniforms
         shader.SetMat4("view", view);
         shader.SetMat4("projection", projection);
 
-        // Normal matrix = inverse(transpose(mat3(model)))
-        glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model_mat)));
-        shader.SetMat3("normalMatrix", normalMatrix);
-
-        // Lighting uniforms
-        glm::vec3 sunDirection = glm::normalize(glm::vec3(0.3f, 1.0F, 0.3f));
+        // Lighting uniforms (same for all objects)
+        glm::vec3 sunDirection = glm::normalize(glm::vec3(0.3F, 1.0F, 0.3F));
         shader.SetVec3("sun.direction", sunDirection);
-        shader.SetVec3("sun.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
-        shader.SetVec3("sun.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
-        shader.SetVec3("sun.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        shader.SetVec3("sun.ambient", glm::vec3(0.3F, 0.3F, 0.3F));
+        shader.SetVec3("sun.diffuse", glm::vec3(0.7F, 0.7F, 0.7F));
+        shader.SetVec3("sun.specular", glm::vec3(0.5F, 0.5F, 0.5F));
 
         glm::vec3 lanternPos = glm::vec3(1.0F, 1.0F, 1.0F);
         shader.SetVec3("lantern.position", lanternPos);
-        shader.SetVec3("lantern.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-        shader.SetVec3("lantern.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-        shader.SetVec3("lantern.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+        shader.SetVec3("lantern.ambient", glm::vec3(0.1F, 0.1F, 0.1F));
+        shader.SetVec3("lantern.diffuse", glm::vec3(0.5F, 0.5F, 0.5F));
+        shader.SetVec3("lantern.specular", glm::vec3(0.5F, 0.5F, 0.5F));
         shader.SetFloat("lantern.constant", 1.0F);
-        shader.SetFloat("lantern.linear", 0.09f);
-        shader.SetFloat("lantern.quadratic", 0.032f);
+        shader.SetFloat("lantern.linear", 0.09F);
+        shader.SetFloat("lantern.quadratic", 0.032F);
 
         shader.SetVec3("viewPos", g_camera->GetPosition());
-        shader.SetFloat("shininess", 32.0F);
         shader.SetInt("diffuseMap", 0);
 
         err = glGetError();
@@ -237,23 +245,27 @@ auto main() -> int
                       << "\n";
         }
 
-        // Draw model
-        // Clear error queue before drawing
-        while (glGetError() != GL_NO_ERROR)
+        // Draw all scene objects
+        for (const auto &obj : scene_objects)
         {
-        }
+            // Compute model matrix: translate -> rotate -> scale
+            glm::mat4 model_mat = glm::mat4(1.0F);
+            model_mat = glm::translate(model_mat, obj.position);
+            model_mat = glm::rotate(model_mat, glm::radians(obj.rotation_degrees), obj.rotation_axis);
+            model_mat = glm::scale(model_mat, obj.scale);
 
-        model.Draw(shader);
+            // Set model-specific uniforms
+            shader.SetMat4("model", model_mat);
+            glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model_mat)));
+            shader.SetMat3("normalMatrix", normalMatrix);
+            shader.SetFloat("shininess", obj.shininess);
 
-        err = glGetError();
-        if (err != GL_NO_ERROR)
-        {
-            std::cerr << "GL Error after model.Draw(): " << err << "\n";
-            // Check if there are more errors
-            while ((err = glGetError()) != GL_NO_ERROR)
+            // Clear error queue before drawing
+            while (glGetError() != GL_NO_ERROR)
             {
-                std::cerr << "  Additional error: " << err << "\n";
             }
+
+            obj.model->Draw(shader);
         }
 
         // Swap buffers
@@ -262,7 +274,32 @@ auto main() -> int
     }
 
     // Cleanup
-    if (g_camera)
+    // Delete models from scene objects (track deleted pointers to avoid double-delete)
+    std::vector<Model *> deleted_models;
+    for (auto &obj : scene_objects)
+    {
+        if (obj.model != nullptr)
+        {
+            // Check if we've already deleted this model pointer
+            bool already_deleted = false;
+            for (const auto *deleted_ptr : deleted_models)
+            {
+                if (deleted_ptr == obj.model)
+                {
+                    already_deleted = true;
+                    break;
+                }
+            }
+            if (!already_deleted)
+            {
+                delete obj.model;
+                deleted_models.push_back(obj.model);
+                obj.model = nullptr;
+            }
+        }
+    }
+
+    if (g_camera != nullptr)
     {
         delete g_camera;
         g_camera = nullptr;
