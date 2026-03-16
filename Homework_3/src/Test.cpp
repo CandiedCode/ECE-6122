@@ -4,7 +4,7 @@
 
 int checkOpenGLVersion()
 {
-    glfwSetErrorCallback([](int, const char *err) { std::cerr << "GLFW Error: " << err << std::endl; });
+    glfwSetErrorCallback([](int, const char *err) { std::cerr << "GLFW Error: " << err << "\n"; });
 
     if (!glfwInit())
         return -1;
