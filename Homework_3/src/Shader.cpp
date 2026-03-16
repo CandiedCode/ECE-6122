@@ -43,30 +43,30 @@ Shader::Shader(const char *vertPath, const char *fragPath)
 
     // Compile vertex shader
     GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vShaderCode, NULL);
+    glShaderSource(vertex, 1, &vShaderCode, nullptr);
     glCompileShader(vertex);
 
     // Check vertex compile errors
-    int success;
-    char infoLog[512];
+    int success = 0;
+    std::array<char, 512> infoLog{};
     glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-    if (!success)
+    if (success == 0) // NOLINT(readability-implicit-bool-conversion)
     {
-        glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-        std::cerr << "Vertex shader compilation failed:\n" << infoLog << "\n";
+        glGetShaderInfoLog(vertex, 512, nullptr, infoLog.data()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        std::cerr << "Vertex shader compilation failed:\n" << infoLog.data() << "\n";
     }
 
     // Compile fragment shader
     GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fShaderCode, NULL);
+    glShaderSource(fragment, 1, &fShaderCode, nullptr);
     glCompileShader(fragment);
 
     // Check fragment compile errors
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-    if (!success)
+    if (success == 0) // NOLINT(readability-implicit-bool-conversion)
     {
-        glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-        std::cerr << "Fragment shader compilation failed:\n" << infoLog << "\n";
+        glGetShaderInfoLog(fragment, 512, nullptr, infoLog.data()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        std::cerr << "Fragment shader compilation failed:\n" << infoLog.data() << "\n";
     }
 
     // Link program
@@ -77,10 +77,11 @@ Shader::Shader(const char *vertPath, const char *fragPath)
 
     // Check link errors
     glGetProgramiv(ID, GL_LINK_STATUS, &success);
-    if (!success)
+    if (success == 0) // NOLINT(readability-implicit-bool-conversion)
     {
-        glGetProgramInfoLog(ID, 512, NULL, infoLog);
-        std::cerr << "Shader program linking failed:\n" << infoLog << "\n";
+        glGetProgramInfoLog(ID, 512, nullptr, infoLog.data()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        std::cerr << "Shader program linking failed:\n"
+                  << infoLog.data() << "\n"; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
     }
 
     // Delete shaders

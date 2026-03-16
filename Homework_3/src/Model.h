@@ -30,8 +30,8 @@ class Model
   private:
     std::vector<Mesh> meshes_;
     std::string directory_;
-    void ProcessNode(aiNode *, const aiScene *);
-    auto ProcessMesh(aiMesh *, const aiScene *) -> Mesh;
+    void ProcessNode(aiNode *node, const aiScene *scene);
+    static auto ProcessMesh(aiMesh *mesh, const aiScene *scene) -> Mesh;
 };
 
 #endif // HOMEWORK_3_SRC_MODEL_H_

@@ -30,10 +30,8 @@ struct Vertex
 class Mesh
 {
   public:
-    // @brief constructor initializes VAO, VBO, and EBO to 0
-    Mesh() : vao_(0), vbo_(0), ebo_(0)
-    {
-    }
+    // @brief default constructor initializes all members with their default values
+    Mesh() = default;
 
     // @brief constructor initializes VAO, VBO, EBO, and textureID based on provided vertices and indices, and calls Setup() to create
     // OpenGL buffers
@@ -42,7 +40,7 @@ class Mesh
     // @details The constructor initializes the VAO, VBO, and EBO to 0, sets the textureID to a default white texture, and then calls the
     // Setup() method to create the OpenGL buffers based on the provided vertex and index data.
     Mesh(const std::vector<Vertex> &vertices, const std::vector<unsigned int> &indices)
-        : vao_(0), vbo_(0), ebo_(0), vertices_(vertices), indices_(indices), texture_id_(GetWhiteTexture())
+        : vertices_(vertices), indices_(indices), texture_id_(GetWhiteTexture())
     {
         Setup();
     }
@@ -113,9 +111,9 @@ class Mesh
         return texture_id_;
     }
     // @brief Setter for texture ID
-    void SetTextureID(GLuint id)
+    void SetTextureID(GLuint texture_id)
     {
-        texture_id_ = id;
+        texture_id_ = texture_id;
     }
     // @brief Getters for vertices
     [[nodiscard]] auto GetVertices() const -> const std::vector<Vertex> &

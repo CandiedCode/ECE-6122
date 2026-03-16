@@ -11,8 +11,8 @@
  * control in OpenGL
  */
 
-#ifndef ECE_6122_CAMERA_H_
-#define ECE_6122_CAMERA_H_
+#ifndef HOMEWORK_3_SRC_CAMERA_H_
+#define HOMEWORK_3_SRC_CAMERA_H_
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -88,4 +88,4 @@ class Camera
     void UpdateCameraVectors();
 };
 
-#endif // ECE_6122_CAMERA_H_
+#endif // HOMEWORK_3_SRC_CAMERA_H_

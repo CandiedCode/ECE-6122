@@ -1,7 +1,7 @@
 #include "Model.h"
 #include "Mesh.h"
 #include "Shader.h"
-#include "texture.h"
+#include "Texture.h"
 #include <algorithm>
 #include <cfloat>
 #include <iostream>
@@ -16,7 +16,7 @@ Model::Model(const std::string &path)
     const aiScene *scene =
         importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace);
 
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+    if (scene == nullptr || (scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) != 0 || scene->mRootNode == nullptr)
     {
         std::cerr << "Assimp Error loading '" << path << "': " << importer.GetErrorString() << "\n";
         return;
@@ -42,33 +42,40 @@ void Model::ProcessNode(aiNode *node, const aiScene *scene)
     }
 }
 
-Mesh Model::ProcessMesh(aiMesh *mesh, const aiScene *scene)
+auto Model::ProcessMesh(aiMesh *mesh, const aiScene *scene) -> Mesh
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
 
     // Log bounds
-    float minX = FLT_MAX, maxX = -FLT_MAX;
-    float minY = FLT_MAX, maxY = -FLT_MAX;
-    float minZ = FLT_MAX, maxZ = -FLT_MAX;
+    float minX = FLT_MAX;
+    float maxX = -FLT_MAX;
+    float minY = FLT_MAX;
+    float maxY = -FLT_MAX;
+    float minZ = FLT_MAX;
+    float maxZ = -FLT_MAX;
 
     for (unsigned i = 0; i < mesh->mNumVertices; ++i)
     {
-        Vertex v;
-        v.position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
-        v.normal = {mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z};
-        if (mesh->mTextureCoords[0])
-            v.tex_coords = {mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y};
+        Vertex vertex;
+        vertex.position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
+        vertex.normal = {mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z};
+        if (mesh->mTextureCoords[0] != nullptr)
+        {
+            vertex.tex_coords = {mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y};
+        }
         else
-            v.tex_coords = {0.0F, 0.0F};
-        vertices.push_back(v);
+        {
+            vertex.tex_coords = {0.0F, 0.0F};
+        }
+        vertices.push_back(vertex);
 
-        minX = std::min(minX, v.position.x);
-        maxX = std::max(maxX, v.position.x);
-        minY = std::min(minY, v.position.y);
-        maxY = std::max(maxY, v.position.y);
-        minZ = std::min(minZ, v.position.z);
-        maxZ = std::max(maxZ, v.position.z);
+        minX = std::min(minX, vertex.position.x);
+        maxX = std::max(maxX, vertex.position.x);
+        minY = std::min(minY, vertex.position.y);
+        maxY = std::max(maxY, vertex.position.y);
+        minZ = std::min(minZ, vertex.position.z);
+        maxZ = std::max(maxZ, vertex.position.z);
     }
 
     std::cout << "  Mesh bounds: X[" << minX << " to " << maxX << "] Y[" << minY << " to " << maxY << "] Z[" << minZ << " to " << maxZ
@@ -105,7 +112,9 @@ void Model::Draw(Shader &shader) const
     }
     draw_count++;
     if (draw_count > 60)
+    {
         draw_count = 0;
+    }
 
     for (const auto &mesh : meshes_)
     {

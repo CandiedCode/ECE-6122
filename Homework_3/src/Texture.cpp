@@ -7,14 +7,15 @@
 // Static white fallback texture
 static GLuint g_whiteTexture = 0;
 
-GLuint GetWhiteTexture()
+auto GetWhiteTexture() -> GLuint
 {
     if (g_whiteTexture == 0)
     {
-        unsigned char white[] = {255, 255, 255, 255};
+        constexpr std::array<unsigned char, 4> white{255, 255, 255, 255};
         glGenTextures(1, &g_whiteTexture);
         glBindTexture(GL_TEXTURE_2D, g_whiteTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     white.data()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         std::cout << "Created white fallback texture: " << g_whiteTexture << "\n";
@@ -22,23 +23,23 @@ GLuint GetWhiteTexture()
     return g_whiteTexture;
 }
 
-GLuint LoadTextureFromFile(const std::string &path)
+auto LoadTextureFromFile(const std::string &path) -> GLuint
 {
-    int width;
-    int height;
-    int channels;
+    int width = 0;
+    int height = 0;
+    int channels = 0;
 
     // TODO(cwagenberg): what is 4?
     unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 4);
 
-    if (!data)
+    if (data == nullptr) // NOLINT(readability-implicit-bool-conversion)
     {
         std::cerr << "Failed to load texture: " << path << "\n";
         // TODO(cwagenberg): raise error
         return GetWhiteTexture();
     }
 
-    GLuint textureID;
+    GLuint textureID = 0;
 
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
@@ -53,7 +54,7 @@ GLuint LoadTextureFromFile(const std::string &path)
     return textureID;
 }
 
-GLuint LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material)
+auto LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material) -> GLuint
 {
     std::cout << "  LoadTextureFromMaterial: Checking material"
               << "\n";
@@ -71,10 +72,10 @@ GLuint LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material)
 
         // Check if it's an embedded texture
         const aiTexture *embeddedTexture = scene->GetEmbeddedTexture(path.C_Str());
-        if (embeddedTexture)
+        if (embeddedTexture != nullptr) // NOLINT(readability-implicit-bool-conversion)
         {
             std::cout << "  Found embedded texture: " << path.C_Str() << "\n";
-            GLuint textureID;
+            GLuint textureID = 0;
             glGenTextures(1, &textureID);
             glBindTexture(GL_TEXTURE_2D, textureID);
 
@@ -84,11 +85,14 @@ GLuint LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material)
                 // Compressed format - decompress with stb_image
                 std::cout << "  Decompressing texture with stb_image"
                           << "\n";
-                int width, height, channels;
-                unsigned char *data = stbi_load_from_memory(reinterpret_cast<unsigned char *>(embeddedTexture->pcData),
-                                                            embeddedTexture->mWidth, &width, &height, &channels, 4);
+                int width = 0;
+                int height = 0;
+                int channels = 0;
+                unsigned char *data =
+                    stbi_load_from_memory(reinterpret_cast<unsigned char *>(embeddedTexture->pcData), // NOLINT(clang-analyzer-unix.Malloc)
+                                          static_cast<int>(embeddedTexture->mWidth), &width, &height, &channels, 4);
 
-                if (data)
+                if (data != nullptr) // NOLINT(readability-implicit-bool-conversion)
                 {
                     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -98,17 +102,14 @@ GLuint LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material)
                     stbi_image_free(data);
                     return textureID;
                 }
-                else
-                {
-                    std::cout << "  Failed to decompress texture with stb_image"
-                              << "\n";
-                }
+                std::cout << "  Failed to decompress texture with stb_image"
+                          << "\n";
             }
             else
             {
                 // Uncompressed RGBA
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, embeddedTexture->mWidth, embeddedTexture->mHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                             embeddedTexture->pcData);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, static_cast<GLsizei>(embeddedTexture->mWidth),
+                             static_cast<GLsizei>(embeddedTexture->mHeight), 0, GL_RGBA, GL_UNSIGNED_BYTE, embeddedTexture->pcData);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 std::cout << "  Loaded embedded texture: " << embeddedTexture->mWidth << "x" << embeddedTexture->mHeight
