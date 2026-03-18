@@ -80,18 +80,13 @@ else()
     target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps)
     message(STATUS "Using GLAD from external/glfw-3.1.2/deps (bundled with GLFW)")
 
-    # For assimp: if the target doesn't exist (external/CMakeLists.txt not included),
-    # create an interface target. Otherwise, just add the include directories to Hw3.
-    if(NOT TARGET assimp)
-        add_library(assimp INTERFACE)
-        target_include_directories(assimp INTERFACE
-            ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/include
-            ${CMAKE_SOURCE_DIR}/external/stb
-        )
-        message(STATUS "Using Assimp from external/assimp-3.0.1270/include (interface library)")
-    else()
-        message(STATUS "Using Assimp from external/assimp-3.0.1270 (already built)")
-    endif()
+    # Build Assimp from external/ source
+    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_BUILD_ZLIB OFF CACHE BOOL "" FORCE)
+    set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270 ${CMAKE_BINARY_DIR}/external/assimp-3.0.1270)
+    message(STATUS "Using Assimp from external/assimp-3.0.1270 (built from source)")
 endif()
 
 # Find OpenGL
