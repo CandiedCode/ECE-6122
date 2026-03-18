@@ -64,29 +64,11 @@ if(NOT USE_EXTERNAL_LIBS)
     set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(Assimp)
 else()
-    message(STATUS "Homework_3: Using GLM, GLFW, and Assimp from external/")
+    message(STATUS "Homework_3: Using libraries from external/ (built by root CMakeLists.txt)")
+    # Note: external/ targets (glfw, glad, assimp, etc.) are built and available from root CMakeLists.txt
     # GLM is header-only; create an interface target pointing at external/glm-0.9.7.1
     add_library(glm INTERFACE)
     target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm-0.9.7.1)
-
-    # Build GLFW from external/ source
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    add_subdirectory(${CMAKE_SOURCE_DIR}/external/glfw-3.1.2 ${CMAKE_BINARY_DIR}/external/glfw-3.1.2)
-    message(STATUS "Using GLFW from external/glfw-3.1.2 (built from source)")
-
-    # Build GLAD from external source
-    add_library(glad ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps/glad.c)
-    target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps)
-    message(STATUS "Using GLAD from external/glfw-3.1.2/deps (bundled with GLFW)")
-
-    # Build Assimp from external/ source
-    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_ZLIB OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
-    add_subdirectory(${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270 ${CMAKE_BINARY_DIR}/external/assimp-3.0.1270)
-    message(STATUS "Using Assimp from external/assimp-3.0.1270 (built from source)")
 endif()
 
 # Find OpenGL
