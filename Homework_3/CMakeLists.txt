@@ -148,9 +148,9 @@ if(NOT USE_EXTERNAL_LIBS AND APPLE)
     )
 endif()
 
-# On Linux with FetchContent GLFW, GLFW 3.1.2 does not propagate its X11
-# transitive dependencies through CMake targets, so we link them explicitly.
-if(NOT USE_EXTERNAL_LIBS AND UNIX AND NOT APPLE)
+# On Linux, GLFW 3.1.2 does not propagate its X11 transitive dependencies
+# through CMake targets, so we link them explicitly.
+if(UNIX AND NOT APPLE)
     find_package(X11 REQUIRED)
     target_link_libraries(Hw3 PRIVATE
         ${X11_LIBRARIES}
