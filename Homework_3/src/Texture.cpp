@@ -7,7 +7,7 @@
 #include <string>
 
 // Helper function to find embedded textures - compatible with both old and new Assimp versions
-// Works by manually searching through mTextures array when GetEmbeddedTexture is not available
+// Extracts texture by index from the "*N" format used by Assimp
 auto FindEmbeddedTextureCompat(const aiScene *scene, const char *path) -> const aiTexture *
 {
     if (path == nullptr || path[0] == '\0' || scene == nullptr || scene->mNumTextures == 0)
@@ -15,7 +15,8 @@ auto FindEmbeddedTextureCompat(const aiScene *scene, const char *path) -> const 
         return nullptr;
     }
 
-    // Check if path starts with '*' (embedded texture index format)
+    // Assimp embedded textures use "*N" format where N is the index in mTextures array
+    // This format is consistent across old and new Assimp versions
     if (path[0] == '*')
     {
         const char *indexStr = path + 1;
@@ -23,19 +24,6 @@ auto FindEmbeddedTextureCompat(const aiScene *scene, const char *path) -> const 
         if (index >= 0 && index < static_cast<int>(scene->mNumTextures))
         {
             return scene->mTextures[index];
-        }
-    }
-
-    // Search by filename
-    for (unsigned int i = 0; i < scene->mNumTextures; ++i)
-    {
-        if (scene->mTextures[i] != nullptr)
-        {
-            const char *texName = scene->mTextures[i]->mFilename.C_Str();
-            if (texName != nullptr && std::string(texName) == path)
-            {
-                return scene->mTextures[i];
-            }
         }
     }
 
