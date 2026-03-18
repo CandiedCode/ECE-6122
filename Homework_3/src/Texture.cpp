@@ -4,23 +4,21 @@
 #include <stb_image.h>
 #include <string>
 
-// Static white fallback texture
-static GLuint g_whiteTexture = 0;
-
 auto GetWhiteTexture() -> GLuint
 {
-    if (g_whiteTexture == 0)
+    static GLuint whiteTexture = 0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+    if (whiteTexture == 0)
     {
         constexpr std::array<unsigned char, 4> white{255, 255, 255, 255};
-        glGenTextures(1, &g_whiteTexture);
-        glBindTexture(GL_TEXTURE_2D, g_whiteTexture);
+        glGenTextures(1, &whiteTexture);
+        glBindTexture(GL_TEXTURE_2D, whiteTexture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                      white.data()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        std::cout << "Created white fallback texture: " << g_whiteTexture << "\n";
+        std::cout << "Created white fallback texture: " << whiteTexture << "\n";
     }
-    return g_whiteTexture;
+    return whiteTexture;
 }
 
 auto LoadTextureFromFile(const std::string &path) -> GLuint
@@ -128,4 +126,48 @@ auto LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material) -
     std::cout << "  Using white fallback texture"
               << "\n";
     return GetWhiteTexture();
+}
+
+auto CreateGrassTexture() -> GLuint
+{
+    const int texWidth = 256;
+    const int texHeight = 256;
+    unsigned char grassData[texWidth * texHeight * 3];
+
+    // Create a simple grass texture with variations
+    for (int y = 0; y < texHeight; ++y)
+    {
+        for (int x = 0; x < texWidth; ++x)
+        {
+            int index = ((y * texWidth) + x) * 3;
+
+            // Base grass color (green)
+            unsigned char red = 34;
+            unsigned char green = 139;
+            unsigned char blue = 34;
+
+            // Add some variation
+            int variation = ((x + y) / 16) % 2;
+            if (variation == 0)
+            {
+                green += 20;
+            }
+
+            grassData[index] = red;
+            grassData[index + 1] = green;
+            grassData[index + 2] = blue;
+        }
+    }
+
+    GLuint textureID = 0;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texWidth, texHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, grassData);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return textureID;
 }

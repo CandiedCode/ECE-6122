@@ -24,8 +24,14 @@ Model::Model(const std::string &path)
 
     std::cout << "Successfully loaded model: " << path << " (" << scene->mNumMeshes << " meshes)"
               << "\n";
-    directory_ = path.substr(0, path.find_last_of('/'));
     ProcessNode(scene->mRootNode, scene);
+}
+
+Model::~Model()
+{
+    // Meshes in meshes_ vector will automatically be destroyed via their destructors,
+    // which clean up their VAO, VBO, EBO, and texture resources
+    meshes_.clear();
 }
 
 void Model::ProcessNode(aiNode *node, const aiScene *scene)
@@ -62,11 +68,11 @@ auto Model::ProcessMesh(aiMesh *mesh, const aiScene *scene) -> Mesh
         vertex.normal = {mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z};
         if (mesh->mTextureCoords[0] != nullptr)
         {
-            vertex.tex_coords = {mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y};
+            vertex.texture_coords = {mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y};
         }
         else
         {
-            vertex.tex_coords = {0.0F, 0.0F};
+            vertex.texture_coords = {0.0F, 0.0F};
         }
         vertices.push_back(vertex);
 
@@ -102,20 +108,8 @@ auto Model::ProcessMesh(aiMesh *mesh, const aiScene *scene) -> Mesh
     return result;
 }
 
-void Model::Draw(Shader &shader) const
+void Model::Draw() const
 {
-    static int draw_count = 0;
-    if (draw_count == 0)
-    {
-        std::cout << "Model::Draw() called with " << meshes_.size() << " meshes"
-                  << "\n";
-    }
-    draw_count++;
-    if (draw_count > 60)
-    {
-        draw_count = 0;
-    }
-
     for (const auto &mesh : meshes_)
     {
         mesh.Draw();

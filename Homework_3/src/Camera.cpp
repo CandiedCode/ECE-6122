@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 Camera::Camera(glm::vec3 position, glm::vec3 world_up, float yaw, float pitch)
     : position_(position), front_(0.0F, 0.0F, -1.0F), world_up_(world_up), yaw_(yaw), pitch_(pitch), movement_speed_(5.0F)
@@ -22,12 +23,19 @@ Camera::Camera(glm::vec3 position, glm::vec3 world_up, float yaw, float pitch)
 
 auto Camera::GetViewMatrix() const -> glm::mat4
 {
+    // The view matrix is calculated using the camera's position, front vector, and up vector. We use glm::lookAt to create the view matrix,
+    // which transforms world coordinates to view coordinates based on the camera's orientation and position in the world. The "center"
+    // parameter for lookAt is calculated as position + front, which represents the point the camera is looking at. The "up" parameter is
+    // the camera's up vector, which defines the camera's vertical orientation. This view matrix will be used in the vertex shader to
+    // transform vertices from world space to view space, allowing us to render the scene from the camera's perspective.
     return glm::lookAt(position_, position_ + front_, up_);
 }
 
 void Camera::ProcessKeyboard(int direction, float deltaTime)
 {
     float velocity = movement_speed_ * deltaTime;
+    std::cout << "Processing keyboard input: direction=" << direction << ", deltaTime=" << deltaTime << ", velocity=" << velocity << "\n";
+
     switch (direction)
     {
     case kFORWARD:
@@ -49,7 +57,11 @@ void Camera::ProcessKeyboard(int direction, float deltaTime)
 
 void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)
 {
-    const float sensitivity = 0.1F;
+    const float baseSensitivity = 0.1F;
+    const float defaultSpeed = 5.0F;
+    // Scale sensitivity with movement speed (normalized to default speed)
+    float sensitivity = baseSensitivity * (movement_speed_ / defaultSpeed);
+
     xOffset *= sensitivity;
     yOffset *= sensitivity;
 
@@ -66,8 +78,9 @@ void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPi
 
 void Camera::ProcessMouseScroll(float yOffset)
 {
-    movement_speed_ += yOffset * 0.5F;
-    movement_speed_ = std::clamp(movement_speed_, 1.0F, 20.0F);
+    movement_speed_ += yOffset;
+    movement_speed_ = std::clamp(movement_speed_, 1.0F, 50.0F);
+    std::cout << "Camera movement speed adjusted to: " << movement_speed_ << "\n";
 }
 
 void Camera::UpdateCameraVectors()

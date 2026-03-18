@@ -12,19 +12,23 @@
 #ifndef HOMEWORK_3_SRC_MESH_H_
 #define HOMEWORK_3_SRC_MESH_H_
 
+#include "Texture.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <utility>
 #include <vector>
 
-// Forward declare to avoid circular dependency
-auto GetWhiteTexture() -> GLuint;
-
+// @brief Vertex structure containing position, normal, and texture coordinate data for a single vertex.
+// This structure is used to define the layout of vertex data for the mesh, and will be used to create the vertex buffer
+// object (VBO) and configure vertex attribute pointers in OpenGL.
 struct Vertex
 {
+    // Position of the vertex in 3D space
     glm::vec3 position;
+    // Normal vector at the vertex, used for lighting calculations in the shader
     glm::vec3 normal;
-    glm::vec2 tex_coords;
+    // Texture coordinates for the vertex, used for texture mapping in the shader
+    glm::vec2 texture_coords;
 };
 
 class Mesh
@@ -143,5 +147,11 @@ class Mesh
     // (position, normal, texture coordinates) for use in the vertex shader.
     void Setup();
 };
+
+// @brief Create a ground plane mesh with subdivisions and tiling UVs
+// @param size The size of the ground plane (extends from -size/2 to size/2 in X and Z)
+// @param subdivisions Number of subdivisions along each axis (higher = more tessellation for lighting)
+// @return A Mesh object representing the ground plane
+auto CreateGroundPlane(float size = 100.0F, int subdivisions = 10) -> Mesh;
 
 #endif // HOMEWORK_3_SRC_MESH_H_

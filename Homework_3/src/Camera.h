@@ -35,20 +35,30 @@ class Camera
     Camera(glm::vec3 position = glm::vec3(0.0F, 0.0F, 3.0F), glm::vec3 world_up = glm::vec3(0.0F, 1.0F, 0.0F), float yaw = -90.0F,
            float pitch = 0.0F);
 
-    // Getter methods for camera state (const-qualified)
+    // @brief Get the view matrix calculated using the camera's position and orientation
+    // @return The view matrix as a glm::mat4 that can be used in the vertex shader to transform world coordinates to view coordinates
     [[nodiscard]] auto GetViewMatrix() const -> glm::mat4;
+
+    // @brief Get the current position of the camera
+    // @return The position of the camera as a glm::vec3
     [[nodiscard]] auto GetPosition() const -> glm::vec3
     {
         return position_;
     }
+    // @brief Get the current front vector of the camera
+    // @return The front vector of the camera as a glm::vec3
     [[nodiscard]] auto GetFront() const -> glm::vec3
     {
         return front_;
     }
+    // @brief Get the current up vector of the camera
+    // @return The up vector of the camera as a glm::vec3
     [[nodiscard]] auto GetUp() const -> glm::vec3
     {
         return up_;
     }
+    // @brief Get the current right vector of the camera
+    // @return The right vector of the camera as a glm::vec3
     [[nodiscard]] auto GetRight() const -> glm::vec3
     {
         return right_;

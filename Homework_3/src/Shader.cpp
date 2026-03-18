@@ -1,3 +1,17 @@
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-03-15
+ * Description:  Homework 3: 3D World Scene Rendering with OpenGL and Assimp
+ *
+ *
+ * @file Shader.cpp
+ * @brief Implementation file for the Shader class, which handles loading, compiling, and linking vertex and fragment shaders in OpenGL. The
+ * Shader class provides methods to set uniform variables in the shader program, allowing for easy interaction with shader parameters during
+ * rendering.  This code was adapted from the shader loading code in the OpenGL tutorial at
+ * https://github.com/opengl-tutorials/ogl/blob/master/common/shader.cpp
+ */
+
 #include "Shader.h"
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
@@ -21,6 +35,7 @@ Shader::Shader(const char *vertPath, const char *fragPath)
     else
     {
         std::cerr << "Failed to open vertex shader: " << vertPath << "\n";
+        exit(EXIT_FAILURE);
     }
 
     // Read fragment shader source
@@ -36,8 +51,10 @@ Shader::Shader(const char *vertPath, const char *fragPath)
     else
     {
         std::cerr << "Failed to open fragment shader: " << fragPath << "\n";
+        exit(EXIT_FAILURE);
     }
 
+    // https://github.com/opengl-tutorials/ogl/blob/master/common/shader.cpp
     const char *vShaderCode = vertexCode.c_str();
     const char *fShaderCode = fragmentCode.c_str();
 
@@ -47,13 +64,18 @@ Shader::Shader(const char *vertPath, const char *fragPath)
     glCompileShader(vertex);
 
     // Check vertex compile errors
-    int success = 0;
-    std::array<char, 512> infoLog{};
+    GLint success = GL_FALSE;
+    int InfoLogLength = 0;
+
+    // Check Vertex Shader
     glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-    if (success == 0) // NOLINT(readability-implicit-bool-conversion)
+    glGetShaderiv(vertex, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+    if (InfoLogLength > 0)
     {
-        glGetShaderInfoLog(vertex, 512, nullptr, infoLog.data()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        std::cerr << "Vertex shader compilation failed:\n" << infoLog.data() << "\n";
+        std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
+        glGetShaderInfoLog(vertex, InfoLogLength, nullptr, &VertexShaderErrorMessage[0]);
+        std::cerr << "Vertex shader compilation failed:\n" << &VertexShaderErrorMessage[0] << "\n";
     }
 
     // Compile fragment shader
@@ -63,10 +85,12 @@ Shader::Shader(const char *vertPath, const char *fragPath)
 
     // Check fragment compile errors
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-    if (success == 0) // NOLINT(readability-implicit-bool-conversion)
+    glGetShaderiv(fragment, GL_INFO_LOG_LENGTH, &InfoLogLength);
+    if (InfoLogLength > 0)
     {
-        glGetShaderInfoLog(fragment, 512, nullptr, infoLog.data()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        std::cerr << "Fragment shader compilation failed:\n" << infoLog.data() << "\n";
+        std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
+        glGetShaderInfoLog(fragment, InfoLogLength, nullptr, &FragmentShaderErrorMessage[0]);
+        std::cerr << "Fragment shader compilation failed:\n" << &FragmentShaderErrorMessage[0] << "\n";
     }
 
     // Link program
@@ -75,18 +99,27 @@ Shader::Shader(const char *vertPath, const char *fragPath)
     glAttachShader(ID, fragment);
     glLinkProgram(ID);
 
-    // Check link errors
+    // Check the program
     glGetProgramiv(ID, GL_LINK_STATUS, &success);
-    if (success == 0) // NOLINT(readability-implicit-bool-conversion)
+    glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+    if (InfoLogLength > 0)
     {
-        glGetProgramInfoLog(ID, 512, nullptr, infoLog.data()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        std::cerr << "Shader program linking failed:\n"
-                  << infoLog.data() << "\n"; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
+        glGetProgramInfoLog(ID, InfoLogLength, nullptr, &ProgramErrorMessage[0]);
+        std::cerr << "Shader program linking failed:\n" << &ProgramErrorMessage[0] << "\n";
     }
 
     // Delete shaders
     glDeleteShader(vertex);
     glDeleteShader(fragment);
+}
+
+Shader::~Shader()
+{
+    if (ID != 0)
+    {
+        glDeleteProgram(ID);
+    }
 }
 
 void Shader::Use() const
@@ -96,51 +129,70 @@ void Shader::Use() const
 
 void Shader::SetMat4(const std::string &name, const glm::mat4 &val) const
 {
-    GLint loc = glGetUniformLocation(ID, name.c_str());
-    if (loc == -1)
+    // Get the location of the uniform variable in the shader program
+    GLint location = glGetUniformLocation(ID, name.c_str());
+    if (location == -1)
     {
         std::cerr << "Uniform not found: " << name << "\n";
     }
     else
     {
-        glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(val));
+        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(val));
     }
 }
 
 void Shader::SetMat3(const std::string &name, const glm::mat3 &val) const
 {
-    GLint loc = glGetUniformLocation(ID, name.c_str());
-    glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(val));
-}
-
-void Shader::SetVec3(const std::string &name, const glm::vec3 &val) const
-{
-    GLint loc = glGetUniformLocation(ID, name.c_str());
-    if (loc == -1)
+    // Get the location of the uniform variable in the shader program
+    GLint location = glGetUniformLocation(ID, name.c_str());
+    if (location == -1)
     {
         std::cerr << "Uniform not found: " << name << "\n";
     }
     else
     {
-        glUniform3f(loc, val.x, val.y, val.z);
+        glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(val));
+    }
+}
+
+void Shader::SetVec3(const std::string &name, const glm::vec3 &val) const
+{
+    // Get the location of the uniform variable in the shader program
+    GLint location = glGetUniformLocation(ID, name.c_str());
+    if (location == -1)
+    {
+        std::cerr << "Uniform not found: " << name << "\n";
+    }
+    else
+    {
+        glUniform3f(location, val.x, val.y, val.z);
     }
 }
 
 void Shader::SetFloat(const std::string &name, float val) const
 {
-    GLint loc = glGetUniformLocation(ID, name.c_str());
-    if (loc == -1)
+    // Get the location of the uniform variable in the shader program
+    GLint location = glGetUniformLocation(ID, name.c_str());
+    if (location == -1)
     {
         std::cerr << "Uniform not found: " << name << "\n";
     }
     else
     {
-        glUniform1f(loc, val);
+        glUniform1f(location, val);
     }
 }
 
 void Shader::SetInt(const std::string &name, int val) const
 {
-    GLint loc = glGetUniformLocation(ID, name.c_str());
-    glUniform1i(loc, val);
+    // Get the location of the uniform variable in the shader program
+    GLint location = glGetUniformLocation(ID, name.c_str());
+    if (location == -1)
+    {
+        std::cerr << "Uniform not found: " << name << "\n";
+    }
+    else
+    {
+        glUniform1i(location, val);
+    }
 }

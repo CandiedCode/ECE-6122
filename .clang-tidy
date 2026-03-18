@@ -15,6 +15,7 @@ Checks: >
   -cppcoreguidelines-pro-type-reinterpret-cast,
   -cppcoreguidelines-pro-type-union-access,
   -readability-magic-numbers,
+  -readability-identifier-length,
   -clang-diagnostic-*,
 WarningsAsErrors: ''
 
@@ -57,6 +58,3 @@ CheckOptions:
   # C++ 17: Prefer std::transparent_functors for generic programming
   - key: modernize-use-transparent-functors.SafeMode
     value: '0'
-
-  - key: readability-identifier-length.IgnoredVariableNames
-    value: 'a|b|c|oc|t|t1|t2|u|x|y|up'

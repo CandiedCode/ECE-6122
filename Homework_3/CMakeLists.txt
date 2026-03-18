@@ -71,6 +71,18 @@ else()
     add_library(glad ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps/glad.c)
     target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps)
     message(STATUS "Using GLAD from external/glfw-3.1.2/deps (bundled with GLFW)")
+    # For assimp: if the target doesn't exist (external/CMakeLists.txt not included),
+    # create an interface target. Otherwise, just add the include directories to Hw3.
+    if(NOT TARGET assimp)
+        add_library(assimp INTERFACE)
+        target_include_directories(assimp INTERFACE
+            ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/include
+            ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/contrib/stb
+        )
+        message(STATUS "Using Assimp from external/assimp-3.0.1270/include (interface library)")
+    else()
+        message(STATUS "Using Assimp from external/assimp-3.0.1270 (already built)")
+    endif()
 endif()
 
 # Find OpenGL
@@ -82,11 +94,11 @@ message(STATUS "OpenGL include directories: ${OPENGL_INCLUDE_DIR}")
 
 file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Hw3.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/shader.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/mesh.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/model.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/camera.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/texture.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Shader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Mesh.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Model.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Texture.cpp
 )
 
 add_executable(Hw3 ${SOURCES})
@@ -96,6 +108,7 @@ if(USE_EXTERNAL_LIBS)
     target_include_directories(Hw3 PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/include
+        ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/include
         ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/contrib/stb
     )
 else()
