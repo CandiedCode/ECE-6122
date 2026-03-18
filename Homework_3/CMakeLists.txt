@@ -68,9 +68,18 @@ else()
     # GLM is header-only; create an interface target pointing at external/glm-0.9.7.1
     add_library(glm INTERFACE)
     target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm-0.9.7.1)
+
+    # Build GLFW from external/ source
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/external/glfw-3.1.2 ${CMAKE_BINARY_DIR}/external/glfw-3.1.2)
+    message(STATUS "Using GLFW from external/glfw-3.1.2 (built from source)")
+
+    # Build GLAD from external source
     add_library(glad ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps/glad.c)
     target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps)
     message(STATUS "Using GLAD from external/glfw-3.1.2/deps (bundled with GLFW)")
+
     # For assimp: if the target doesn't exist (external/CMakeLists.txt not included),
     # create an interface target. Otherwise, just add the include directories to Hw3.
     if(NOT TARGET assimp)
