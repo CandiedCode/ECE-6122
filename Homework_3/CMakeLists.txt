@@ -77,7 +77,7 @@ else()
         add_library(assimp INTERFACE)
         target_include_directories(assimp INTERFACE
             ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/include
-            ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/contrib/stb
+            ${CMAKE_SOURCE_DIR}/external/stb
         )
         message(STATUS "Using Assimp from external/assimp-3.0.1270/include (interface library)")
     else()
