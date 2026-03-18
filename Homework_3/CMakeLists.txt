@@ -28,6 +28,18 @@ endif()
 # Fetch dependencies
 include(FetchContent)
 
+# Fetch Assimp (model loading library)
+FetchContent_Declare(Assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp
+    GIT_TAG v5.4.2
+    GIT_SHALLOW ON
+)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ZLIB OFF CACHE BOOL "" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(Assimp)
+
 if(NOT USE_EXTERNAL_LIBS)
     # Fetch GLM (header-only math library)
     FetchContent_Declare(GLM
@@ -51,20 +63,8 @@ if(NOT USE_EXTERNAL_LIBS)
     add_library(glad ${GLFW_SOURCE_DIR}/deps/glad.c)
     target_include_directories(glad PUBLIC ${GLFW_SOURCE_DIR}/deps)
     message(STATUS "Using GLAD from GLFW FetchContent (${GLFW_SOURCE_DIR}/deps)")
-
-    # Fetch Assimp (model loading library)
-    FetchContent_Declare(Assimp
-        GIT_REPOSITORY https://github.com/assimp/assimp
-        GIT_TAG v5.4.2
-        GIT_SHALLOW ON
-    )
-    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_ZLIB OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(Assimp)
 else()
-    message(STATUS "Homework_3: Using GLM, GLFW, and Assimp from external/")
+    message(STATUS "Homework_3: Using GLM and GLFW from external/")
     # GLM is header-only; create an interface target pointing at external/glm-0.9.7.1
     add_library(glm INTERFACE)
     target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm-0.9.7.1)
