@@ -27,13 +27,11 @@ auto LoadTextureFromFile(const std::string &path) -> GLuint
     int height = 0;
     int channels = 0;
 
-    // TODO(cwagenberg): what is 4?
     unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 4);
 
     if (data == nullptr) // NOLINT(readability-implicit-bool-conversion)
     {
         std::cerr << "Failed to load texture: " << path << "\n";
-        // TODO(cwagenberg): raise error
         return GetWhiteTexture();
     }
 

@@ -109,7 +109,7 @@ if(USE_EXTERNAL_LIBS)
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/include
         ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/include
-        ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/contrib/stb
+        ${CMAKE_SOURCE_DIR}/external/stb
     )
 else()
     target_include_directories(Hw3 PRIVATE
