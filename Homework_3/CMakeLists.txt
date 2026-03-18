@@ -60,17 +60,25 @@ if(NOT USE_EXTERNAL_LIBS)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(GLFW)  # This will use the already-fetched GLFW_SOURCE
 
-    add_library(glad ${GLFW_SOURCE_DIR}/deps/glad.c)
-    target_include_directories(glad PUBLIC ${GLFW_SOURCE_DIR}/deps)
-    message(STATUS "Using GLAD from GLFW FetchContent (${GLFW_SOURCE_DIR}/deps)")
+    if(NOT TARGET glad)
+        add_library(glad ${GLFW_SOURCE_DIR}/deps/glad.c)
+        target_include_directories(glad PUBLIC ${GLFW_SOURCE_DIR}/deps)
+        message(STATUS "Using GLAD from GLFW FetchContent (${GLFW_SOURCE_DIR}/deps)")
+    endif()
 else()
     message(STATUS "Homework_3: Using GLM and GLFW from external/")
     # GLM is header-only; create an interface target pointing at external/glm-0.9.7.1
-    add_library(glm INTERFACE)
-    target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm-0.9.7.1)
-    add_library(glad ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps/glad.c)
-    target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps)
-    message(STATUS "Using GLAD from external/glfw-3.1.2/deps (bundled with GLFW)")
+    if(NOT TARGET glm)
+        add_library(glm INTERFACE)
+        target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm-0.9.7.1)
+    endif()
+
+    if(NOT TARGET glad)
+        add_library(glad ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps/glad.c)
+        target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps)
+        message(STATUS "Using GLAD from external/glfw-3.1.2/deps (bundled with GLFW)")
+    endif()
+
     # For assimp: if the target doesn't exist (external/CMakeLists.txt not included),
     # create an interface target. Otherwise, just add the include directories to Hw3.
     if(NOT TARGET assimp)
@@ -115,7 +123,9 @@ else()
     target_include_directories(Hw3 PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${GLFW_SOURCE_DIR}/include
-        ${assimp_SOURCE_DIR}/contrib/stb
+        ${assimp_SOURCE_DIR}/include
+        ${assimp_BINARY_DIR}/include
+        ${CMAKE_SOURCE_DIR}/external/stb
     )
 endif()
 
