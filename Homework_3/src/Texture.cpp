@@ -1,8 +1,46 @@
 #include "Texture.h"
+#include <array>
+#include <cstdlib>
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include <string>
+
+// Helper function to find embedded textures - compatible with both old and new Assimp versions
+// Works by manually searching through mTextures array when GetEmbeddedTexture is not available
+auto FindEmbeddedTextureCompat(const aiScene *scene, const char *path) -> const aiTexture *
+{
+    if (path == nullptr || path[0] == '\0' || scene == nullptr || scene->mNumTextures == 0)
+    {
+        return nullptr;
+    }
+
+    // Check if path starts with '*' (embedded texture index format)
+    if (path[0] == '*')
+    {
+        const char *indexStr = path + 1;
+        int index = std::atoi(indexStr);
+        if (index >= 0 && index < static_cast<int>(scene->mNumTextures))
+        {
+            return scene->mTextures[index];
+        }
+    }
+
+    // Search by filename
+    for (unsigned int i = 0; i < scene->mNumTextures; ++i)
+    {
+        if (scene->mTextures[i] != nullptr)
+        {
+            const char *texName = scene->mTextures[i]->mFilename.C_Str();
+            if (texName != nullptr && std::string(texName) == path)
+            {
+                return scene->mTextures[i];
+            }
+        }
+    }
+
+    return nullptr;
+}
 
 auto GetWhiteTexture() -> GLuint
 {
@@ -67,7 +105,11 @@ auto LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material) -
         std::cout << "  Texture path: " << path.C_Str() << "\n";
 
         // Check if it's an embedded texture
-        const aiTexture *embeddedTexture = scene->GetEmbeddedTexture(path.C_Str());
+        // Use compatibility helper that works with both old and new Assimp versions
+        // Even though I'm supposed to be using the same version of assump, GetEmbeddedTexture is not available in
+        // external/assimp-3.0.1270/include/assimp/scene.h but is in build/_deps/assump-src/include/assump/scene.h, so this helper will
+        // handle both cases
+        const aiTexture *embeddedTexture = FindEmbeddedTextureCompat(scene, path.C_Str());
         if (embeddedTexture != nullptr) // NOLINT(readability-implicit-bool-conversion)
         {
             std::cout << "  Found embedded texture: " << path.C_Str() << "\n";
