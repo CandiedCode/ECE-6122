@@ -24,13 +24,15 @@ auto GetWhiteTexture() -> GLuint
 
 auto LoadTextureFromFile(const std::string &path) -> GLuint
 {
+    std::cout << "Attempting to load texture from file: " << path << "\n";
     int width = 0;
     int height = 0;
     int channels = 0;
 
     unsigned char *data = stbi_load(path.c_str(), &width, &height, &channels, 4);
 
-    if (data == nullptr) // NOLINT(readability-implicit-bool-conversion)
+    // If loading failed, try alternative paths (in case of relative path issues)
+    if (data == nullptr)
     {
         std::cerr << "Failed to load texture: " << path << "\n";
         return GetWhiteTexture();
@@ -51,13 +53,12 @@ auto LoadTextureFromFile(const std::string &path) -> GLuint
     return textureID;
 }
 
-auto LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material) -> GLuint
+auto LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material, const std::string &modelDirectory) -> GLuint
 {
     std::cout << "  LoadTextureFromMaterial: Checking material"
               << "\n";
-    std::cout << "  Number of embedded textures in scene: " << scene->mNumTextures << "\n";
 
-    // Try to get diffuse texture
+    // Try to get diffuse texture path
     unsigned int diffuseCount = material->GetTextureCount(aiTextureType_DIFFUSE);
     std::cout << "  Diffuse texture count: " << diffuseCount << "\n";
 
@@ -65,63 +66,55 @@ auto LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material) -
     {
         aiString path;
         material->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-        std::cout << "  Texture path: " << path.C_Str() << "\n";
 
-        // Check if it's an embedded texture
-        const aiTexture *embeddedTexture = scene->GetEmbeddedTexture(path.C_Str());
-        if (embeddedTexture != nullptr) // NOLINT(readability-implicit-bool-conversion)
+        // Remove comments from path (everything after #)
+        std::string cleanPath(path.C_Str());
+        size_t commentPos = cleanPath.find('#');
+        if (commentPos != std::string::npos)
         {
-            std::cout << "  Found embedded texture: " << path.C_Str() << "\n";
-            GLuint textureID = 0;
-            glGenTextures(1, &textureID);
-            glBindTexture(GL_TEXTURE_2D, textureID);
-
-            // Handle compressed textures
-            if (embeddedTexture->mHeight == 0)
-            {
-                // Compressed format - decompress with stb_image
-                std::cout << "  Decompressing texture with stb_image"
-                          << "\n";
-                int width = 0;
-                int height = 0;
-                int channels = 0;
-                unsigned char *data =
-                    stbi_load_from_memory(reinterpret_cast<unsigned char *>(embeddedTexture->pcData), // NOLINT(clang-analyzer-unix.Malloc)
-                                          static_cast<int>(embeddedTexture->mWidth), &width, &height, &channels, 4);
-
-                if (data != nullptr) // NOLINT(readability-implicit-bool-conversion)
-                {
-                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                    std::cout << "  Loaded decompressed texture: " << width << "x" << height << " (ID: " << textureID << ")"
-                              << "\n";
-                    stbi_image_free(data);
-                    return textureID;
-                }
-                std::cout << "  Failed to decompress texture with stb_image"
-                          << "\n";
-            }
-            else
-            {
-                // Uncompressed RGBA
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, static_cast<GLsizei>(embeddedTexture->mWidth),
-                             static_cast<GLsizei>(embeddedTexture->mHeight), 0, GL_RGBA, GL_UNSIGNED_BYTE, embeddedTexture->pcData);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                std::cout << "  Loaded embedded texture: " << embeddedTexture->mWidth << "x" << embeddedTexture->mHeight
-                          << " (ID: " << textureID << ")"
-                          << "\n";
-                return textureID;
-            }
+            cleanPath = cleanPath.substr(0, commentPos);
         }
-        else
+
+        // Trim whitespace from the end
+        while (!cleanPath.empty() && std::isspace(cleanPath.back()))
         {
-            std::cout << "  No embedded texture found for: " << path.C_Str() << "\n";
+            cleanPath.pop_back();
         }
+
+        std::cout << "  Texture path: " << cleanPath << "\n";
+
+        // Construct full path relative to model directory
+        std::string fullPath = modelDirectory + "/" + cleanPath;
+        std::cout << "  Full path: " << fullPath << "\n";
+
+        // Try to load texture from file
+        return LoadTextureFromFile(fullPath);
     }
 
-    // No valid texture found, use white fallback
+    // No texture found, check for material color (Kd) and create a colored texture
+    aiColor3D diffuseColor(0.7F, 0.7F, 0.7F); // Default gray
+    if (material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuseColor) == AI_SUCCESS)
+    {
+        std::cout << "  Using material diffuse color: RGB(" << diffuseColor.r << ", " << diffuseColor.g << ", " << diffuseColor.b << ")\n";
+
+        // Create a 1x1 colored texture (RGBA format for consistency)
+        GLuint textureID = 0;
+        unsigned char colorData[4] = {
+            static_cast<unsigned char>(diffuseColor.r * 255), static_cast<unsigned char>(diffuseColor.g * 255),
+            static_cast<unsigned char>(diffuseColor.b * 255),
+            255 // Alpha channel (opaque)
+        };
+
+        glGenTextures(1, &textureID);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, colorData);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        return textureID;
+    }
+
+    // No valid texture or color found, use white fallback
     std::cout << "  Using white fallback texture"
               << "\n";
     return GetWhiteTexture();
@@ -169,4 +162,18 @@ auto CreateGrassTexture() -> GLuint
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return textureID;
+}
+
+auto GetShininessFromMaterial(const aiMaterial *material) -> float
+{
+    float shininess = 32.0F; // Default shininess value
+    if (material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS)
+    {
+        std::cout << "  Loaded shininess from material: " << shininess << "\n";
+    }
+    else
+    {
+        std::cout << "  Using default shininess: " << shininess << "\n";
+    }
+    return shininess;
 }

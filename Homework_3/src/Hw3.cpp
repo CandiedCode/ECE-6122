@@ -3,10 +3,10 @@
 #include "Model.h"
 #include "Shader.h"
 #include "Texture.h"
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <filesystem>
-#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -234,75 +234,87 @@ auto loadModels(const char *executablePath) -> std::vector<SceneObject>
     std::cout << "Loading models..."
               << "\n";
 
-    auto bullseye_path = resolveFilePath("./assets/toy_story_bullseye.glb", executablePath);
-    if (!bullseye_path.has_value())
+    // Load farmer model
+    auto farmer_path = resolveFilePath("assets/models/farmer/farmer.obj", executablePath);
+    if (!farmer_path.has_value())
     {
-        std::cerr << "Error: Could not find bullseye model at './assets/toy_story_bullseye.glb' or relative to executable\n";
+        std::cerr << "Error: Could not find farmer model at 'assets/models/farmer/farmer.obj' or relative to executable\n";
         exit(EXIT_FAILURE);
     }
-    auto *model_bullseye = new Model(bullseye_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
+    auto *model_farmer = new Model(farmer_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
 
-    auto buzz_path = resolveFilePath("./assets/buzz_lightyear.glb", executablePath);
-    if (!buzz_path.has_value())
+    // Load barrel model
+    auto barrel_path = resolveFilePath("assets/models/barrel/Barrel_OBJ.obj", executablePath);
+    if (!barrel_path.has_value())
     {
-        std::cerr << "Error: Could not find buzz model at './assets/buzz_lightyear.glb' or relative to executable\n";
+        std::cerr << "Error: Could not find barrel model at 'assets/models/barrel/Barrel_OBJ.obj' or relative to executable\n";
         exit(EXIT_FAILURE);
     }
-    auto *model_buzz = new Model(buzz_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
+    auto *model_barrel = new Model(barrel_path.value());   // NOLINT(cppcoreguidelines-owning-memory)
+    auto *model_barrel_2 = new Model(barrel_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
 
-    auto woody_path = resolveFilePath("./assets/woody.glb", executablePath);
-    if (!woody_path.has_value())
+    // Load farmhouse model
+    auto farmhouse_path = resolveFilePath("assets/models/farmhouse/Farm_house.obj", executablePath);
+    if (!farmhouse_path.has_value())
     {
-        std::cerr << "Error: Could not find woody model at './assets/woody.glb' or relative to executable\n";
+        std::cerr << "Error: Could not find farmhouse model at 'assets/models/farmhouse/Farm_house.obj' or relative to executable\n";
         exit(EXIT_FAILURE);
     }
-    auto *model_woody = new Model(woody_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
+    auto *model_farmhouse = new Model(farmhouse_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
 
-    auto slinky_path = resolveFilePath("./assets/slinky_dog_rigged.glb", executablePath);
-    if (!slinky_path.has_value())
+    // Load horse model
+    auto horse_path = resolveFilePath("assets/models/Horse_Lores.obj", executablePath);
+    if (!horse_path.has_value())
     {
-        std::cerr << "Error: Could not find slinky model at './assets/slinky_dog_rigged.glb' or relative to executable\n";
+        std::cerr << "Error: Could not find horse model at 'assets/models/Horse_Lores.obj' or relative to executable\n";
         exit(EXIT_FAILURE);
     }
-    auto *model_slinky = new Model(slinky_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
+    auto *model_horse = new Model(horse_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
 
-    auto hamm_path = resolveFilePath("./assets/hamm.glb", executablePath);
-    if (!hamm_path.has_value())
+    // Load robot model
+    auto robot_path = resolveFilePath("assets/models/robot/Robot.obj", executablePath);
+    if (!robot_path.has_value())
     {
-        std::cerr << "Error: Could not find hamm model at './assets/hamm.glb' or relative to executable\n";
+        std::cerr << "Error: Could not find robot model at 'assets/models/robot/Robot.obj' or relative to executable\n";
         exit(EXIT_FAILURE);
     }
-    auto *model_hamm = new Model(hamm_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
+    auto *model_robot = new Model(robot_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
 
     std::cout << "Models loaded"
               << "\n";
     // Create scene objects with transforms
     std::vector<SceneObject> scene_objects;
-    scene_objects.push_back(SceneObject{model_bullseye, glm::vec3(0.0F, 0.0F, 0.0F), // Positioned at origin
-                                        0.0F,                                        // No rotation
-                                        glm::vec3(0.0F, 1.0F, 0.0F),                 // Rotate around Y axis
-                                        glm::vec3(1.0F, 1.0F, 1.0F),                 // No scaling
-                                        32.0F});                                     // Default shininess
-    scene_objects.push_back(SceneObject{model_buzz, glm::vec3(12.0F, 8.0F, 30.0F),   // Positioned to the right and closer to camera
-                                        45.0F,                                       // Rotate to face the camera
-                                        glm::vec3(-1.0F, 1.0F, 0.0F),                // Rotate around Y axis
-                                        glm::vec3(2.5F, 2.5F, 2.5F),                 // Scaled up
-                                        32.0F});                                     // Default shininess
-    scene_objects.push_back(SceneObject{model_woody, glm::vec3(-15.0F, 0.0F, 15.0F), // Positioned to the left and further back
-                                        90.0F,                                       // Rotate to face the grass
-                                        glm::vec3(0.0F, 1.0F, 0.0F),                 // Rotate around Y axis
-                                        glm::vec3(0.1F, 0.1F, 0.1F),                 // Scaled down
-                                        32.0F});                                     // Default shininess
-    scene_objects.push_back(SceneObject{model_slinky, glm::vec3(-8.0F, 0.0F, 10.0F), // Positioned to the left and closer to camera
-                                        0.0F,                                        // No rotation
-                                        glm::vec3(0.0F, 1.0F, 0.0F),                 // Rotate around Y axis
-                                        glm::vec3(0.8F, 0.8F, 0.8F),                 // Scaled down
-                                        32.0F});                                     // Default shininess
-    scene_objects.push_back(SceneObject{model_hamm, glm::vec3(10.0F, 0.0F, -10.0F),  // Positioned to the right and further back
-                                        36.0F,                                       // Rotate
-                                        glm::vec3(0.0F, 1.0F, 0.0F),                 // Rotate around Y axis
-                                        glm::vec3(0.02F, 0.02F, 0.02F),              // Scaled down
-                                        32.0F});                                     // Default shininess
+    scene_objects.push_back(SceneObject{model_farmer, glm::vec3(0.0F, 3.0F, 0.0F),        // Positioned at origin
+                                        0.0F,                                             // No rotation
+                                        glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis
+                                        glm::vec3(5.0F, 5.0F, 5.0F),                      // scale up to be more visible
+                                        32.0F});                                          // Default shininess
+    scene_objects.push_back(SceneObject{model_barrel, glm::vec3(-8.0F, 0.0F, 0.0F),       // Positioned to the left
+                                        0.0F,                                             // No rotation
+                                        glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis
+                                        glm::vec3(3.0F, 3.0F, 3.0F),                      // scale up to be more visible
+                                        32.0F});                                          // Default shininess
+    scene_objects.push_back(SceneObject{model_barrel_2, glm::vec3(-10.25F, 0.0F, 0.0F),   // Positioned to the left
+                                        0.0F,                                             // No rotation
+                                        glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis
+                                        glm::vec3(3.0F, 3.0F, 3.0F),                      // scale up to be more visible
+                                        32.0F});                                          // Default shininess
+    scene_objects.push_back(SceneObject{model_farmhouse, glm::vec3(20.0F, 10.0F, -20.0F), // Positioned far back and right
+                                        90.0F,                                            // Rotate to face front
+                                        glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis to see front
+                                        glm::vec3(0.25F, 0.25F, 0.25F),                   // Much smaller scale to fit in scene
+                                        32.0F});                                          // Default shininess
+    scene_objects.push_back(SceneObject{model_horse, glm::vec3(8.0F, -5.0F, 40.0F),       // Positioned to the right and back
+                                        180.0F,                                           // Rotate 180 degrees to face front
+                                        glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis
+                                        glm::vec3(0.06F, 0.06F, 0.06F),                   // Much smaller scale
+                                        32.0F});                                          // Default shininess
+    scene_objects.push_back(SceneObject{model_robot, glm::vec3(-15.0F, 0.0F, 25.0F),      // Positioned to the left and back
+                                        0.0F,                                             // No rotation
+                                        glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis
+                                        glm::vec3(1.0F, 1.0F, 1.0F),                      // no scale
+                                        32.0F});                                          // Default shininess
+
     return scene_objects;
 }
 
@@ -365,16 +377,16 @@ auto main(int argc, char **argv) -> int
         glEnable(GL_DEPTH_TEST);
 
         // Load shader
-        auto shader_path = resolveFilePath("./shaders/object.vert", argv[0]);
+        auto shader_path = resolveFilePath("assets/shaders/object.vert", argv[0]);
         if (!shader_path.has_value())
         {
-            std::cerr << "Error: Could not find vertex shader at './shaders/object.vert' or relative to executable\n";
+            std::cerr << "Error: Could not find vertex shader at 'assets/shaders/object.vert' or relative to executable\n";
             exit(EXIT_FAILURE);
         }
-        auto fragment_shader_path = resolveFilePath("./shaders/object.frag", argv[0]);
+        auto fragment_shader_path = resolveFilePath("assets/shaders/object.frag", argv[0]);
         if (!fragment_shader_path.has_value())
         {
-            std::cerr << "Error: Could not find fragment shader at './shaders/object.frag' or relative to executable\n";
+            std::cerr << "Error: Could not find fragment shader at 'assets/shaders/object.frag' or relative to executable\n";
             exit(EXIT_FAILURE);
         }
         Shader shader(shader_path.value().c_str(), fragment_shader_path.value().c_str());

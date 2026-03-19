@@ -13,7 +13,7 @@
 #define HOMEWORK_3_SRC_MESH_H_
 
 #include "Texture.h"
-#include <GL/glew.h>
+// #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <utility>
 #include <vector>

@@ -1,15 +1,23 @@
 #include "Model.h"
 #include "Mesh.h"
 #include "Shader.h"
-#include "Texture.h"
+// #include "Texture.h"
 #include <algorithm>
 #include <cfloat>
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <vector>
 
 Model::Model(const std::string &path)
 {
+    // Extract the directory from the model path
+    modelDirectory_ = std::filesystem::path(path).parent_path().string();
+    if (modelDirectory_.empty())
+    {
+        modelDirectory_ = ".";
+    }
+
     // Create an instance of the Open Asset Importer
     Assimp::Importer importer;
 
@@ -102,7 +110,7 @@ auto Model::ProcessMesh(aiMesh *mesh, const aiScene *scene) -> Mesh
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-        result.SetTextureID(LoadTextureFromMaterial(scene, material));
+        result.SetTextureID(LoadTextureFromMaterial(scene, material, modelDirectory_));
     }
 
     return result;
