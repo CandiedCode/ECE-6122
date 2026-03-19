@@ -27,7 +27,7 @@ lint/format: ## Check code formatting using clang-format
 .PHONY: lint/cpplint
 lint/cpplint: ## Lint C++ code using cpplint
 	@echo "Linting C++ code..."
-	find Homework_* -name '*.cpp' -o -name '*.h' | xargs cpplint
+	find Homework_* \( -name '*.cpp' -o -name '*.h' \) ! -name 'stb_image.h' ! -path 'Homework_3_new_assimp/*' | xargs cpplint --config=CPPLINT.cfg
 	@echo "✓ C++ linting complete"
 
 .PHONY: lint/tidy

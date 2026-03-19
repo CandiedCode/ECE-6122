@@ -12,8 +12,8 @@
 #ifndef HOMEWORK_3_SRC_TEXTURE_H_
 #define HOMEWORK_3_SRC_TEXTURE_H_
 
+#include <GL/glew.h>
 #include <assimp/scene.h>
-#include <glad/glad.h>
 #include <string>
 
 // @brief Get a default white texture and return its OpenGL texture ID. This function creates a 1x1 white texture if it
@@ -31,13 +31,19 @@ auto LoadTextureFromFile(const std::string &path) -> GLuint;
 // external textures, and creates an OpenGL texture object.
 // @param scene The Assimp scene containing the material and any embedded textures
 // @param material The Assimp material from which to load the texture
+// @param modelDirectory The directory containing the model file (for resolving relative texture paths)
 // @return The OpenGL texture ID of the loaded texture, or a fallback white texture if loading fails or if no valid texture is found in the
 // material
-auto LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material) -> GLuint;
+auto LoadTextureFromMaterial(const aiScene *scene, const aiMaterial *material, const std::string &modelDirectory = ".") -> GLuint;
 
 // @brief Create a simple procedural grass texture. This function generates a green texture with some variation to simulate grass and
 // creates an OpenGL texture object.
 // @return The OpenGL texture ID of the created grass texture
 auto CreateGrassTexture() -> GLuint;
+
+// @brief Extract shininess value from an Assimp material
+// @param material The Assimp material from which to extract the shininess value
+// @return The shininess value from the material, or a default value if not found
+auto GetShininessFromMaterial(const aiMaterial *material) -> float;
 
 #endif // HOMEWORK_3_SRC_TEXTURE_H_

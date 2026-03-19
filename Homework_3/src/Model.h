@@ -40,9 +40,19 @@ class Model
     // calls to render the mesh geometry.
     void Draw() const;
 
+    // @brief Get the meshes in this model for fine-grained control (e.g., per-mesh shader uniforms)
+    // @return Constant reference to the vector of meshes
+    [[nodiscard]] auto GetMeshes() const -> const std::vector<Mesh> &
+    {
+        return meshes_;
+    }
+
   private:
     // Vector to store the meshes that make up the model. Each Mesh contains the vertex data, indices, and textures for a part of the model.
     std::vector<Mesh> meshes_;
+
+    // Directory containing the model file, used for resolving relative texture paths
+    std::string modelDirectory_;
 
     // @brief Process a node in the Assimp scene graph recursively.
     // @param node The current node to process
@@ -53,7 +63,7 @@ class Model
     // @param mesh The Assimp mesh to process
     // @param scene The Assimp scene containing the model data
     // @return A Mesh object containing the vertex data, indices, and textures for the given Assimp mesh
-    static auto ProcessMesh(aiMesh *mesh, const aiScene *scene) -> Mesh;
+    auto ProcessMesh(aiMesh *mesh, const aiScene *scene) -> Mesh;
 };
 
 #endif // HOMEWORK_3_SRC_MODEL_H_

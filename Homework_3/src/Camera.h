@@ -64,20 +64,20 @@ class Camera
         return right_;
     }
 
-    // @brief Process keyboard input to move the camera in the specified direction
+    // @brief Process direction input to move the camera in the specified direction
     // @param direction The direction to move (FORWARD, BACKWARD, LEFT, RIGHT)
     // @param deltaTime The time elapsed since the last frame (used to ensure consistent movement speed)
-    void ProcessKeyboard(int direction, float deltaTime);
+    void ProcessDirection(int direction, float deltaTime);
 
-    // @brief Process mouse movement to rotate the camera's orientation
+    // @brief Process camera view input to rotate the camera's orientation
     // @param xOffset The horizontal mouse movement (in pixels)
     // @param yOffset The vertical mouse movement (in pixels)
     // @param constrainPitch Whether to constrain the pitch angle to prevent flipping (default: true)
-    void ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch = true);
+    void ProcessCameraView(float xOffset, float yOffset, bool constrainPitch = true);
 
-    // @brief Process mouse scroll input to zoom in/out by adjusting the camera's movement speed
+    // @brief Process movement speed via mouse scroll input to zoom in/out by adjusting the camera's movement speed
     // @param yOffset The vertical scroll amount (positive for scroll up, negative for scroll down)
-    void ProcessMouseScroll(float yOffset);
+    void ProcessMovementSpeed(float yOffset);
 
   private:
     // Camera attributes
