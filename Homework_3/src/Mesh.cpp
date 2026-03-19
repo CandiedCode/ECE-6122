@@ -20,6 +20,8 @@
 #include <string>
 #include <vector>
 
+namespace
+{
 // @brief Helper function to check and report OpenGL errors
 // @param errorMsg Descriptive message to prepend to any error output
 void CheckGLError(const std::string &errorMsg)
@@ -30,6 +32,7 @@ void CheckGLError(const std::string &errorMsg)
         std::cerr << "Error " << errorMsg << ": " << err << "\n";
     }
 }
+} // namespace
 
 Mesh::~Mesh()
 {
@@ -128,25 +131,27 @@ void Mesh::Draw() const
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+// https://github.com/opengl-tutorials/ogl/blob/15e57f6cccef388915e565d8322b8442049e1bd8/external/AntTweakBar-1.16/examples/TwAdvanced1.cpp#L453
 auto CreateGroundPlane(float size, int subdivisions) -> Mesh
 {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
 
     // Calculate the step size for vertex positions based on the desired size and number of subdivisions
-    float halfSize = size / 2.0F;
+    float half_size = size / 2.0F;
+
     // The step size determines how far apart the vertices are along the X and Z axes. It is calculated by dividing the total size of the
     // plane by the number of subdivisions, which gives the distance between adjacent vertices in the grid.
     float step = size / static_cast<float>(subdivisions);
 
-    // Generate vertices with tiling UVs
+    // Generate vertices with tiling  - texture coordinates
     for (int z = 0; z <= subdivisions; ++z)
     {
         // For each row of vertices along the Z axis, we loop through the columns along the X axis to create a grid of vertices.
         for (int x = 0; x <= subdivisions; ++x)
         {
             Vertex vertex;
-            vertex.position = glm::vec3(-halfSize + (static_cast<float>(x) * step), -5.0F, -halfSize + (static_cast<float>(z) * step));
+            vertex.position = glm::vec3(-half_size + (static_cast<float>(x) * step), -5.0F, -half_size + (static_cast<float>(z) * step));
             vertex.normal = glm::vec3(0.0F, 1.0F, 0.0F);
 
             // Tile the texture 4 times across the plane
@@ -166,15 +171,15 @@ auto CreateGroundPlane(float size, int subdivisions) -> Mesh
             int bottomLeft = ((z + 1) * (subdivisions + 1)) + x;
             int bottomRight = bottomLeft + 1;
 
-            // First triangle
+            // First triangle - top triangle of the square
             indices.push_back(static_cast<unsigned int>(topLeft));
             indices.push_back(static_cast<unsigned int>(bottomLeft));
             indices.push_back(static_cast<unsigned int>(topRight));
 
-            // Second triangle
+            // Second triangle - bottom triangle of the square
             indices.push_back(static_cast<unsigned int>(topRight));
-            indices.push_back(static_cast<unsigned int>(bottomLeft));
             indices.push_back(static_cast<unsigned int>(bottomRight));
+            indices.push_back(static_cast<unsigned int>(bottomLeft));
         }
     }
 

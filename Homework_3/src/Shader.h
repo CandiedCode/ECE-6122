@@ -22,7 +22,7 @@ class Shader
   public:
     // The OpenGL ID of the shader program created by linking the vertex and fragment shaders together.
     // This ID is used to reference the shader program
-    GLuint ID;
+    GLuint id_;
 
     // @brief Constructor that loads, compiles, and links vertex and fragment shaders from the specified file paths.
     // @param vertPath The file path to the vertex shader source code

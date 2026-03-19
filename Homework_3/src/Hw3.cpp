@@ -15,13 +15,13 @@
 #include <string>
 #include <vector>
 
-const int WINDOW_WIDTH = 1024;
-const int WINDOW_HEIGHT = 768;
+constexpr int kWindowWidth = 1024;
+constexpr int kWindowHeight = 768;
 
 // Global camera and input state
 Camera *g_camera = nullptr;           // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-float g_lastX = WINDOW_WIDTH / 2.0F;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-float g_lastY = WINDOW_HEIGHT / 2.0F; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+float g_lastX = kWindowWidth / 2.0F;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+float g_lastY = kWindowHeight / 2.0F; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 bool g_firstMouse = true;             // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 float g_deltaTime = 0.0F;             // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 float g_lastFrame = 0.0F;             // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
@@ -36,7 +36,6 @@ struct SceneObject
     float rotation_degrees;
     glm::vec3 rotation_axis;
     glm::vec3 scale;
-    float shininess;
 };
 
 // @brief GLFW mouse movement callback to update camera orientation based on mouse input
@@ -62,11 +61,11 @@ void MouseCallback(GLFWwindow *window, double xpos, double ypos)
 
     if (g_camera != nullptr)
     {
-        g_camera->ProcessMouseMovement(xoffset, yoffset);
+        g_camera->ProcessCameraView(xoffset, yoffset);
     }
 }
 
-// @brief GLFW scroll callback to update camera zoom based on scroll input
+// @brief GLFW scroll callback to update camera movement speed based on scroll input
 // @param window Pointer to GLFWwindow to query input state
 // @param xoffset The horizontal scroll amount (not used in this implementation)
 // @param yoffset The vertical scroll amount (positive for scroll up, negative for scroll down)
@@ -74,7 +73,7 @@ void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
     if (g_camera != nullptr)
     {
-        g_camera->ProcessMouseScroll(static_cast<float>(yoffset));
+        g_camera->ProcessMovementSpeed(static_cast<float>(yoffset));
     }
 }
 
@@ -84,7 +83,7 @@ void GLClearError()
     while (glGetError() != GL_NO_ERROR)
     {
         // Loop until all errors are cleared
-    };
+    }
 }
 
 // @brief Resolve a file path by checking both the provided path and relative to the executable directory
@@ -101,11 +100,11 @@ auto resolveFilePath(const std::string &filePath, const std::string &executableP
     }
 
     // Try relative to the executable directory
-    std::string executableDir = std::filesystem::path(executablePath).parent_path().string();
-    std::string fullPath = executableDir + "/" + filePath;
-    if (std::filesystem::exists(fullPath))
+    std::string executable_dir = std::filesystem::path(executablePath).parent_path().string();
+    std::string full_path = executable_dir + "/" + filePath;
+    if (std::filesystem::exists(full_path))
     {
-        return fullPath;
+        return full_path;
     }
 
     // File not found in either location
@@ -130,31 +129,31 @@ auto initializeWindow() -> GLFWwindow *
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We want the core profile
 
     // Try to detect screen size and use 80% of it
-    GLFWmonitor *primaryMonitor = glfwGetPrimaryMonitor();
-    int windowWidth = WINDOW_WIDTH;
-    int windowHeight = WINDOW_HEIGHT;
+    GLFWmonitor *primary_monitor = glfwGetPrimaryMonitor();
+    int window_width = kWindowWidth;
+    int window_height = kWindowHeight;
 
-    if (primaryMonitor != nullptr)
+    if (primary_monitor != nullptr)
     {
-        const GLFWvidmode *videoMode = glfwGetVideoMode(primaryMonitor);
-        if (videoMode != nullptr)
+        const GLFWvidmode *video_mode = glfwGetVideoMode(primary_monitor);
+        if (video_mode != nullptr)
         {
-            windowWidth = static_cast<int>(videoMode->width * 0.8);
-            windowHeight = static_cast<int>(videoMode->height * 0.8);
-            std::cout << "Detected screen resolution: " << videoMode->width << "x" << videoMode->height << ", using: " << windowWidth << "x"
-                      << windowHeight << "\n";
+            window_width = static_cast<int>(video_mode->width * 0.8);
+            window_height = static_cast<int>(video_mode->height * 0.8);
+            std::cout << "Detected screen resolution: " << video_mode->width << "x" << video_mode->height << ", using: " << window_width
+                      << "x" << window_height << "\n";
         }
         else
         {
-            std::cerr << "Failed to detect screen resolution, using default " << WINDOW_WIDTH << "x" << WINDOW_HEIGHT << "\n";
+            std::cerr << "Failed to detect screen resolution, using default " << kWindowWidth << "x" << kWindowHeight << "\n";
         }
     }
     else
     {
-        std::cerr << "Failed to detect primary monitor, using default " << WINDOW_WIDTH << "x" << WINDOW_HEIGHT << "\n";
+        std::cerr << "Failed to detect primary monitor, using default " << kWindowWidth << "x" << kWindowHeight << "\n";
     }
 
-    GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, "HW3 - Model Rendering", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(window_width, window_height, "HW3 - Model Rendering", nullptr, nullptr);
     if (window == nullptr)
     {
         std::cerr << "Failed to open GLFW window\n";
@@ -180,25 +179,25 @@ void processKeyboard(GLFWwindow *window, float deltaTime)
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
         std::cout << "W or Up arrow key pressed: moving camera forward\n";
-        g_camera->ProcessKeyboard(Camera::kFORWARD, deltaTime);
+        g_camera->ProcessDirection(Camera::kFORWARD, deltaTime);
     }
     // S moves camera backward
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
         std::cout << "S or Down arrow key pressed: moving camera backward\n";
-        g_camera->ProcessKeyboard(Camera::kBACKWARD, deltaTime);
+        g_camera->ProcessDirection(Camera::kBACKWARD, deltaTime);
     }
     // A moves camera left
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
         std::cout << "A or Left arrow key pressed: moving camera left\n";
-        g_camera->ProcessKeyboard(Camera::kLEFT, deltaTime);
+        g_camera->ProcessDirection(Camera::kLEFT, deltaTime);
     }
     // D moves camera right
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
         std::cout << "D or Right arrow key pressed: moving camera right\n";
-        g_camera->ProcessKeyboard(Camera::kRIGHT, deltaTime);
+        g_camera->ProcessDirection(Camera::kRIGHT, deltaTime);
     }
 
     // Q quits the application
@@ -209,22 +208,22 @@ void processKeyboard(GLFWwindow *window, float deltaTime)
     }
 
     // + increases movement speed (only trigger on key press, not while held)
-    bool equalKeyCurrentlyPressed = glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS;
-    if (equalKeyCurrentlyPressed && !g_equalKeyPressed)
+    bool equal_key_currently_pressed = glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS;
+    if (equal_key_currently_pressed && !g_equalKeyPressed)
     {
         std::cout << "+ key pressed: increasing camera speed\n";
-        g_camera->ProcessMouseScroll(1.0F); // Simulate scroll up to increase speed
+        g_camera->ProcessMovementSpeed(1.0F); // Simulate scroll up to increase speed
     }
-    g_equalKeyPressed = equalKeyCurrentlyPressed;
+    g_equalKeyPressed = equal_key_currently_pressed;
 
     // - decreases movement speed (only trigger on key press, not while held)
-    bool minusKeyCurrentlyPressed = glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS;
-    if (minusKeyCurrentlyPressed && !g_minusKeyPressed)
+    bool minus_key_currently_pressed = glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS;
+    if (minus_key_currently_pressed && !g_minusKeyPressed)
     {
         std::cout << "- key pressed: decreasing camera speed\n";
-        g_camera->ProcessMouseScroll(-1.0F); // Simulate scroll down to decrease speed
+        g_camera->ProcessMovementSpeed(-1.0F); // Simulate scroll down to decrease speed
     }
-    g_minusKeyPressed = minusKeyCurrentlyPressed;
+    g_minusKeyPressed = minus_key_currently_pressed;
 }
 
 // @brief Load 3D models from disk using the Model class
@@ -287,33 +286,27 @@ auto loadModels(const char *executablePath) -> std::vector<SceneObject>
     scene_objects.push_back(SceneObject{model_farmer, glm::vec3(0.0F, 3.0F, 0.0F),        // Positioned at origin
                                         0.0F,                                             // No rotation
                                         glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis
-                                        glm::vec3(5.0F, 5.0F, 5.0F),                      // scale up to be more visible
-                                        32.0F});                                          // Default shininess
+                                        glm::vec3(5.0F, 5.0F, 5.0F)});                    // scale up to be more visible
     scene_objects.push_back(SceneObject{model_barrel, glm::vec3(-8.0F, 0.0F, 0.0F),       // Positioned to the left
                                         0.0F,                                             // No rotation
                                         glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis
-                                        glm::vec3(3.0F, 3.0F, 3.0F),                      // scale up to be more visible
-                                        32.0F});                                          // Default shininess
+                                        glm::vec3(3.0F, 3.0F, 3.0F)});                    // scale up to be more visible
     scene_objects.push_back(SceneObject{model_barrel_2, glm::vec3(-10.25F, 0.0F, 0.0F),   // Positioned to the left
                                         0.0F,                                             // No rotation
                                         glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis
-                                        glm::vec3(3.0F, 3.0F, 3.0F),                      // scale up to be more visible
-                                        32.0F});                                          // Default shininess
+                                        glm::vec3(3.0F, 3.0F, 3.0F)});                    // scale up to be more visible
     scene_objects.push_back(SceneObject{model_farmhouse, glm::vec3(20.0F, 10.0F, -20.0F), // Positioned far back and right
                                         90.0F,                                            // Rotate to face front
                                         glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis to see front
-                                        glm::vec3(0.25F, 0.25F, 0.25F),                   // Much smaller scale to fit in scene
-                                        32.0F});                                          // Default shininess
+                                        glm::vec3(0.25F, 0.25F, 0.25F)});                 // Much smaller scale to fit in scene
     scene_objects.push_back(SceneObject{model_horse, glm::vec3(8.0F, -5.0F, 40.0F),       // Positioned to the right and back
                                         180.0F,                                           // Rotate 180 degrees to face front
                                         glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis
-                                        glm::vec3(0.06F, 0.06F, 0.06F),                   // Much smaller scale
-                                        32.0F});                                          // Default shininess
+                                        glm::vec3(0.06F, 0.06F, 0.06F)});                 // Much smaller scale
     scene_objects.push_back(SceneObject{model_robot, glm::vec3(-15.0F, 0.0F, 25.0F),      // Positioned to the left and back
                                         0.0F,                                             // No rotation
                                         glm::vec3(0.0F, 1.0F, 0.0F),                      // Rotate around Y axis
-                                        glm::vec3(1.0F, 1.0F, 1.0F),                      // no scale
-                                        32.0F});                                          // Default shininess
+                                        glm::vec3(1.0F, 1.0F, 1.0F)});                    // no scale
 
     return scene_objects;
 }
@@ -390,7 +383,7 @@ auto main(int argc, char **argv) -> int
             exit(EXIT_FAILURE);
         }
         Shader shader(shader_path.value().c_str(), fragment_shader_path.value().c_str());
-        std::cout << "Shader ID: " << shader.ID << "\n";
+        std::cout << "Shader ID: " << shader.id_ << "\n";
 
         // Load 5 models
         auto scene_objects = loadModels(argv[0]);
@@ -435,7 +428,7 @@ auto main(int argc, char **argv) -> int
             // Projection matrix : 45° Field of View, window width/height ratio, display range : 0.1 unit <-> 100 units
             // https://github.com/opengl-tutorials/ogl/blob/master/tutorial03_matrices/tutorial03.cpp#L70
             glm::mat4 projection =
-                glm::perspective(glm::radians(45.0F), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1F, 100.0F);
+                glm::perspective(glm::radians(45.0F), static_cast<float>(kWindowWidth) / static_cast<float>(kWindowHeight), 0.1F, 100.0F);
 
             // Set view and projection uniforms
             // MVP is calculated in the shader (object.vert) to allow for normal matrix calculation and flexibility in shader design
@@ -492,13 +485,16 @@ auto main(int argc, char **argv) -> int
                 shader.SetMat4("model", model_mat);
                 glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model_mat)));
                 shader.SetMat3("normalMatrix", normalMatrix);
-                shader.SetFloat("shininess", obj.shininess);
 
                 // Clear any existing OpenGL errors before drawing the model
                 GLClearError();
 
-                // Draw the model
-                obj.model->Draw();
+                // Draw each mesh with its own shininess value
+                for (const auto &mesh : obj.model->GetMeshes())
+                {
+                    shader.SetFloat("shininess", mesh.GetShininess());
+                    mesh.Draw();
+                }
             }
 
             // Draw ground plane

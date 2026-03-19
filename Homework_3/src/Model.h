@@ -40,6 +40,13 @@ class Model
     // calls to render the mesh geometry.
     void Draw() const;
 
+    // @brief Get the meshes in this model for fine-grained control (e.g., per-mesh shader uniforms)
+    // @return Constant reference to the vector of meshes
+    [[nodiscard]] auto GetMeshes() const -> const std::vector<Mesh> &
+    {
+        return meshes_;
+    }
+
   private:
     // Vector to store the meshes that make up the model. Each Mesh contains the vertex data, indices, and textures for a part of the model.
     std::vector<Mesh> meshes_;

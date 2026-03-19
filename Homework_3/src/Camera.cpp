@@ -31,11 +31,12 @@ auto Camera::GetViewMatrix() const -> glm::mat4
     return glm::lookAt(position_, position_ + front_, up_);
 }
 
-void Camera::ProcessKeyboard(int direction, float deltaTime)
+void Camera::ProcessDirection(int direction, float deltaTime)
 {
     float velocity = movement_speed_ * deltaTime;
     std::cout << "Processing keyboard input: direction=" << direction << ", deltaTime=" << deltaTime << ", velocity=" << velocity << "\n";
 
+    // https://github.com/jhurley-blip/ECE4122-6122-OpenGL/blob/master/common/controls.cpp#L75-L89
     switch (direction)
     {
     case kFORWARD:
@@ -55,12 +56,13 @@ void Camera::ProcessKeyboard(int direction, float deltaTime)
     }
 }
 
-void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPitch)
+void Camera::ProcessCameraView(float xOffset, float yOffset, bool constrainPitch)
 {
-    const float baseSensitivity = 0.1F;
-    const float defaultSpeed = 5.0F;
+    constexpr float kBaseSensitivity = 0.1F; // 1  make the view move pretty fast, 0.1 makes it more reasonable
+    constexpr float kDefaultSpeed = 5.0F;
+
     // Scale sensitivity with movement speed (normalized to default speed)
-    float sensitivity = baseSensitivity * (movement_speed_ / defaultSpeed);
+    float sensitivity = kBaseSensitivity * (movement_speed_ / kDefaultSpeed);
 
     xOffset *= sensitivity;
     yOffset *= sensitivity;
@@ -76,7 +78,7 @@ void Camera::ProcessMouseMovement(float xOffset, float yOffset, bool constrainPi
     UpdateCameraVectors();
 }
 
-void Camera::ProcessMouseScroll(float yOffset)
+void Camera::ProcessMovementSpeed(float yOffset)
 {
     movement_speed_ += yOffset;
     movement_speed_ = std::clamp(movement_speed_, 1.0F, 50.0F);
@@ -85,11 +87,12 @@ void Camera::ProcessMouseScroll(float yOffset)
 
 void Camera::UpdateCameraVectors()
 {
-    glm::vec3 front;
-    front.x = std::cos(glm::radians(yaw_)) * std::cos(glm::radians(pitch_));
-    front.y = std::sin(glm::radians(pitch_));
-    front.z = std::sin(glm::radians(yaw_)) * std::cos(glm::radians(pitch_));
-    front_ = glm::normalize(front);
+    // https://learnopengl.com/Getting-started/Camera
+    glm::vec3 direction;
+    direction.x = std::cos(glm::radians(yaw_)) * std::cos(glm::radians(pitch_));
+    direction.y = std::sin(glm::radians(pitch_));
+    direction.z = std::sin(glm::radians(yaw_)) * std::cos(glm::radians(pitch_));
+    front_ = glm::normalize(direction);
 
     right_ = glm::normalize(glm::cross(front_, world_up_));
     up_ = glm::normalize(glm::cross(right_, front_));

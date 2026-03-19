@@ -13,7 +13,6 @@
 #define HOMEWORK_3_SRC_MESH_H_
 
 #include "Texture.h"
-// #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <utility>
 #include <vector>
@@ -21,6 +20,7 @@
 // @brief Vertex structure containing position, normal, and texture coordinate data for a single vertex.
 // This structure is used to define the layout of vertex data for the mesh, and will be used to create the vertex buffer
 // object (VBO) and configure vertex attribute pointers in OpenGL.
+// https://github.com/opengl-tutorials/ogl/blob/master/common/vboindexer.cpp
 struct Vertex
 {
     // Position of the vertex in 3D space
@@ -61,7 +61,7 @@ class Mesh
     // resources that have been transferred.
     Mesh(Mesh &&other) noexcept
         : vao_(other.vao_), vbo_(other.vbo_), ebo_(other.ebo_), vertices_(std::move(other.vertices_)), indices_(std::move(other.indices_)),
-          texture_id_(other.texture_id_)
+          texture_id_(other.texture_id_), shininess_(other.shininess_)
     {
         other.vao_ = 0;
         other.vbo_ = 0;
@@ -90,6 +90,7 @@ class Mesh
         vbo_ = other.vbo_;
         ebo_ = other.ebo_;
         texture_id_ = other.texture_id_;
+        shininess_ = other.shininess_;
 
         other.vao_ = 0;
         other.vbo_ = 0;
@@ -129,6 +130,16 @@ class Mesh
     {
         return indices_;
     }
+    // @brief Getter for shininess value
+    [[nodiscard]] auto GetShininess() const -> float
+    {
+        return shininess_;
+    }
+    // @brief Setter for shininess value
+    void SetShininess(float shininess)
+    {
+        shininess_ = shininess;
+    }
 
   private:
     // OpenGL buffer IDs
@@ -140,6 +151,7 @@ class Mesh
     std::vector<Vertex> vertices_;
     std::vector<unsigned int> indices_;
     GLuint texture_id_ = 0;
+    float shininess_ = 32.0F;
 
     // @brief Setup the mesh by creating and binding the VAO, VBO, and EBO, and configuring the vertex attribute pointers. This method
     // generates the OpenGL buffers for the vertex array (VAO), vertex buffer (VBO), and element buffer (EBO), binds them, and uploads the
