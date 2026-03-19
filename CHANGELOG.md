@@ -1,3 +1,9 @@
+## [1.6.0](https://github.com/CandiedCode/ECE-6122/compare/v1.5.2...v1.6.0) (2026-03-19)
+
+### Features
+
+* add camera control ([bf27b52](https://github.com/CandiedCode/ECE-6122/commit/bf27b52b68b4631b76aad52be7a09bb947fc559d))
+
 ## [1.5.2](https://github.com/CandiedCode/ECE-6122/compare/v1.5.1...v1.5.2) (2026-03-15)
 
 ### Bug Fixes
