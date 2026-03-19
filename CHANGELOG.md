@@ -1,3 +1,9 @@
+## [1.7.0](https://github.com/CandiedCode/ECE-6122/compare/v1.6.0...v1.7.0) (2026-03-19)
+
+### Features
+
+* use farm style scene and older assimp ([2d1b79d](https://github.com/CandiedCode/ECE-6122/commit/2d1b79d79122adbdb9bc6a86bf3a400acb2c5a62))
+
 ## [1.6.0](https://github.com/CandiedCode/ECE-6122/compare/v1.5.2...v1.6.0) (2026-03-19)
 
 ### Features
