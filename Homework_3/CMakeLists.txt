@@ -28,6 +28,18 @@ endif()
 # Fetch dependencies
 include(FetchContent)
 
+# Fetch Assimp (model loading library)
+FetchContent_Declare(Assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp
+    GIT_TAG v5.4.2
+    GIT_SHALLOW ON
+)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_ZLIB OFF CACHE BOOL "" FORCE)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(Assimp)
+
 if(NOT USE_EXTERNAL_LIBS)
     # Fetch GLM (header-only math library)
     FetchContent_Declare(GLM
@@ -48,29 +60,37 @@ if(NOT USE_EXTERNAL_LIBS)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(GLFW)  # This will use the already-fetched GLFW_SOURCE
 
-    add_library(glad ${GLFW_SOURCE_DIR}/deps/glad.c)
-    target_include_directories(glad PUBLIC ${GLFW_SOURCE_DIR}/deps)
-    message(STATUS "Using GLAD from GLFW FetchContent (${GLFW_SOURCE_DIR}/deps)")
-
-    # Fetch Assimp (model loading library)
-    FetchContent_Declare(Assimp
-        GIT_REPOSITORY https://github.com/assimp/assimp
-        GIT_TAG v5.4.2
-        GIT_SHALLOW ON
-    )
-    set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_BUILD_ZLIB OFF CACHE BOOL "" FORCE)
-    set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(Assimp)
+    if(NOT TARGET glad)
+        add_library(glad ${GLFW_SOURCE_DIR}/deps/glad.c)
+        target_include_directories(glad PUBLIC ${GLFW_SOURCE_DIR}/deps)
+        message(STATUS "Using GLAD from GLFW FetchContent (${GLFW_SOURCE_DIR}/deps)")
+    endif()
 else()
-    message(STATUS "Homework_3: Using GLM, GLFW, and Assimp from external/")
+    message(STATUS "Homework_3: Using GLM and GLFW from external/")
     # GLM is header-only; create an interface target pointing at external/glm-0.9.7.1
-    add_library(glm INTERFACE)
-    target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm-0.9.7.1)
-    add_library(glad ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps/glad.c)
-    target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps)
-    message(STATUS "Using GLAD from external/glfw-3.1.2/deps (bundled with GLFW)")
+    if(NOT TARGET glm)
+        add_library(glm INTERFACE)
+        target_include_directories(glm INTERFACE ${CMAKE_SOURCE_DIR}/external/glm-0.9.7.1)
+    endif()
+
+    if(NOT TARGET glad)
+        add_library(glad ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps/glad.c)
+        target_include_directories(glad PUBLIC ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/deps)
+        message(STATUS "Using GLAD from external/glfw-3.1.2/deps (bundled with GLFW)")
+    endif()
+
+    # For assimp: if the target doesn't exist (external/CMakeLists.txt not included),
+    # create an interface target. Otherwise, just add the include directories to Hw3.
+    if(NOT TARGET assimp)
+        add_library(assimp INTERFACE)
+        target_include_directories(assimp INTERFACE
+            ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/include
+            ${CMAKE_SOURCE_DIR}/external/stb
+        )
+        message(STATUS "Using Assimp from external/assimp-3.0.1270/include (interface library)")
+    else()
+        message(STATUS "Using Assimp from external/assimp-3.0.1270 (already built)")
+    endif()
 endif()
 
 # Find OpenGL
@@ -82,11 +102,11 @@ message(STATUS "OpenGL include directories: ${OPENGL_INCLUDE_DIR}")
 
 file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Hw3.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/shader.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/mesh.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/model.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/camera.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/texture.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Shader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Mesh.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Model.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Camera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Texture.cpp
 )
 
 add_executable(Hw3 ${SOURCES})
@@ -96,13 +116,16 @@ if(USE_EXTERNAL_LIBS)
     target_include_directories(Hw3 PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/external/glfw-3.1.2/include
-        ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/contrib/stb
+        ${CMAKE_SOURCE_DIR}/external/assimp-3.0.1270/include
+        ${CMAKE_SOURCE_DIR}/external/stb
     )
 else()
     target_include_directories(Hw3 PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${GLFW_SOURCE_DIR}/include
-        ${assimp_SOURCE_DIR}/contrib/stb
+        ${assimp_SOURCE_DIR}/include
+        ${assimp_BINARY_DIR}/include
+        ${CMAKE_SOURCE_DIR}/external/stb
     )
 endif()
 
@@ -125,9 +148,9 @@ if(NOT USE_EXTERNAL_LIBS AND APPLE)
     )
 endif()
 
-# On Linux with FetchContent GLFW, GLFW 3.1.2 does not propagate its X11
-# transitive dependencies through CMake targets, so we link them explicitly.
-if(NOT USE_EXTERNAL_LIBS AND UNIX AND NOT APPLE)
+# On Linux, GLFW 3.1.2 does not propagate its X11 transitive dependencies
+# through CMake targets, so we link them explicitly.
+if(UNIX AND NOT APPLE)
     find_package(X11 REQUIRED)
     target_link_libraries(Hw3 PRIVATE
         ${X11_LIBRARIES}

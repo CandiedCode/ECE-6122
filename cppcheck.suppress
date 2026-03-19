@@ -1,2 +1,3 @@
-*:*/SFML/*
-*:*/external/*
+*:build/_deps/*
+*:SFML/*
+*:external/*

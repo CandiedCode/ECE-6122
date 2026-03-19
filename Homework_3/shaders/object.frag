@@ -1,9 +1,19 @@
 #version 330 core
 out vec4 FragColor;
 in vec3 FragPos; in vec3 Normal; in vec2 TexCoords;
-struct DirLight { vec3 direction, ambient, diffuse, specular; };
+
+struct DirLight {
+    vec3 direction,
+    ambient,
+    diffuse,
+    specular;
+};
+
 struct PointLight {
-    vec3 position, ambient, diffuse, specular;
+    vec3 position,
+    ambient,
+    diffuse,
+    specular;
     float constant, linear, quadratic;
 };
 

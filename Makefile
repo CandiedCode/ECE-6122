@@ -35,7 +35,7 @@ lint/tidy: ## Run clang-tidy static analysis
 	@echo "Running clang-tidy..."
 	run-clang-tidy -p build \
 		-j $$(sysctl -n hw.ncpu) \
-		-header-filter='Homework_' \
+		-header-filter='Homework_(?!.*build)' \
 		'Homework_.*'
 	@echo "✓ clang-tidy analysis complete"
 
@@ -44,7 +44,7 @@ lint/tidy-fix: ## Run clang-tidy static analysis and apply fixes
 	@echo "Running clang-tidy with fixes..."
 	run-clang-tidy -p build \
 		-j $$(sysctl -n hw.ncpu) \
-		-header-filter='Homework_' \
+		-header-filter='Homework_(?!.*build)' \
 		'Homework_.*' -fix
 	@echo "✓ clang-tidy fixes applied"
 
@@ -56,8 +56,7 @@ lint/cppcheck: ## Run Cppcheck security analysis with MISRA rules
 	--project=build/compile_commands.json \
 	--enable=warning,performance,portability \
 	--inconclusive \
-	--suppressions-list=cppcheck.suppress \
-	-i build/_deps
+	--suppressions-list=cppcheck.suppress
 	@echo "✓ Cppcheck analysis complete"
 
 .PHONY: lint/markdow

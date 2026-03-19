@@ -16,8 +16,18 @@ add_definitions(
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "Build the GLFW documentation")
 add_subdirectory (glfw-3.1.2)
 
+### GLAD ###
+
+add_library(glad STATIC
+	glfw-3.1.2/deps/glad.c
+)
+target_include_directories(glad PUBLIC
+	glfw-3.1.2/deps
+)
+
 include_directories(
 	glfw-3.1.2/include/GLFW/
+	glfw-3.1.2/deps/
 	glew-1.13.0/include/
 )
 
@@ -150,19 +160,19 @@ target_link_libraries(ANTTWEAKBAR_116_OGLCORE_GLFW
 include(CheckIncludeFile)
 include(CheckTypeSize)
 include(CheckFunctionExists)
-add_subdirectory( assimp-3.0.1270/contrib/zlib )
+# add_subdirectory( assimp-3.0.1270/contrib/zlib )
 
-# Compile without Boost
-include_directories( assimp-3.0.1270/code/BoostWorkaround )
-add_definitions( -DASSIMP_BUILD_BOOST_WORKAROUND )
+# # Compile without Boost
+# include_directories( assimp-3.0.1270/code/BoostWorkaround )
+# add_definitions( -DASSIMP_BUILD_BOOST_WORKAROUND )
 
-# Compile AssImp
-set( LIB_INSTALL_DIR "lib")
-set(LIBASSIMP_COMPONENT libassimp3.0-r1270-OGLtuts)
-set(ZLIB_LIBRARIES zlib)
-set(BUILD_STATIC_LIB ON)
-#set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zlib)
-add_subdirectory( assimp-3.0.1270/code )
+# # Compile AssImp
+# set( LIB_INSTALL_DIR "lib")
+# set(LIBASSIMP_COMPONENT libassimp3.0-r1270-OGLtuts)
+# set(ZLIB_LIBRARIES zlib)
+# set(BUILD_STATIC_LIB ON)
+# #set(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zlib)
+# add_subdirectory( assimp-3.0.1270/code )
 
 
 ### BULLET ###

@@ -1,221 +1,543 @@
-#include "model.h"
-#include "shader.h"
+#include "Camera.h"
+#include "Mesh.h"
+#include "Model.h"
+#include "Shader.h"
+#include "Texture.h"
 #include <GLFW/glfw3.h>
 #include <cmath>
+#include <filesystem>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-// #include <GL/glew.h>
+#include <optional>
+#include <string>
+#include <vector>
 
 const int WINDOW_WIDTH = 1024;
 const int WINDOW_HEIGHT = 768;
 
-// // @brief Check if OpenGL context can be created and print version info
-// // @return 0 on success, -1 on failure
-// int checkOpenGLVersion()
-// {
-//     glfwSetErrorCallback([](int, const char *err) { std::cerr << "GLFW Error: " << err << std::endl; });
+// Global camera and input state
+Camera *g_camera = nullptr;           // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+float g_lastX = WINDOW_WIDTH / 2.0F;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+float g_lastY = WINDOW_HEIGHT / 2.0F; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+bool g_firstMouse = true;             // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+float g_deltaTime = 0.0F;             // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+float g_lastFrame = 0.0F;             // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+bool g_equalKeyPressed = false;       // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+bool g_minusKeyPressed = false;       // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
-//     if (!glfwInit())
-//         return -1;
+// @brief Struct to represent an object in the scene with its model and transform
+struct SceneObject
+{
+    Model *model;
+    glm::vec3 position;
+    float rotation_degrees;
+    glm::vec3 rotation_axis;
+    glm::vec3 scale;
+    float shininess;
+};
 
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-//     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+// @brief GLFW mouse movement callback to update camera orientation based on mouse input
+// @param window Pointer to GLFWwindow to query input state
+// @param xpos The new x-coordinate of the mouse cursor
+// @param ypos The new y-coordinate of the mouse cursor
+// https://github.com/opengl-tutorials/ogl/blob/master/tutorial17_rotations/tutorial17.cpp#L97
+void MouseCallback(GLFWwindow *window, double xpos, double ypos)
+{
+    if (g_firstMouse)
+    {
+        g_lastX = static_cast<float>(xpos);
+        g_lastY = static_cast<float>(ypos);
+        g_firstMouse = false;
+        return;
+    }
 
-//     GLFWwindow *window = glfwCreateWindow(800, 600, "OpenGL Test", nullptr, nullptr);
-//     if (!window)
-//         return -1;
+    float xoffset = static_cast<float>(xpos) - g_lastX;
+    float yoffset = g_lastY - static_cast<float>(ypos); // reversed: y increases downward in screen space
 
-//     glfwMakeContextCurrent(window);
-//     glewInit();
+    g_lastX = static_cast<float>(xpos);
+    g_lastY = static_cast<float>(ypos);
 
-//     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << "\n";
-//     std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
-//     std::cout << "Vendor: " << glGetString(GL_VENDOR) << "\n";
-//     std::cout << "Renderer: " << glGetString(GL_RENDERER) << "\n";
+    if (g_camera != nullptr)
+    {
+        g_camera->ProcessMouseMovement(xoffset, yoffset);
+    }
+}
 
-//     glfwDestroyWindow(window);
-//     glfwTerminate();
-//     return 0;
-// }
+// @brief GLFW scroll callback to update camera zoom based on scroll input
+// @param window Pointer to GLFWwindow to query input state
+// @param xoffset The horizontal scroll amount (not used in this implementation)
+// @param yoffset The vertical scroll amount (positive for scroll up, negative for scroll down)
+void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    if (g_camera != nullptr)
+    {
+        g_camera->ProcessMouseScroll(static_cast<float>(yoffset));
+    }
+}
+
+// @brief Clear all OpenGL errors by calling glGetError in a loop until it returns GL_NO_ERROR
+void GLClearError()
+{
+    while (glGetError() != GL_NO_ERROR)
+    {
+        // Loop until all errors are cleared
+    };
+}
+
+// @brief Resolve a file path by checking both the provided path and relative to the executable directory
+// @details First checks if the file exists at the provided path. If not found, attempts to locate it relative to the executable directory.
+// @param filePath The path to the file (can be relative or absolute)
+// @param executablePath The path to the executable (argv[0])
+// @return The resolved file path if found, std::nullopt otherwise
+auto resolveFilePath(const std::string &filePath, const std::string &executablePath) -> std::optional<std::string>
+{
+    // Try the path as provided first
+    if (std::filesystem::exists(filePath))
+    {
+        return filePath;
+    }
+
+    // Try relative to the executable directory
+    std::string executableDir = std::filesystem::path(executablePath).parent_path().string();
+    std::string fullPath = executableDir + "/" + filePath;
+    if (std::filesystem::exists(fullPath))
+    {
+        return fullPath;
+    }
+
+    // File not found in either location
+    return std::nullopt;
+}
 
 // @brief Initialize GLFW, create window, and setup OpenGL context
-// @details Code adapted from https://github.com/opengl-tutorials/ogl/blob/master/tutorial02_red_triangle/tutorial02.cpp
+// @details Attempts to detect screen size and open in fullscreen; falls back to windowed mode if detection fails
 // @return Pointer to GLFWwindow on success, nullptr on failure
-GLFWwindow *initializeWindow()
+auto initializeWindow() -> GLFWwindow *
 {
-    if (!glfwInit())
+    if (glfwInit() == 0)
     {
         std::cerr << "Failed to initialize GLFW\n";
         return nullptr;
     }
 
-    glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // For MacOS compatibility
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);                               // 4x antialiasing
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);                 // OpenGL 3.3
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);                 // OpenGL 3.3
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);           // For MacOS compatibility
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // We want the core profile
 
-    GLFWwindow *window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "HW3 - Model Rendering", NULL, NULL);
-    if (window == NULL)
+    // Try to detect screen size and use 80% of it
+    GLFWmonitor *primaryMonitor = glfwGetPrimaryMonitor();
+    int windowWidth = WINDOW_WIDTH;
+    int windowHeight = WINDOW_HEIGHT;
+
+    if (primaryMonitor != nullptr)
+    {
+        const GLFWvidmode *videoMode = glfwGetVideoMode(primaryMonitor);
+        if (videoMode != nullptr)
+        {
+            windowWidth = static_cast<int>(videoMode->width * 0.8);
+            windowHeight = static_cast<int>(videoMode->height * 0.8);
+            std::cout << "Detected screen resolution: " << videoMode->width << "x" << videoMode->height << ", using: " << windowWidth << "x"
+                      << windowHeight << "\n";
+        }
+        else
+        {
+            std::cerr << "Failed to detect screen resolution, using default " << WINDOW_WIDTH << "x" << WINDOW_HEIGHT << "\n";
+        }
+    }
+    else
+    {
+        std::cerr << "Failed to detect primary monitor, using default " << WINDOW_WIDTH << "x" << WINDOW_HEIGHT << "\n";
+    }
+
+    GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, "HW3 - Model Rendering", nullptr, nullptr);
+    if (window == nullptr)
     {
         std::cerr << "Failed to open GLFW window\n";
         glfwTerminate();
         return nullptr;
     }
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(window); // Initialize OpenGL context for the window
+
     return window;
 }
 
-int main(void)
+// @brief Process keyboard input for camera movement
+// @param window Pointer to GLFWwindow to query key states
+// @param deltaTime Time elapsed since last frame to ensure consistent movement speed
+void processKeyboard(GLFWwindow *window, float deltaTime)
 {
-
-    // Open a window and create its OpenGL context
-    GLFWwindow *window = initializeWindow();
-    if (window == nullptr)
+    if (g_camera == nullptr)
     {
-        std::cerr << "Failed to open GLFW window\n";
-        getchar();
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-
-    // Initialize GLAD to load OpenGL function pointers
-    // load all the OpenGL function addresses and check for any errors
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cerr << "Failed to initialize GLAD\n";
-        glfwTerminate();
-        return -1;
+        return;
     }
 
-    // Clear the screen to a dark gray color and enable depth testing
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    // Enable depth testing for correct 3D rendering
-    // https://www.opengl-tutorial.org/beginners-tutorials/tutorial-4-a-colored-cube/
-    glEnable(GL_DEPTH_TEST);
-
-    // Load shader
-    Shader shader("./shaders/object.vert", "./shaders/object.frag");
-    std::cout << "Shader ID: " << shader.ID << std::endl;
-
-    // Load model
-    std::cout << "Loading model..." << std::endl;
-    // Model model("./assets/batamax/batamax.obj");
-    Model model("./assets/toy_story_bullseye.glb");
-    std::cout << "Model loaded" << std::endl;
-
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
-    std::cout << "Starting render loop..." << std::endl;
-    int frameCount = 0;
-    while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0)
+    // W moves camera forward
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        if (frameCount == 0)
+        std::cout << "W or Up arrow key pressed: moving camera forward\n";
+        g_camera->ProcessKeyboard(Camera::kFORWARD, deltaTime);
+    }
+    // S moves camera backward
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        std::cout << "S or Down arrow key pressed: moving camera backward\n";
+        g_camera->ProcessKeyboard(Camera::kBACKWARD, deltaTime);
+    }
+    // A moves camera left
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    {
+        std::cout << "A or Left arrow key pressed: moving camera left\n";
+        g_camera->ProcessKeyboard(Camera::kLEFT, deltaTime);
+    }
+    // D moves camera right
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        std::cout << "D or Right arrow key pressed: moving camera right\n";
+        g_camera->ProcessKeyboard(Camera::kRIGHT, deltaTime);
+    }
+
+    // Q quits the application
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        std::cout << "Q or Escape key pressed: exiting application\n";
+        glfwSetWindowShouldClose(window, 1);
+    }
+
+    // + increases movement speed (only trigger on key press, not while held)
+    bool equalKeyCurrentlyPressed = glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS;
+    if (equalKeyCurrentlyPressed && !g_equalKeyPressed)
+    {
+        std::cout << "+ key pressed: increasing camera speed\n";
+        g_camera->ProcessMouseScroll(1.0F); // Simulate scroll up to increase speed
+    }
+    g_equalKeyPressed = equalKeyCurrentlyPressed;
+
+    // - decreases movement speed (only trigger on key press, not while held)
+    bool minusKeyCurrentlyPressed = glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS;
+    if (minusKeyCurrentlyPressed && !g_minusKeyPressed)
+    {
+        std::cout << "- key pressed: decreasing camera speed\n";
+        g_camera->ProcessMouseScroll(-1.0F); // Simulate scroll down to decrease speed
+    }
+    g_minusKeyPressed = minusKeyCurrentlyPressed;
+}
+
+// @brief Load 3D models from disk using the Model class
+// @return A vector of SceneObject structs containing the loaded models and their transforms
+auto loadModels(const char *executablePath) -> std::vector<SceneObject>
+{
+    std::cout << "Loading models..."
+              << "\n";
+
+    auto bullseye_path = resolveFilePath("./assets/toy_story_bullseye.glb", executablePath);
+    if (!bullseye_path.has_value())
+    {
+        std::cerr << "Error: Could not find bullseye model at './assets/toy_story_bullseye.glb' or relative to executable\n";
+        exit(EXIT_FAILURE);
+    }
+    auto *model_bullseye = new Model(bullseye_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
+
+    auto buzz_path = resolveFilePath("./assets/buzz_lightyear.glb", executablePath);
+    if (!buzz_path.has_value())
+    {
+        std::cerr << "Error: Could not find buzz model at './assets/buzz_lightyear.glb' or relative to executable\n";
+        exit(EXIT_FAILURE);
+    }
+    auto *model_buzz = new Model(buzz_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
+
+    auto woody_path = resolveFilePath("./assets/woody.glb", executablePath);
+    if (!woody_path.has_value())
+    {
+        std::cerr << "Error: Could not find woody model at './assets/woody.glb' or relative to executable\n";
+        exit(EXIT_FAILURE);
+    }
+    auto *model_woody = new Model(woody_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
+
+    auto slinky_path = resolveFilePath("./assets/slinky_dog_rigged.glb", executablePath);
+    if (!slinky_path.has_value())
+    {
+        std::cerr << "Error: Could not find slinky model at './assets/slinky_dog_rigged.glb' or relative to executable\n";
+        exit(EXIT_FAILURE);
+    }
+    auto *model_slinky = new Model(slinky_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
+
+    auto hamm_path = resolveFilePath("./assets/hamm.glb", executablePath);
+    if (!hamm_path.has_value())
+    {
+        std::cerr << "Error: Could not find hamm model at './assets/hamm.glb' or relative to executable\n";
+        exit(EXIT_FAILURE);
+    }
+    auto *model_hamm = new Model(hamm_path.value()); // NOLINT(cppcoreguidelines-owning-memory)
+
+    std::cout << "Models loaded"
+              << "\n";
+    // Create scene objects with transforms
+    std::vector<SceneObject> scene_objects;
+    scene_objects.push_back(SceneObject{model_bullseye, glm::vec3(0.0F, 0.0F, 0.0F), // Positioned at origin
+                                        0.0F,                                        // No rotation
+                                        glm::vec3(0.0F, 1.0F, 0.0F),                 // Rotate around Y axis
+                                        glm::vec3(1.0F, 1.0F, 1.0F),                 // No scaling
+                                        32.0F});                                     // Default shininess
+    scene_objects.push_back(SceneObject{model_buzz, glm::vec3(12.0F, 8.0F, 30.0F),   // Positioned to the right and closer to camera
+                                        45.0F,                                       // Rotate to face the camera
+                                        glm::vec3(-1.0F, 1.0F, 0.0F),                // Rotate around Y axis
+                                        glm::vec3(2.5F, 2.5F, 2.5F),                 // Scaled up
+                                        32.0F});                                     // Default shininess
+    scene_objects.push_back(SceneObject{model_woody, glm::vec3(-15.0F, 0.0F, 15.0F), // Positioned to the left and further back
+                                        90.0F,                                       // Rotate to face the grass
+                                        glm::vec3(0.0F, 1.0F, 0.0F),                 // Rotate around Y axis
+                                        glm::vec3(0.1F, 0.1F, 0.1F),                 // Scaled down
+                                        32.0F});                                     // Default shininess
+    scene_objects.push_back(SceneObject{model_slinky, glm::vec3(-8.0F, 0.0F, 10.0F), // Positioned to the left and closer to camera
+                                        0.0F,                                        // No rotation
+                                        glm::vec3(0.0F, 1.0F, 0.0F),                 // Rotate around Y axis
+                                        glm::vec3(0.8F, 0.8F, 0.8F),                 // Scaled down
+                                        32.0F});                                     // Default shininess
+    scene_objects.push_back(SceneObject{model_hamm, glm::vec3(10.0F, 0.0F, -10.0F),  // Positioned to the right and further back
+                                        36.0F,                                       // Rotate
+                                        glm::vec3(0.0F, 1.0F, 0.0F),                 // Rotate around Y axis
+                                        glm::vec3(0.02F, 0.02F, 0.02F),              // Scaled down
+                                        32.0F});                                     // Default shininess
+    return scene_objects;
+}
+
+// @brief Load ground plane model and texture
+// @return A Mesh object representing the ground plane with the grass texture applied
+auto loadGroundPlane() -> Mesh
+{
+    Mesh ground_mesh = CreateGroundPlane(100.0F, 10);
+    ground_mesh.SetTextureID(CreateGrassTexture());
+    std::cout << "Ground plane created"
+              << "\n";
+    return ground_mesh;
+}
+
+// @brief Main function initializes window, loads models and shaders, and enters render loop
+// @param argc Argument count from command line
+// @param argv Argument vector from command line (expects executable path in argv[0])
+// @return Exit code (0 for success, non-zero for failure)
+auto main(int argc, char **argv) -> int
+{
+    try
+    {
+        // Open a window and create its OpenGL context
+        GLFWwindow *window = initializeWindow();
+        if (window == nullptr)
         {
-            std::cout << "Frame 0: Starting to render" << std::endl;
+            std::cerr << "Failed to open GLFW window\n";
+            getchar();
+            glfwTerminate();
+            return -1;
         }
-        frameCount++;
-        if (frameCount > 60)
-            frameCount = 0;
 
-        // Clear screen
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR)
+        // Create and initialize camera
+        g_camera = new Camera(glm::vec3(0.0F, 8.0F, 35.0F)); // NOLINT(cppcoreguidelines-owning-memory)
+        // Start position: elevated, looking at origin
+
+        // Register input callbacks
+        // Set the mouse movement callback to update camera orientation based on mouse input
+        glfwSetCursorPosCallback(window, MouseCallback);
+        // Set the scroll callback to update camera zoom based on scroll input
+        glfwSetScrollCallback(window, ScrollCallback);
+
+        // Hide cursor but allow normal input (including trackpad scroll)
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
+        // Initialize GLAD to load OpenGL function pointers
+        // load all the OpenGL function addresses and check for any errors
+        if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0)
         {
-            std::cerr << "GL Error after clear: " << err << std::endl;
+            std::cerr << "Failed to initialize GLAD\n";
+            glfwTerminate();
+            return -1;
         }
 
-        // Use shader
-        shader.Use();
-        err = glGetError();
-        if (err != GL_NO_ERROR)
+        // Clear the screen to a dark gray color and enable depth testing
+        glClearColor(0.1F, 0.1F, 0.1F, 1.0F);
+        // Enable depth testing for correct 3D rendering
+        // https://www.opengl-tutorial.org/beginners-tutorials/tutorial-4-a-colored-cube/
+        glEnable(GL_DEPTH_TEST);
+
+        // Load shader
+        auto shader_path = resolveFilePath("./shaders/object.vert", argv[0]);
+        if (!shader_path.has_value())
         {
-            std::cerr << "GL Error after shader.Use(): " << err << std::endl;
+            std::cerr << "Error: Could not find vertex shader at './shaders/object.vert' or relative to executable\n";
+            exit(EXIT_FAILURE);
         }
-
-        // Setup matrices
-        glm::mat4 model_mat = glm::mat4(1.0f);
-        model_mat = glm::translate(model_mat, glm::vec3(0.0f, 0.0f, 0.0f));
-        model_mat = glm::rotate(model_mat, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate 90 degrees around Y
-
-        glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 5.0f, 50.0f), // camera position (zoomed out more)
-                                     glm::vec3(0.0f, 1.5f, 0.0f),  // look at (centered on model)
-                                     glm::vec3(0.0f, 1.0f, 0.0f)   // up
-        );
-
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f);
-
-        // Set uniforms
-        shader.SetMat4("model", model_mat);
-        shader.SetMat4("view", view);
-        shader.SetMat4("projection", projection);
-
-        // Normal matrix = inverse(transpose(mat3(model)))
-        glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model_mat)));
-        shader.SetMat3("normalMatrix", normalMatrix);
-
-        // Lighting uniforms
-        glm::vec3 sunDirection = glm::normalize(glm::vec3(0.3f, 1.0f, 0.3f));
-        shader.SetVec3("sun.direction", sunDirection);
-        shader.SetVec3("sun.ambient", glm::vec3(0.3f, 0.3f, 0.3f));
-        shader.SetVec3("sun.diffuse", glm::vec3(0.7f, 0.7f, 0.7f));
-        shader.SetVec3("sun.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-
-        glm::vec3 lanternPos = glm::vec3(1.0f, 1.0f, 1.0f);
-        shader.SetVec3("lantern.position", lanternPos);
-        shader.SetVec3("lantern.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-        shader.SetVec3("lantern.diffuse", glm::vec3(0.5f, 0.5f, 0.5f));
-        shader.SetVec3("lantern.specular", glm::vec3(0.5f, 0.5f, 0.5f));
-        shader.SetFloat("lantern.constant", 1.0f);
-        shader.SetFloat("lantern.linear", 0.09f);
-        shader.SetFloat("lantern.quadratic", 0.032f);
-
-        shader.SetVec3("viewPos", glm::vec3(0.0f, 0.5f, 1.5f));
-        shader.SetFloat("shininess", 32.0f);
-        shader.SetInt("diffuseMap", 0);
-
-        err = glGetError();
-        if (err != GL_NO_ERROR)
+        auto fragment_shader_path = resolveFilePath("./shaders/object.frag", argv[0]);
+        if (!fragment_shader_path.has_value())
         {
-            std::cerr << "GL Error after setting uniforms: " << err << std::endl;
+            std::cerr << "Error: Could not find fragment shader at './shaders/object.frag' or relative to executable\n";
+            exit(EXIT_FAILURE);
         }
-        else if (frameCount == 0)
-        {
-            std::cout << "No errors from uniforms" << std::endl;
-        }
+        Shader shader(shader_path.value().c_str(), fragment_shader_path.value().c_str());
+        std::cout << "Shader ID: " << shader.ID << "\n";
 
-        // Draw model
-        // Clear error queue before drawing
-        while (glGetError() != GL_NO_ERROR)
-        {
-        }
+        // Load 5 models
+        auto scene_objects = loadModels(argv[0]);
+        // Load grass texture and create ground plane mesh
+        auto ground_mesh = loadGroundPlane();
 
-        model.Draw(shader);
+        // Ensure we can capture the escape key being pressed below
+        glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
-        err = glGetError();
-        if (err != GL_NO_ERROR)
+        // Main render loop
+        while (glfwWindowShouldClose(window) == 0)
         {
-            std::cerr << "GL Error after model.Draw(): " << err << std::endl;
-            // Check if there are more errors
-            while ((err = glGetError()) != GL_NO_ERROR)
+            // Delta time
+            auto currentFrame = static_cast<float>(glfwGetTime());
+            g_deltaTime = currentFrame - g_lastFrame;
+            g_lastFrame = currentFrame;
+
+            // Process keyboard input
+            processKeyboard(window, g_deltaTime);
+
+            // Clear screen
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            // Check for OpenGL errors after clearing the screen
+            GLenum error = glGetError();
+            if (error != GL_NO_ERROR)
             {
-                std::cerr << "  Additional error: " << err << std::endl;
+                std::cerr << "GL Error after clear: " << error << "\n";
+            }
+
+            // Use shader
+            shader.Use();
+            error = glGetError();
+            if (error != GL_NO_ERROR)
+            {
+                std::cerr << "GL Error after shader.Use(): " << error << "\n";
+            }
+
+            // Setup view and projection matrices (same for all objects)
+            glm::mat4 view = g_camera->GetViewMatrix();
+
+            // Projection matrix : 45° Field of View, window width/height ratio, display range : 0.1 unit <-> 100 units
+            // https://github.com/opengl-tutorials/ogl/blob/master/tutorial03_matrices/tutorial03.cpp#L70
+            glm::mat4 projection =
+                glm::perspective(glm::radians(45.0F), static_cast<float>(WINDOW_WIDTH) / static_cast<float>(WINDOW_HEIGHT), 0.1F, 100.0F);
+
+            // Set view and projection uniforms
+            // MVP is calculated in the shader (object.vert) to allow for normal matrix calculation and flexibility in shader design
+            shader.SetMat4("view", view);
+            shader.SetMat4("projection", projection);
+
+            // Lighting uniforms (same for all objects)
+            // Option 1: Warm Sunset (Golden Hour)
+            glm::vec3 sunDirection = glm::normalize(glm::vec3(-0.5F, -0.8F, -0.2F));
+
+            // https://learnopengl.com/Lighting/Light-casters
+            // Set properties on uniform DirLight struct in shader for sun:
+            shader.SetVec3("sun.direction", sunDirection);
+            shader.SetVec3("sun.ambient", glm::vec3(0.4F, 0.35F, 0.25F)); // Warm ambient
+            shader.SetVec3("sun.diffuse", glm::vec3(1.0F, 0.85F, 0.5F));  // Golden diffuse
+            shader.SetVec3("sun.specular", glm::vec3(0.8F, 0.7F, 0.4F));
+
+            // Lantern follows camera with offset (like a flashlight)
+            glm::vec3 lanternPos =
+                g_camera->GetPosition() + glm::vec3(2.0F, 1.0F, 2.0F); // Offset to the right, slightly above, and in front of the camera
+
+            // Set properties on uniform PointLight struct in shader for lantern:
+            shader.SetVec3("lantern.position", lanternPos);
+            shader.SetVec3("lantern.ambient", glm::vec3(0.1F, 0.1F, 0.15F));
+            shader.SetVec3("lantern.diffuse", glm::vec3(0.3F, 0.5F, 0.8F)); // Cool blue
+            shader.SetVec3("lantern.specular", glm::vec3(0.5F, 0.5F, 1.0F));
+            shader.SetFloat("lantern.constant", 1.0F);
+            shader.SetFloat("lantern.linear", 0.09F);
+            shader.SetFloat("lantern.quadratic", 0.032F);
+
+            // Set viewer position uniform for specular lighting calculations
+            shader.SetVec3("viewPos", g_camera->GetPosition());
+            shader.SetInt("diffuseMap", 0);
+
+            error = glGetError();
+            if (error != GL_NO_ERROR)
+            {
+                std::cerr << "GL Error after setting uniforms: " << error << "\n";
+            }
+
+            // Draw all scene objects
+            for (const auto &obj : scene_objects)
+            {
+                // Compute model matrix: translate -> rotate -> scale
+                glm::mat4 model_mat = glm::mat4(1.0F);
+                // Apply transformations in the correct order: scale
+                model_mat = glm::translate(model_mat, obj.position);
+                // Rotate around specified axis by specified degrees
+                model_mat = glm::rotate(model_mat, glm::radians(obj.rotation_degrees), obj.rotation_axis);
+                // Scale the model
+                model_mat = glm::scale(model_mat, obj.scale);
+
+                // Set model-specific uniforms
+                shader.SetMat4("model", model_mat);
+                glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model_mat)));
+                shader.SetMat3("normalMatrix", normalMatrix);
+                shader.SetFloat("shininess", obj.shininess);
+
+                // Clear any existing OpenGL errors before drawing the model
+                GLClearError();
+
+                // Draw the model
+                obj.model->Draw();
+            }
+
+            // Draw ground plane
+            glm::mat4 model_mat = glm::mat4(1.0F); // Ground plane is already positioned at the origin
+            shader.SetMat4("model", model_mat);    // No transformations needed for the ground plane
+            glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model_mat)));
+            shader.SetMat3("normalMatrix", normalMatrix); // Normal matrix is identity since model matrix is identity
+            shader.SetFloat("shininess", 15.0F);          // Ground plane shininess (less shiny than the toys)
+
+            GLClearError();     // Clear any existing OpenGL errors before drawing the ground mesh
+            ground_mesh.Draw(); // Draw the ground plane mesh
+
+            // Swap buffers
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+        }
+
+        // Cleanup OpenGL and application resources
+        // Delete models (which triggers Mesh destructors to clean up VAO/VBO/EBO/textures)
+        for (auto &obj : scene_objects)
+        {
+            if (obj.model != nullptr)
+            {
+                delete obj.model;
+                obj.model = nullptr;
             }
         }
 
-        // Swap buffers
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        if (g_camera != nullptr)
+        {
+            delete g_camera;
+            g_camera = nullptr;
+        }
+
+        // Shader destructor will be called automatically here when shader goes out of scope
+        // Ground mesh destructor will be called automatically when ground_mesh goes out of scope
+        // Both will clean up their VAO/VBO/EBO and texture resources
+
+        // Cleanup GLFW
+        glfwDestroyWindow(window);
+        glfwTerminate();
+
+        return 0;
     }
-
-    // Cleanup
-    glfwTerminate();
-
-    return 0;
+    catch (const std::exception &e)
+    {
+        std::cerr << "Caught exception: " << e.what() << "\n";
+        return 1;
+    }
+    catch (...)
+    {
+        std::cerr << "Caught unknown exception\n";
+        return 1;
+    }
 }
