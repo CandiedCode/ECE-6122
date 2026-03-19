@@ -1,5 +1,5 @@
 #include <GLFW/glfw3.h>
-#include <glad/glad.h>
+#include <GL/glew.h>
 #include <iostream>
 
 int checkOpenGLVersion()
@@ -19,7 +19,8 @@ int checkOpenGLVersion()
         return -1;
 
     glfwMakeContextCurrent(window);
-    gladLoadGL();
+    glewExperimental = GL_TRUE;
+    glewInit();
 
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << "\n";
     std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";

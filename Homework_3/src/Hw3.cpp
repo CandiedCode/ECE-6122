@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <filesystem>
-#include <glad/glad.h>
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -348,11 +348,12 @@ auto main(int argc, char **argv) -> int
         // Hide cursor but allow normal input (including trackpad scroll)
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-        // Initialize GLAD to load OpenGL function pointers
+        // Initialize GLEW to load OpenGL function pointers
         // load all the OpenGL function addresses and check for any errors
-        if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) == 0)
+        glewExperimental = GL_TRUE;
+        if (glewInit() != GLEW_OK)
         {
-            std::cerr << "Failed to initialize GLAD\n";
+            std::cerr << "Failed to initialize GLEW\n";
             glfwTerminate();
             return -1;
         }

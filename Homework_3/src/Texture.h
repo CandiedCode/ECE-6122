@@ -13,7 +13,7 @@
 #define HOMEWORK_3_SRC_TEXTURE_H_
 
 #include <assimp/scene.h>
-#include <glad/glad.h>
+#include <GL/glew.h>
 #include <string>
 
 // @brief Get a default white texture and return its OpenGL texture ID. This function creates a 1x1 white texture if it
