@@ -1,3 +1,17 @@
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-03-15
+ * Description:  Homework 3: 3D World Scene Rendering with OpenGL and Assimp
+ *
+ *
+ * @file Texture.cpp
+ * @brief Texture class implementation for loading and managing textures in OpenGL. The Texture class is responsible for loading textures
+ * from files, handling embedded textures in Assimp materials, and creating OpenGL texture objects. The implementation includes error
+ * handling for texture loading and provides a fallback white texture if loading fails.
+ *
+ */
+
 #include "Texture.h"
 #include <array>
 #include <iostream>

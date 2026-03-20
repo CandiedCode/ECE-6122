@@ -24,9 +24,15 @@ For the ground plane, alternating green stripes simulate grass.
 
 ## Build
 
-Uses CMAKE_CXX_STANDARD of 17 for C++ features like `std::optional`.
-
 Running `make build/release` creates an executable in `../output/bin/Hmk3`. The
 application must be run from the executable directory since asset paths are relative to it.
 
 This has been tested on both my mac and pace ice.
+
+## Video Demo
+
+I build and ran my application from scratch on both my mac and pace ice
+https://youtu.be/7wKtyRPxxnY
+
+If you just want to see the application running you can jump to
+https://youtu.be/7wKtyRPxxnY?t=76
