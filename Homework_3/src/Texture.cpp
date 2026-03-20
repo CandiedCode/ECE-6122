@@ -220,7 +220,7 @@ auto GetShininessFromMaterial(const aiMaterial *material) -> float
         // Clamp shininess to a reasonable range to prevent overly shiny or dull materials
         // that could wash out colors or make rendering appear incorrect
         constexpr float kMinShininess = 1.0F;
-        constexpr float kMaxShininess = 128.0F;
+        constexpr float kMaxShininess = 200.0F;
         float clamped_shininess = std::max(kMinShininess, std::min(shininess, kMaxShininess));
         std::cout << "  Loaded shininess from material: " << shininess << " (clamped to " << clamped_shininess << ")\n";
         return clamped_shininess;
