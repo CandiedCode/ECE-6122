@@ -1,3 +1,19 @@
+/**
+ * Author: Jennifer Cwagenberg
+ * Class: ECE6122
+ * Last Date Modified: 2026-03-15
+ * Description:  Homework 3: 3D World Scene Rendering with OpenGL and Assimp
+ *
+ *
+ * @file Model.cpp
+ * @brief Model class implementation for loading and rendering 3D models using Assimp. The Model class is responsible for loading a model
+ * from a file, processing its nodes and meshes, and storing the resulting Mesh objects for rendering. The Model class uses Assimp to read
+ * the model file, extract the mesh data, and create Mesh objects that contain the vertex data, index data, and textures for each mesh. The
+ * Model class also manages * the OpenGL resources associated with the meshes and provides a Draw() method to render the model on the
+ * screen. The implementation includes error * handling for model loading and logs the bounds of each mesh for debugging purposes.
+ *
+ */
+
 #include "Model.h"
 #include "Mesh.h"
 #include "Shader.h"

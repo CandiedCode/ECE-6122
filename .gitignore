@@ -6,6 +6,8 @@
 *.lo
 *.o
 *.obj
+# Allow .obj model files in Homework_3/assets
+!Homework_3/assets/**/*.obj
 
 # Precompiled Headers
 *.gch
