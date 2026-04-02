@@ -122,12 +122,40 @@ __constant__ Light  d_lights[NUM_LIGHTS];
 //   Otherwise set t_hit = t0 if t0 >= 1e-4f, else t1  (prefer the nearer root
 //   that is in front of the ray origin).
 //
-__device__ bool intersect(const Vec3& ro, const Vec3& rd,
-                          const Sphere& s, float& t_hit)
+__device__ bool intersect(const Vec3& ro, const Vec3& rd, const Sphere& s, float& t_hit)
 {
-    // TODO -- implement (~10 lines)
-    (void)ro; (void)rd; (void)s; (void)t_hit;
-    return false;
+    Vec3 oc = ro - s.center;
+    float b = oc.dot(rd);  // half coefficient
+    float c = oc.dot(oc) - s.radius * s.radius;
+    float discriminant = b * b - c;
+
+    if (discriminant < 0.f) return false;
+
+    float sq = sqrtf(discriminant);
+    float t0 = -b - sq;  // near root
+    float t1 = -b + sq;  // far root
+
+    float atol = 1e-4f;  // absolute tolerance to avoid self-intersection
+
+    // Both roots behind ray
+    // t0 ≤ t1, so if t1 < atol, then t0 < atol too.
+    if (t1 < atol)
+    {
+        return false;
+    }
+
+    // Prefer nearer root in front of ray origin
+    // If t0 is in front of ray origin, use it; otherwise, use t1.
+    if (t0 >= atol)
+    {
+        t_hit = t0;
+    }
+    // t1 >= atol, so t0 < atol, so t0 is behind ray origin but t1 is in front.
+    else
+    {
+        t_hit = t1;
+    }
+    return true;
 }
 
 // Shadow ray (provided) -- iterates intersect() over all spheres.
@@ -178,9 +206,33 @@ __device__ bool shadowRay(const Vec3& origin, const Vec3& dir, float max_t)
 __device__ Vec3 shade(const Vec3& hit_pt, const Vec3& normal,
                       const Vec3& view_dir, const Sphere& s)
 {
-    // TODO -- implement (~15 lines)
-    (void)hit_pt; (void)normal; (void)view_dir; (void)s;
-    return {1.f, 0.f, 1.f};   // placeholder magenta -- replace this
+    // ambient term
+    // start with 12% of the sphere's base color.
+    Vec3 result = s.color * 0.12f;
+
+    // for each light sources
+    for (int i = 0; i < NUM_LIGHTS; ++i) {
+        // Compute vector from hit point toward the light
+        Vec3 to_light = d_lights[i].pos - hit_pt;
+        float dist = to_light.length();
+        Vec3 L = to_light * (1.f / dist);  // normalize
+
+        // shadow test
+        if (shadowRay(hit_pt, L, dist))
+            continue;  // light is blocked, skip this light
+
+        // diffuse - Lambertian
+        // 0 -> dark, 1 -> bright
+        float diff = max(0, normal.dot(L));
+        result += s.color * d_lights[i].color * diff;
+
+        // specular - Blinn-Phong
+        Vec3 H = (L + view_dir).normalize();
+        float spec = pow(max(0, normal.dot(H)), s.shininess);
+        result += d_lights[i].color * spec * 0.6f;
+    }
+
+    return result.clamp01();
 }
 
 // ============================================================================
@@ -199,10 +251,13 @@ __device__ Vec3 shade(const Vec3& hit_pt, const Vec3& normal,
 //
 __device__ Vec3 skyColor(const Vec3& rd)
 {
-    // TODO -- implement (~4 lines)
-    // For now returns a flat dark background so the rest of the scene is visible.
-    (void)rd;
-    return {0.05f, 0.05f, 0.08f};
+    // Map normalized ray y-component from [-1, 1] to [0, 1]
+    float t = 0.5f * (rd.normalize().y + 1.f);  // 0 at horizon, 1 at zenith
+
+    // Interpolate between warm horizon and cool zenith
+    Vec3 horizon = {0.95f, 0.80f, 0.55f};
+    Vec3 zenith  = {0.08f, 0.18f, 0.48f};
+    return horizon * (1.f - t) + zenith * t;
 }
 
 // ============================================================================
@@ -265,11 +320,60 @@ __global__ void renderTile(
     Vec3     cam_up         // unit vector: camera up direction
 )
 {
-    // TODO -- implement (~35 lines, following the pseudocode above)
-    (void)d_pixels; (void)x_offset; (void)y_offset;
-    (void)tile_w;   (void)tile_h;   (void)image_w;  (void)image_h;
-    (void)fov_deg;  (void)cam_origin; (void)cam_forward;
-    (void)cam_right; (void)cam_up;
+    // Thread-to-pixel mapping
+    uint16_t px = threadIdx.x + blockIdx.x * blockDim.x;
+    uint16_t py = threadIdx.y + blockIdx.y * blockDim.y;
+
+    // Guard: check bounds
+    if (px >= tile_w || py >= tile_h) return;
+
+    // Image pixel coordinates
+    uint16_t img_x = px + x_offset;
+    uint16_t img_y = py + y_offset;
+
+    // Compute camera basis factors
+    float aspect = (float)image_w / (float)image_h;
+    const float PI = 3.14159265358979f;
+    float half_h = tanf(fov_deg * 0.5f * PI / 180.f);
+    float half_w = half_h * aspect;
+
+    // Compute normalized device coordinates (NDC)
+    float u = ((img_x + 0.5f) / image_w) * 2.f - 1.f;   // [-1, +1]
+    float v = -(((img_y + 0.5f) / image_h) * 2.f - 1.f); // [-1, +1], flipped
+
+    // Compute primary ray direction
+    Vec3 rd = (cam_forward + cam_right * (u * half_w) + cam_up * (v * half_h)).normalize();
+
+    // Trace ray against all spheres, find closest hit
+    float t_min = 1e30f;
+    int hit_idx = -1;
+    for (int i = 0; i < NUM_SPHERES; ++i) {
+        float t;
+        if (intersect(cam_origin, rd, d_spheres[i], t) && t < t_min) {
+            t_min = t;
+            hit_idx = i;
+        }
+    }
+
+    // Compute final color
+    Vec3 color;
+    if (hit_idx >= 0) {
+        // Sphere was hit
+        Vec3 hit_pt = cam_origin + rd * t_min;
+        Vec3 normal = (hit_pt - d_spheres[hit_idx].center).normalize();
+        Vec3 view = (cam_origin - hit_pt).normalize();
+        color = shade(hit_pt, normal, view, d_spheres[hit_idx]);
+    } else {
+        // No hit, use sky color
+        color = skyColor(rd);
+    }
+
+    // Write RGBA to output buffer
+    int out_idx = (py * tile_w + px) * 4;
+    d_pixels[out_idx + 0] = (uint8_t)(color.x * 255.f);
+    d_pixels[out_idx + 1] = (uint8_t)(color.y * 255.f);
+    d_pixels[out_idx + 2] = (uint8_t)(color.z * 255.f);
+    d_pixels[out_idx + 3] = 255u;
 }
 
 // ============================================================================
@@ -298,8 +402,8 @@ int main(int argc, char* argv[])
     //   unsigned short my_port = socket.getLocalPort();
     //
     sf::UdpSocket socket;
-    unsigned short my_port = 0;
-    // YOUR CODE HERE (~3 lines)
+    socket.bind(sf::Socket::AnyPort);
+    unsigned short my_port = socket.getLocalPort();
 
     std::cout << "[worker] Bound to port " << my_port << "\n";
 
@@ -314,7 +418,9 @@ int main(int argc, char* argv[])
     //   reg.worker_port = my_port;
     //   socket.send(&reg, sizeof(reg), coord_ip, coord_port);
     //
-    // YOUR CODE HERE (~3 lines)
+    PktRegister reg;
+    reg.worker_port = my_port;
+    socket.send(&reg, sizeof(reg), coord_ip, coord_port);
 
     std::cout << "[worker] Registration sent to "
               << coord_ip << ":" << coord_port << "\n";
@@ -346,7 +452,22 @@ int main(int argc, char* argv[])
     //   }
     //
     SceneDesc scene{};
-    // YOUR CODE HERE (~12 lines)
+    socket.setBlocking(true);
+    uint8_t buf[512];
+    std::size_t received;
+    sf::IpAddress sender;
+    unsigned short sport;
+    for (;;) {
+        if (socket.receive(buf, sizeof(buf), received, sender, sport) == sf::Socket::Done
+            && buf[0] == PKT_REGISTER_ACK
+            && received >= sizeof(PktRegisterAck))
+        {
+            PktRegisterAck ack;
+            std::memcpy(&ack, buf, sizeof(ack));
+            scene = ack.scene;
+            break;
+        }
+    }
 
     std::cout << "[worker] Scene received: "
               << scene.image_w << "x" << scene.image_h
@@ -411,8 +532,18 @@ int main(int argc, char* argv[])
         //   PktWorkOrder order;
         //   std::memcpy(&order, buf, sizeof(order));
         //
+        uint8_t buf[sizeof(PktWorkOrder) + 32];
+        std::size_t received;
+        sf::IpAddress sender;
+        unsigned short sport;
+        socket.receive(buf, sizeof(buf), received, sender, sport);
+        if (buf[0] == PKT_DONE) {
+            std::cout << "[worker] Received PKT_DONE, exiting\n";
+            break;
+        }
+        if (buf[0] != PKT_WORK_ORDER || received < sizeof(PktWorkOrder)) continue;
         PktWorkOrder order{};
-        // YOUR CODE HERE (~9 lines)
+        std::memcpy(&order, buf, sizeof(order));
 
         std::cout << "[worker] Tile " << order.tile_id
                   << "  offset=(" << order.x_offset << "," << order.y_offset << ")"
@@ -431,7 +562,7 @@ int main(int argc, char* argv[])
         //   CUDA_CHECK(cudaMalloc(&d_pixels, pixel_bytes));
         //
         uint8_t* d_pixels = nullptr;
-        // YOUR CODE HERE (~2 lines)
+        CUDA_CHECK(cudaMalloc(&d_pixels, pixel_bytes));
 
         // =====================================================================
         // TODO Part 2e  --  Launch renderTile kernel
@@ -450,7 +581,15 @@ int main(int argc, char* argv[])
         //   CUDA_CHECK(cudaGetLastError());
         //   CUDA_CHECK(cudaDeviceSynchronize());
         //
-        // YOUR CODE HERE (~6 lines)
+        dim3 block(16, 16);
+        dim3 grid((order.tile_w + 15u) / 16u,
+                  (order.tile_h + 15u) / 16u);
+        renderTile<<<grid, block>>>( d_pixels,
+            order.x_offset, order.y_offset, order.tile_w, order.tile_h,
+            scene.image_w,  scene.image_h,  scene.fov_deg,
+            cam_origin, cam_forward, cam_right, cam_up_vec );
+        CUDA_CHECK(cudaGetLastError());
+        CUDA_CHECK(cudaDeviceSynchronize());
 
         // =====================================================================
         // TODO Part 2f  --  Copy rendered pixels device -> host
@@ -464,7 +603,10 @@ int main(int argc, char* argv[])
         //                         pixel_bytes, cudaMemcpyDeviceToHost));
         //   CUDA_CHECK(cudaFree(d_pixels));
         //
-        // YOUR CODE HERE (~4 lines)
+        if (host_pixels.size() < pixel_bytes) host_pixels.resize(pixel_bytes);
+        CUDA_CHECK(cudaMemcpy(host_pixels.data(), d_pixels,
+                              pixel_bytes, cudaMemcpyDeviceToHost));
+        CUDA_CHECK(cudaFree(d_pixels));
 
         // =====================================================================
         // TODO Part 1e  --  Send PktTileResult back to the coordinator
@@ -482,7 +624,14 @@ int main(int argc, char* argv[])
         //   std::memcpy(pkt.data()+sizeof(hdr),  host_pixels.data(),  pixel_bytes);
         //   socket.send(pkt.data(), pkt.size(), coord_ip, coord_port);
         //
-        // YOUR CODE HERE (~8 lines)
+        std::vector<uint8_t> pkt(sizeof(PktTileResult) + pixel_bytes);
+        PktTileResult hdr;
+        hdr.tile_id = order.tile_id;
+        hdr.tile_w  = order.tile_w;
+        hdr.tile_h  = order.tile_h;
+        std::memcpy(pkt.data(),              &hdr,                sizeof(hdr));
+        std::memcpy(pkt.data()+sizeof(hdr),  host_pixels.data(),  pixel_bytes);
+        socket.send(pkt.data(), pkt.size(), coord_ip, coord_port);
 
         std::cout << "[worker] Sent tile " << order.tile_id << "\n";
     }
