@@ -30,7 +30,7 @@
 #include <vector>
 
 // ── Tunables (provided) ───────────────────────────────────────────────────────
-constexpr int REGISTRATION_WAIT_MS = 15000; // registration window length
+constexpr int REGISTRATION_WAIT_MS = 60000; // registration window length
 constexpr int TILE_TIMEOUT_MS = 3000;       // ms before a tile is re-dispatched
 constexpr int UDP_RECV_BUF = 65507;         // max UDP payload size
 
@@ -188,6 +188,11 @@ int main(int argc, char *argv[])
             }
         }
         sf::sleep(sf::milliseconds(10));
+    }
+
+    {
+        long long elapsed = msElapsed(reg_start);
+        std::cout << "[coord] Registration phase ended after " << elapsed << " ms.\n";
     }
 
     if (workers.empty())
