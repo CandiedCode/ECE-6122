@@ -72,6 +72,13 @@ struct Vec3
     {
         return {x + t, y + t, z + t};
     }
+    __host__ __device__ Vec3 &operator+=(const Vec3 &b)
+    {
+        x += b.x;
+        y += b.y;
+        z += b.z;
+        return *this;
+    }
 
     __host__ __device__ float dot(const Vec3 &b) const
     {
@@ -252,12 +259,12 @@ __device__ Vec3 shade(const Vec3 &hit_pt, const Vec3 &normal, const Vec3 &view_d
 
         // diffuse - Lambertian
         // 0 -> dark, 1 -> bright
-        float diff = max(0, normal.dot(L));
+        float diff = fmaxf(0.f, normal.dot(L));
         result += s.color * d_lights[i].color * diff;
 
         // specular - Blinn-Phong
         Vec3 H = (L + view_dir).normalize();
-        float spec = pow(max(0, normal.dot(H)), s.shininess);
+        float spec = pow(fmaxf(0.f, normal.dot(H)), s.shininess);
         result += d_lights[i].color * spec * 0.6f;
     }
 
