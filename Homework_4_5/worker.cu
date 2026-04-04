@@ -17,25 +17,30 @@
 //        d. Send PktTileResult back to the coordinator.
 //      Until PktDone is received.
 // ============================================================================
+#include "packets.h"
 #include <SFML/Network.hpp>
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <cuda_runtime.h>
 #include <iostream>
 #include <vector>
-#include <cstring>
-#include <cstdint>
-#include <cstdio>
-#include <cmath>
-#include "packets.h"
+
+const float PI = 3.14159265358979f;
+const float EPSILON = 1e-4f;
+const float ALPHA = 255.F;
 
 // ── CUDA error-checking macro (provided) ─────────────────────────────────────
-#define CUDA_CHECK(call)                                                       \
-    do {                                                                       \
-        cudaError_t _err = (call);                                             \
-        if (_err != cudaSuccess) {                                             \
-            fprintf(stderr, "CUDA error at %s:%d  %s\n",                      \
-                    __FILE__, __LINE__, cudaGetErrorString(_err));             \
-            exit(EXIT_FAILURE);                                                \
-        }                                                                      \
+#define CUDA_CHECK(call)                                                                                                                   \
+    do                                                                                                                                     \
+    {                                                                                                                                      \
+        cudaError_t _err = (call);                                                                                                         \
+        if (_err != cudaSuccess)                                                                                                           \
+        {                                                                                                                                  \
+            fprintf(stderr, "CUDA error at %s:%d  %s\n", __FILE__, __LINE__, cudaGetErrorString(_err));                                    \
+            exit(EXIT_FAILURE);                                                                                                            \
+        }                                                                                                                                  \
     } while (0)
 
 // ============================================================================
@@ -47,57 +52,86 @@
 // would make those types non-trivially constructible and trigger the error:
 //   "dynamic initialization is not supported for a __constant__ variable"
 // Use brace-aggregate syntax everywhere:  Vec3 v = {x, y, z};  -- never Vec3(x,y,z).
-struct Vec3 {
+struct Vec3
+{
     float x, y, z;
 
-    __host__ __device__ Vec3 operator+(const Vec3& b) const { return {x+b.x, y+b.y, z+b.z}; }
-    __host__ __device__ Vec3 operator-(const Vec3& b) const { return {x-b.x, y-b.y, z-b.z}; }
-    __host__ __device__ Vec3 operator*(float  t)      const { return {x*t,   y*t,   z*t};   }
-    __host__ __device__ Vec3 operator*(const Vec3& b) const { return {x*b.x, y*b.y, z*b.z}; }
-    __host__ __device__ Vec3 operator+(float  t)      const { return {x+t,   y+t,   z+t};   }
-
-    __host__ __device__ float dot(const Vec3& b) const { return x*b.x + y*b.y + z*b.z; }
-    __host__ __device__ float length()           const { return sqrtf(dot(*this)); }
-    __host__ __device__ Vec3  normalize()        const { float l = length(); return {x/l, y/l, z/l}; }
-    __host__ __device__ Vec3  clamp01()          const {
-        return { fminf(1.f, fmaxf(0.f, x)),
-                 fminf(1.f, fmaxf(0.f, y)),
-                 fminf(1.f, fmaxf(0.f, z)) };
+    __host__ __device__ Vec3 operator+(const Vec3 &b) const
+    {
+        return {x + b.x, y + b.y, z + b.z};
+    }
+    __host__ __device__ Vec3 operator-(const Vec3 &b) const
+    {
+        return {x - b.x, y - b.y, z - b.z};
+    }
+    __host__ __device__ Vec3 operator*(float t) const
+    {
+        return {x * t, y * t, z * t};
+    }
+    __host__ __device__ Vec3 operator*(const Vec3 &b) const
+    {
+        return {x * b.x, y * b.y, z * b.z};
+    }
+    __host__ __device__ Vec3 operator+(float t) const
+    {
+        return {x + t, y + t, z + t};
+    }
+    __host__ __device__ Vec3 &operator+=(const Vec3 &b)
+    {
+        return {x + b.x, y + b.y, z + b.z};
+    }
+    __host__ __device__ float dot(const Vec3 &b) const
+    {
+        return x * b.x + y * b.y + z * b.z;
+    }
+    __host__ __device__ float length() const
+    {
+        return sqrtf(dot(*this));
+    }
+    __host__ __device__ Vec3 normalize() const
+    {
+        float l = length();
+        return {x / l, y / l, z / l};
+    }
+    __host__ __device__ Vec3 clamp01() const
+    {
+        return {fminf(1.F, fmaxf(0.F, x)), fminf(1.F, fmaxf(0.F, y)), fminf(1.F, fmaxf(0.F, z))};
     }
 };
 
 // Host-only cross product (used for camera basis construction below)
-static Vec3 cross(const Vec3& a, const Vec3& b) {
-    return { a.y*b.z - a.z*b.y,
-             a.z*b.x - a.x*b.z,
-             a.x*b.y - a.y*b.x };
+static Vec3 cross(const Vec3 &a, const Vec3 &b)
+{
+    return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
 }
 
 // ============================================================================
 // Scene types (provided -- do not modify)
 // ============================================================================
-struct Sphere {
-    Vec3  center;
+struct Sphere
+{
+    Vec3 center;
     float radius;
-    Vec3  color;        // diffuse albedo  (0..1 per channel)
+    Vec3 color;         // diffuse albedo  (0..1 per channel)
     float shininess;    // Phong exponent
     float reflectivity; // reserved for graduate extension
 };
 
-struct Light {
+struct Light
+{
     Vec3 pos;
     Vec3 color;
 };
 
 #define NUM_SPHERES 7
-#define NUM_LIGHTS  2
+#define NUM_LIGHTS 2
 
 // Scene data lives in GPU constant memory and is uploaded once in main().
 // Every thread in every warp reads the same constant-memory address per
 // instruction, so the constant cache handles it in a single broadcast -- zero
 // extra global-memory traffic compared with passing arrays as kernel arguments.
 __constant__ Sphere d_spheres[NUM_SPHERES];
-__constant__ Light  d_lights[NUM_LIGHTS];
+__constant__ Light d_lights[NUM_LIGHTS];
 
 // ============================================================================
 // TODO Part 2b  --  Ray-sphere intersection
@@ -122,21 +156,51 @@ __constant__ Light  d_lights[NUM_LIGHTS];
 //   Otherwise set t_hit = t0 if t0 >= 1e-4f, else t1  (prefer the nearer root
 //   that is in front of the ray origin).
 //
-__device__ bool intersect(const Vec3& ro, const Vec3& rd,
-                          const Sphere& s, float& t_hit)
+__device__ bool intersect(const Vec3 &ro, const Vec3 &rd, const Sphere &s, float &t_hit)
 {
-    // TODO -- implement (~10 lines)
-    (void)ro; (void)rd; (void)s; (void)t_hit;
-    return false;
+    Vec3 origin_to_center = ro - s.center;
+    float b = origin_to_center.dot(rd); // half coefficient
+    float c = origin_to_center.dot(origin_to_center) - s.radius * s.radius;
+    float discriminant = b * b - c;
+
+    if (discriminant < 0.F)
+        return false;
+
+    float sq = sqrtf(discriminant);
+    float t0 = -b - sq; // near root
+    float t1 = -b + sq; // far root
+
+    float atol = 1e-4f; // absolute tolerance to avoid self-intersection
+
+    // Both roots behind ray
+    // t0 ≤ t1, so if t1 < atol, then t0 < atol too.
+    if (t1 < atol)
+    {
+        return false;
+    }
+
+    // Prefer nearer root in front of ray origin
+    // If t0 is in front of ray origin, use it; otherwise, use t1.
+    if (t0 >= atol)
+    {
+        t_hit = t0;
+    }
+    // t1 >= atol,  t0 < atol, thus t0 is behind ray origin but t1 is in front.
+    else
+    {
+        t_hit = t1;
+    }
+    return true;
 }
 
-// Shadow ray (provided) -- iterates intersect() over all spheres.
+// Shadow ray - iterates intersect() over all spheres.
 // Returns true if anything blocks the path from 'origin' to distance max_t.
-__device__ bool shadowRay(const Vec3& origin, const Vec3& dir, float max_t)
+__device__ bool shadowRay(const Vec3 &origin, const Vec3 &dir, float max_t)
 {
-    for (int i = 0; i < NUM_SPHERES; ++i) {
+    for (int i = 0; i < NUM_SPHERES; ++i)
+    {
         float t;
-        if (intersect(origin, dir, d_spheres[i], t) && t < max_t - 1e-3f)
+        if (intersect(origin, dir, d_spheres[i], t) && t < max_t - 1e-3F)
             return true;
     }
     return false;
@@ -159,7 +223,7 @@ __device__ bool shadowRay(const Vec3& origin, const Vec3& dir, float max_t)
 //   2. Compute the vector from hit_pt toward the light:
 //        to_light = d_lights[i].pos - hit_pt
 //        dist     = to_light.length()
-//        L        = to_light * (1.f / dist)   // normalise
+//        L        = to_light * (1.F / dist)   // normalise
 //
 //   3. Shadow test -- call shadowRay(hit_pt, L, dist).
 //      If the path is blocked, skip steps 4 and 5 for this light.
@@ -175,12 +239,38 @@ __device__ bool shadowRay(const Vec3& origin, const Vec3& dir, float max_t)
 //
 //   Return result.clamp01() to keep colours in [0,1].
 //
-__device__ Vec3 shade(const Vec3& hit_pt, const Vec3& normal,
-                      const Vec3& view_dir, const Sphere& s)
+__device__ Vec3 shade(const Vec3 &hit_pt, const Vec3 &normal, const Vec3 &view_dir, const Sphere &s)
 {
-    // TODO -- implement (~15 lines)
-    (void)hit_pt; (void)normal; (void)view_dir; (void)s;
-    return {1.f, 0.f, 1.f};   // placeholder magenta -- replace this
+    // ambient term
+    // start with 12% of the sphere's base color.
+    Vec3 result = s.color * 0.12F;
+
+    // for each light sources
+    for (int i = 0; i < NUM_LIGHTS; i++)
+    {
+        // Compute vector from hit point toward the light
+        Vec3 to_light = d_lights[i].pos - hit_pt;
+        float dist = to_light.length();
+        Vec3 L = to_light * (1.F / dist); // normalize
+
+        // shadow test
+        if (shadowRay(hit_pt, L, dist))
+        {
+            continue; // light is blocked, skip this light
+        }
+
+        // diffuse - Lambertian
+        // 0 -> dark, 1 -> bright
+        float diff = fmaxf(0.F, normal.dot(L));
+        result += s.color * d_lights[i].color * diff;
+
+        // specular - Blinn-Phong
+        Vec3 H = (L + view_dir).normalize();
+        float spec = pow(fmaxf(0.F, normal.dot(H)), s.shininess);
+        result += d_lights[i].color * spec * 0.6F;
+    }
+
+    return result.clamp01();
 }
 
 // ============================================================================
@@ -189,20 +279,23 @@ __device__ Vec3 shade(const Vec3& hit_pt, const Vec3& normal,
 // If a primary ray misses all spheres, return a sky colour instead of black.
 // Map the ray's normalised y-component from [-1, +1] to [0, 1]:
 //
-//   t = 0.5f * (rd.normalize().y + 1.f)   // 0 at horizon, 1 at zenith
+//   t = 0.5f * (rd.normalize().y + 1.F)   // 0 at horizon, 1 at zenith
 //
 // Then linearly interpolate between a warm horizon colour and a cool zenith:
 //
 //   horizon = {0.95f, 0.80f, 0.55f}
 //   zenith  = {0.08f, 0.18f, 0.48f}
-//   return  horizon * (1.f - t) + zenith * t
+//   return  horizon * (1.F - t) + zenith * t
 //
-__device__ Vec3 skyColor(const Vec3& rd)
+__device__ Vec3 skyColor(const Vec3 &rd)
 {
-    // TODO -- implement (~4 lines)
-    // For now returns a flat dark background so the rest of the scene is visible.
-    (void)rd;
-    return {0.05f, 0.05f, 0.08f};
+    // Map normalized ray y-component from [-1, 1] to [0, 1]
+    float t = 0.5f * (rd.normalize().y + 1.F);
+
+    // Interpolate between warm horizon and cool zenith
+    Vec3 horizon = {0.95f, 0.80f, 0.55f};
+    Vec3 zenith = {0.08f, 0.18f, 0.48f};
+    return horizon * (1.F - t) + zenith * t;
 }
 
 // ============================================================================
@@ -222,11 +315,11 @@ __device__ Vec3 skyColor(const Vec3& rd)
 //
 // Compute NDC (Normalised Device Coordinates) for this pixel:
 //   aspect = (float)image_w / (float)image_h
-//   half_h = tanf(fov_deg * 0.5f * PI / 180.f)   // PI = 3.14159265358979f
+//   half_h = tanf(fov_deg * 0.5f * PI / 180.F)   // PI = 3.14159265358979f
 //   half_w = half_h * aspect
 //
-//   u =   ((img_x + 0.5f) / image_w) * 2.f - 1.f   // [-1, +1], left to right
-//   v = -(((img_y + 0.5f) / image_h) * 2.f - 1.f)  // [-1, +1], bottom to top
+//   u =   ((img_x + 0.5f) / image_w) * 2.F - 1.F   // [-1, +1], left to right
+//   v = -(((img_y + 0.5f) / image_h) * 2.F - 1.F)  // [-1, +1], bottom to top
 //                                                    // (flip y: row 0 is top)
 //
 // Primary ray direction:
@@ -245,44 +338,104 @@ __device__ Vec3 skyColor(const Vec3& rd)
 //
 // Write RGBA to d_pixels (alpha = 255):
 //   int out_idx = (py * tile_w + px) * 4;
-//   d_pixels[out_idx + 0] = (uint8_t)(color.x * 255.f);
-//   d_pixels[out_idx + 1] = (uint8_t)(color.y * 255.f);
-//   d_pixels[out_idx + 2] = (uint8_t)(color.z * 255.f);
+//   d_pixels[out_idx + 0] = (uint8_t)(color.x * 255.F);
+//   d_pixels[out_idx + 1] = (uint8_t)(color.y * 255.F);
+//   d_pixels[out_idx + 2] = (uint8_t)(color.z * 255.F);
 //   d_pixels[out_idx + 3] = 255u;
 //
-__global__ void renderTile(
-    uint8_t* d_pixels,      // output: RGBA pixels, row-major within tile
-    uint16_t x_offset,      // tile's left edge in the full image (px)
-    uint16_t y_offset,      // tile's top  edge in the full image (px)
-    uint16_t tile_w,        // actual tile width  (may be < nominal at right edge)
-    uint16_t tile_h,        // actual tile height (may be < nominal at bottom edge)
-    uint16_t image_w,       // full image width  (px)
-    uint16_t image_h,       // full image height (px)
-    float    fov_deg,       // vertical field-of-view (degrees)
-    Vec3     cam_origin,    // camera position
-    Vec3     cam_forward,   // unit vector: camera forward direction
-    Vec3     cam_right,     // unit vector: camera right direction
-    Vec3     cam_up         // unit vector: camera up direction
+__global__ void renderTile(uint8_t *d_pixels, // output: RGBA pixels, row-major within tile
+                           uint16_t x_offset, // tile's left edge in the full image (px)
+                           uint16_t y_offset, // tile's top  edge in the full image (px)
+                           uint16_t tile_w,   // actual tile width  (may be < nominal at right edge)
+                           uint16_t tile_h,   // actual tile height (may be < nominal at bottom edge)
+                           uint16_t image_w,  // full image width  (px)
+                           uint16_t image_h,  // full image height (px)
+                           float fov_deg,     // vertical field-of-view (degrees)
+                           Vec3 cam_origin,   // camera position
+                           Vec3 cam_forward,  // unit vector: camera forward direction
+                           Vec3 cam_right,    // unit vector: camera right direction
+                           Vec3 cam_up        // unit vector: camera up direction
 )
 {
-    // TODO -- implement (~35 lines, following the pseudocode above)
-    (void)d_pixels; (void)x_offset; (void)y_offset;
-    (void)tile_w;   (void)tile_h;   (void)image_w;  (void)image_h;
-    (void)fov_deg;  (void)cam_origin; (void)cam_forward;
-    (void)cam_right; (void)cam_up;
+    // Thread-to-pixel mapping
+    uint16_t pixel_x = threadIdx.x + blockIdx.x * blockDim.x;
+    uint16_t pixel_y = threadIdx.y + blockIdx.y * blockDim.y;
+
+    // Guard: check bounds
+    if (pixel_x >= tile_w || pixel_y >= tile_h)
+    {
+        return;
+    }
+
+    // Image pixel coordinates
+    uint16_t image_x = pixel_x + x_offset;
+    uint16_t image_y = pixel_y + y_offset;
+
+    // Compute NDC (Normalised Device Coordinates) for this pixel:
+    float aspect = static_cast<float>(image_w) / static_cast<float>(image_h);
+    float half_h = tanf(fov_deg * 0.5F * PI / 180.F);
+    float half_w = half_h * aspect;
+
+    // Compute normalized device coordinates (NDC)
+    float u = ((image_x + 0.5F) / image_w) * 2.F - 1.F;    // [-1, +1], left to right
+    float v = -(((image_y + 0.5F) / image_h) * 2.F - 1.F); // [-1, +1], bottom to top (flip y: row 0 is top)
+
+    // Primary ray direction
+    Vec3 rd = (cam_forward + cam_right * (u * half_w) + cam_up * (v * half_h)).normalize();
+
+    // Trace the ray
+    float t_min = EPSILON;
+    int hit_idx = -1;
+
+    for (int i = 0; i < NUM_SPHERES; ++i)
+    {
+        float t;
+        if (intersect(cam_origin, rd, d_spheres[i], t))
+        {
+            // If a sphere was hit, check if it's the closest hit so far
+            if (t < t_min)
+            {
+                t_min = t;
+                hit_idx = i;
+            }
+        }
+    }
+
+    // Compute final color
+    Vec3 color;
+    if (hit_idx >= 0)
+    {
+        // Sphere was hit
+        Vec3 hit_pt = cam_origin + rd * t_min;
+        Vec3 normal = (hit_pt - d_spheres[hit_idx].center).normalize();
+        Vec3 view = (cam_origin - hit_pt).normalize();
+        color = shade(hit_pt, normal, view, d_spheres[hit_idx]);
+    }
+    else
+    {
+        color = skyColor(rd);
+    }
+
+    // Write RGBA to d_pixels (alpha = 255)
+    int out_idx = (pixel_y * tile_w + pixel_x) * 4;
+    d_pixels[out_idx + 0] = (uint8_t)(color.x * ALPHA);
+    d_pixels[out_idx + 1] = (uint8_t)(color.y * ALPHA);
+    d_pixels[out_idx + 2] = (uint8_t)(color.z * ALPHA);
+    d_pixels[out_idx + 3] = 255u;
 }
 
 // ============================================================================
 // main
 // ============================================================================
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
-    if (argc < 3) {
+    if (argc < 3)
+    {
         std::cerr << "Usage: ./build/worker <coordinator_ip> <coordinator_port>\n";
         return 1;
     }
 
-    sf::IpAddress  coord_ip(argv[1]);
+    sf::IpAddress coord_ip(argv[1]);
     unsigned short coord_port = static_cast<unsigned short>(std::stoi(argv[2]));
 
     // =========================================================================
@@ -298,8 +451,8 @@ int main(int argc, char* argv[])
     //   unsigned short my_port = socket.getLocalPort();
     //
     sf::UdpSocket socket;
-    unsigned short my_port = 0;
-    // YOUR CODE HERE (~3 lines)
+    socket.bind(sf::Socket::AnyPort);
+    unsigned short my_port = socket.getLocalPort();
 
     std::cout << "[worker] Bound to port " << my_port << "\n";
 
@@ -314,10 +467,11 @@ int main(int argc, char* argv[])
     //   reg.worker_port = my_port;
     //   socket.send(&reg, sizeof(reg), coord_ip, coord_port);
     //
-    // YOUR CODE HERE (~3 lines)
+    PktRegister reg;
+    reg.worker_port = my_port;
+    socket.send(&reg, sizeof(reg), coord_ip, coord_port);
 
-    std::cout << "[worker] Registration sent to "
-              << coord_ip << ":" << coord_port << "\n";
+    std::cout << "[worker] Registration sent to " << coord_ip << ":" << coord_port << "\n";
 
     // =========================================================================
     // TODO Part 1c  --  Receive PktRegisterAck (blocking)
@@ -345,12 +499,27 @@ int main(int argc, char* argv[])
     //       }
     //   }
     //
+    socket.setBlocking(true);
     SceneDesc scene{};
-    // YOUR CODE HERE (~12 lines)
+    uint8_t buf[512];
+    std::size_t received;
+    sf::IpAddress sender;
+    unsigned short sport;
+    bool continue_loop = true;
 
-    std::cout << "[worker] Scene received: "
-              << scene.image_w << "x" << scene.image_h
-              << "  tiles " << scene.tile_w << "x" << scene.tile_h
+    while (continue_loop)
+    {
+        if (socket.receive(buf, sizeof(buf), received, sender, sport) == sf::Socket::Done && buf[0] == PKT_REGISTER_ACK &&
+            received >= sizeof(PktRegisterAck))
+        {
+            PktRegisterAck ack;
+            std::memcpy(&ack, buf, sizeof(ack));
+            scene = ack.scene;
+            continue_loop = false;
+        }
+    }
+
+    std::cout << "[worker] Scene received: " << scene.image_w << "x" << scene.image_h << "  tiles " << scene.tile_w << "x" << scene.tile_h
               << "  fov=" << scene.fov_deg << " deg\n";
 
     // ── Build camera basis vectors (provided) ─────────────────────────────
@@ -358,32 +527,32 @@ int main(int argc, char* argv[])
     // forward = normalise(lookat - origin)
     // right   = normalise(forward x world_up)
     // up      = normalise(right   x forward)   (re-orthogonalised)
-    Vec3 cam_origin  = { scene.cam_origin[0], scene.cam_origin[1], scene.cam_origin[2] };
-    Vec3 cam_lookat  = { scene.cam_lookat[0], scene.cam_lookat[1], scene.cam_lookat[2] };
-    Vec3 world_up    = { 0.f, 1.f, 0.f };
+    Vec3 cam_origin = {scene.cam_origin[0], scene.cam_origin[1], scene.cam_origin[2]};
+    Vec3 cam_lookat = {scene.cam_lookat[0], scene.cam_lookat[1], scene.cam_lookat[2]};
+    Vec3 world_up = {0.F, 1.F, 0.F};
     Vec3 cam_forward = (cam_lookat - cam_origin).normalize();
-    Vec3 cam_right   = cross(cam_forward, world_up).normalize();
-    Vec3 cam_up_vec  = cross(cam_right, cam_forward).normalize();
+    Vec3 cam_right = cross(cam_forward, world_up).normalize();
+    Vec3 cam_up_vec = cross(cam_right, cam_forward).normalize();
 
     // ── Upload scene geometry to GPU constant memory (provided) ──────────
     // Modify the sphere/light data below to change the scene.
     Sphere h_spheres[NUM_SPHERES] = {
         //  center                  radius  color (RGB 0-1)       shine  refl
-        {{ 0.f, -100.5f,  0.f},  100.f,  {0.40f, 0.65f, 0.30f},  8.f,  0.f},  // ground
-        {{ 0.f,   0.0f,   0.f},    0.5f, {0.85f, 0.15f, 0.15f},  64.f,  0.f},  // red (centre)
-        {{ 1.2f,  0.0f,  -0.5f},   0.5f, {0.15f, 0.40f, 0.90f}, 128.f,  0.f},  // blue (right)
-        {{-1.2f,  0.0f,  -0.5f},   0.5f, {0.90f, 0.75f, 0.10f},  32.f,  0.f},  // gold (left)
-        {{ 0.f,   1.2f,  -1.0f},   0.5f, {0.60f, 0.10f, 0.85f}, 256.f,  0.f},  // purple (top)
-        {{ 0.6f, -0.2f,   1.0f},   0.3f, {0.10f, 0.80f, 0.60f},  64.f,  0.f},  // teal (front-right)
-        {{-0.6f, -0.2f,   1.0f},   0.3f, {0.95f, 0.50f, 0.10f},  64.f,  0.f},  // orange (front-left)
+        {{0.F, -100.5F, 0.F}, 100.F, {0.40F, 0.65F, 0.30F}, 8.F, 0.F},  // ground
+        {{0.F, 0.0F, 0.F}, 0.5F, {0.85F, 0.15F, 0.15F}, 64.F, 0.F},     // red (centre)
+        {{1.2F, 0.0F, -0.5F}, 0.5F, {0.15F, 0.40F, 0.90F}, 128.F, 0.F}, // blue (right)
+        {{-1.2F, 0.0F, -0.5F}, 0.5F, {0.90F, 0.75F, 0.10F}, 32.F, 0.F}, // gold (left)
+        {{0.F, 1.2F, -1.0F}, 0.5F, {0.60F, 0.10F, 0.85F}, 256.F, 0.F},  // purple (top)
+        {{0.6F, -0.2F, 1.0F}, 0.3F, {0.10F, 0.80F, 0.60F}, 64.F, 0.F},  // teal (front-right)
+        {{-0.6F, -0.2F, 1.0F}, 0.3F, {0.95F, 0.50F, 0.10F}, 64.F, 0.F}, // orange (front-left)
     };
     Light h_lights[NUM_LIGHTS] = {
-        {{ 5.f,  8.f,  5.f}, {1.00f, 0.95f, 0.90f}},   // warm key light
-        {{-3.f,  4.f,  2.f}, {0.40f, 0.50f, 0.80f}},   // cool fill light
+        {{5.F, 8.F, 5.F}, {1.00F, 0.95F, 0.90F}},  // warm key light
+        {{-3.F, 4.F, 2.F}, {0.40F, 0.50F, 0.80F}}, // cool fill light
     };
 
     CUDA_CHECK(cudaMemcpyToSymbol(d_spheres, h_spheres, sizeof(h_spheres)));
-    CUDA_CHECK(cudaMemcpyToSymbol(d_lights,  h_lights,  sizeof(h_lights)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_lights, h_lights, sizeof(h_lights)));
 
     // ── Pre-size the host pixel buffer ────────────────────────────────────
     // Resized inside the loop if an edge tile turns out to be larger than
@@ -392,7 +561,8 @@ int main(int argc, char* argv[])
     std::vector<uint8_t> host_pixels(nom_pixels);
 
     // ── Work loop ─────────────────────────────────────────────────────────
-    for (;;) {
+    for (;;)
+    {
         // =====================================================================
         // TODO Part 1d  --  Receive PktWorkOrder (or PktDone)
         // =====================================================================
@@ -411,11 +581,24 @@ int main(int argc, char* argv[])
         //   PktWorkOrder order;
         //   std::memcpy(&order, buf, sizeof(order));
         //
+        uint8_t buf[sizeof(PktWorkOrder) + 32];
+        std::size_t received;
+        sf::IpAddress sender;
+        unsigned short sport;
+        socket.receive(buf, sizeof(buf), received, sender, sport);
+        if (buf[0] == PKT_DONE)
+        {
+            std::cout << "[worker] Received PKT_DONE, exiting\n";
+            break;
+        }
+        if (buf[0] != PKT_WORK_ORDER || received < sizeof(PktWorkOrder))
+        {
+            continue;
+        }
         PktWorkOrder order{};
-        // YOUR CODE HERE (~9 lines)
+        std::memcpy(&order, buf, sizeof(order));
 
-        std::cout << "[worker] Tile " << order.tile_id
-                  << "  offset=(" << order.x_offset << "," << order.y_offset << ")"
+        std::cout << "[worker] Tile " << order.tile_id << "  offset=(" << order.x_offset << "," << order.y_offset << ")"
                   << "  size=" << order.tile_w << "x" << order.tile_h << "\n";
 
         const std::size_t pixel_bytes = (std::size_t)order.tile_w * order.tile_h * 4;
@@ -430,8 +613,8 @@ int main(int argc, char* argv[])
         //   uint8_t* d_pixels = nullptr;
         //   CUDA_CHECK(cudaMalloc(&d_pixels, pixel_bytes));
         //
-        uint8_t* d_pixels = nullptr;
-        // YOUR CODE HERE (~2 lines)
+        uint8_t *d_pixels = nullptr;
+        CUDA_CHECK(cudaMalloc(&d_pixels, pixel_bytes));
 
         // =====================================================================
         // TODO Part 2e  --  Launch renderTile kernel
@@ -450,7 +633,12 @@ int main(int argc, char* argv[])
         //   CUDA_CHECK(cudaGetLastError());
         //   CUDA_CHECK(cudaDeviceSynchronize());
         //
-        // YOUR CODE HERE (~6 lines)
+        dim3 block(16, 16);
+        dim3 grid((order.tile_w + 15u) / 16u, (order.tile_h + 15u) / 16u);
+        renderTile<<<grid, block>>>(d_pixels, order.x_offset, order.y_offset, order.tile_w, order.tile_h, scene.image_w, scene.image_h,
+                                    scene.fov_deg, cam_origin, cam_forward, cam_right, cam_up_vec);
+        CUDA_CHECK(cudaGetLastError());
+        CUDA_CHECK(cudaDeviceSynchronize());
 
         // =====================================================================
         // TODO Part 2f  --  Copy rendered pixels device -> host
@@ -464,7 +652,12 @@ int main(int argc, char* argv[])
         //                         pixel_bytes, cudaMemcpyDeviceToHost));
         //   CUDA_CHECK(cudaFree(d_pixels));
         //
-        // YOUR CODE HERE (~4 lines)
+        if (host_pixels.size() < pixel_bytes)
+        {
+            host_pixels.resize(pixel_bytes);
+        }
+        CUDA_CHECK(cudaMemcpy(host_pixels.data(), d_pixels, pixel_bytes, cudaMemcpyDeviceToHost));
+        CUDA_CHECK(cudaFree(d_pixels));
 
         // =====================================================================
         // TODO Part 1e  --  Send PktTileResult back to the coordinator
@@ -482,7 +675,14 @@ int main(int argc, char* argv[])
         //   std::memcpy(pkt.data()+sizeof(hdr),  host_pixels.data(),  pixel_bytes);
         //   socket.send(pkt.data(), pkt.size(), coord_ip, coord_port);
         //
-        // YOUR CODE HERE (~8 lines)
+        std::vector<uint8_t> pkt(sizeof(PktTileResult) + pixel_bytes);
+        PktTileResult hdr;
+        hdr.tile_id = order.tile_id;
+        hdr.tile_w = order.tile_w;
+        hdr.tile_h = order.tile_h;
+        std::memcpy(pkt.data(), &hdr, sizeof(hdr));
+        std::memcpy(pkt.data() + sizeof(hdr), host_pixels.data(), pixel_bytes);
+        socket.send(pkt.data(), pkt.size(), coord_ip, coord_port);
 
         std::cout << "[worker] Sent tile " << order.tile_id << "\n";
     }

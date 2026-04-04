@@ -21,13 +21,13 @@ lint/makefile: ## Lint Makefile using checkmake
 .PHONY: lint/format
 lint/format: ## Check code formatting using clang-format
 	@echo "Checking code formatting..."
-	@find Homework_* -name '*.cpp' -o -name '*.h' | xargs clang-format -i
+	@find Homework_* \( -name '*.cpp' -o -name '*.h' -o -name '*.cu' \) | xargs clang-format -i
 	@echo "✓ Code formatting check complete"
 
 .PHONY: lint/cpplint
 lint/cpplint: ## Lint C++ code using cpplint
 	@echo "Linting C++ code..."
-	find Homework_* \( -name '*.cpp' -o -name '*.h' \) ! -name 'stb_image.h' ! -path 'Homework_3_new_assimp/*' | xargs cpplint --config=CPPLINT.cfg
+	find Homework_* \( -name '*.cpp' -o -name '*.h' -o -name '*.cu' \) ! -name 'stb_image.h' ! -path 'Homework_3_new_assimp/*' | xargs cpplint --config=CPPLINT.cfg
 	@echo "✓ C++ linting complete"
 
 .PHONY: lint/tidy
@@ -75,7 +75,7 @@ lint/markdown-fix: ## Fix markdown files using markdownlint v0.38.0
 cmake: BUILD_TYPE ?= Debug
 cmake: ## Generate CMake build files using the default preset
 	@echo "Generating CMake build files..."
-	cd build && cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
+	cd build && cmake .. -DCMAKE_BUILD_TYPE=$(BUILD_TYPE)
 
 .PHONY: cmake/benchmark
 cmake/benchmark: ## Generate CMake build files for Benchmark configuration

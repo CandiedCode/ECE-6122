@@ -31,8 +31,10 @@ elseif(UNIX)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${COMMON_OUTPUT_DIR}/lib")  # For static libraries
 endif()
 
-add_subdirectory(Homework_3)
-add_subdirectory(external)
+# add_subdirectory(Homework_3)
+# add_subdirectory(external)
+add_subdirectory(Homework_4_5)
+add_subdirectory(SFML)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 link_directories(${PROJECT_SOURCE_DIR}/lib)
