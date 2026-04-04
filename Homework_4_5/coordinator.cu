@@ -106,7 +106,6 @@ int main(int argc, char *argv[])
     //   socket.setBlocking(false);
     //
     sf::UdpSocket socket;
-    // TODO: do we need to check other sf::Socket::Status values here?
     if (socket.bind(port) != sf::Socket::Done)
     {
         std::cerr << "[coord] Failed to bind socket to port " << port << "\n";
@@ -190,10 +189,8 @@ int main(int argc, char *argv[])
         sf::sleep(sf::milliseconds(10));
     }
 
-    {
-        long long elapsed = msElapsed(reg_start);
-        std::cout << "[coord] Registration phase ended after " << elapsed << " ms.\n";
-    }
+    long long elapsed = msElapsed(reg_start);
+    std::cout << "[coord] Registration phase ended after " << elapsed << " ms.\n";
 
     if (workers.empty())
     {
@@ -288,7 +285,9 @@ int main(int argc, char *argv[])
         for (auto &w : workers)
         {
             if (!w.idle || pending.empty())
+            {
                 continue;
+            }
             while (!pending.empty() && tiles[pending.front()].done)
             {
                 pending.pop();
@@ -414,19 +413,25 @@ int main(int argc, char *argv[])
 
             // Tile result
             if (recv_buf[0] != PKT_TILE_RESULT || received < sizeof(PktTileResult))
+            {
                 continue;
-
+            }
             PktTileResult hdr;
             std::memcpy(&hdr, recv_buf.data(), sizeof(hdr));
 
-            if (hdr.tile_id >= (uint32_t)total_tiles || tiles[hdr.tile_id].done)
+            // Guard
+            if (hdr.tile_id >= static_cast<uint32_t>(total_tiles) || tiles[hdr.tile_id].done)
+            {
                 continue;
+            }
 
-            const std::size_t pixel_bytes = (std::size_t)hdr.tile_w * hdr.tile_h * 4;
-            if (received < sizeof(PktTileResult) + pixel_bytes)
+            // Verify payload
+            if (received < sizeof(PktTileResult) + static_cast<std::size_t>(hdr.tile_w) * static_cast<std::size_t>(hdr.tile_h) * 4)
+            {
                 continue;
+            }
 
-            // Copy pixels into full_image
+            // Copy pixels into full_image using sf::Image::setPixel
             const uint8_t *pixels = recv_buf.data() + sizeof(PktTileResult);
             TileInfo &ti = tiles[hdr.tile_id];
             for (uint16_t py = 0; py < hdr.tile_h; ++py)
@@ -442,11 +447,13 @@ int main(int argc, char *argv[])
             // Mark tile done
             tiles[hdr.tile_id].done = true;
             tiles[hdr.tile_id].in_flight = false;
+            // increment tiles_done
             ++tiles_done;
 
             // Mark sending worker idle
             for (auto &w : workers)
             {
+                // match by sender IP + sport
                 if (w.ip == sender && w.port == sport)
                 {
                     w.idle = true;
@@ -456,7 +463,7 @@ int main(int argc, char *argv[])
 
             // Update texture and window title
             texture.update(full_image);
-            window.setTitle("Ray Tracer  \u2014  " + std::to_string(tiles_done) + " / " + std::to_string(total_tiles) + " tiles complete");
+            window.setTitle("Ray Tracer -- " + std::to_string(tiles_done) + " / " + std::to_string(total_tiles) + " tiles complete");
         }
 
         // — Draw frame (provided) —

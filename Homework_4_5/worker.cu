@@ -27,6 +27,10 @@
 #include <iostream>
 #include <vector>
 
+const float PI = 3.14159265358979f;
+const float EPSILON = 1e-4f;
+const float ALPHA = 255.F;
+
 // ── CUDA error-checking macro (provided) ─────────────────────────────────────
 #define CUDA_CHECK(call)                                                                                                                   \
     do                                                                                                                                     \
@@ -74,12 +78,8 @@ struct Vec3
     }
     __host__ __device__ Vec3 &operator+=(const Vec3 &b)
     {
-        x += b.x;
-        y += b.y;
-        z += b.z;
-        return *this;
+        return {x + b.x, y + b.y, z + b.z};
     }
-
     __host__ __device__ float dot(const Vec3 &b) const
     {
         return x * b.x + y * b.y + z * b.z;
@@ -95,7 +95,7 @@ struct Vec3
     }
     __host__ __device__ Vec3 clamp01() const
     {
-        return {fminf(1.f, fmaxf(0.f, x)), fminf(1.f, fmaxf(0.f, y)), fminf(1.f, fmaxf(0.f, z))};
+        return {fminf(1.F, fmaxf(0.F, x)), fminf(1.F, fmaxf(0.F, y)), fminf(1.F, fmaxf(0.F, z))};
     }
 };
 
@@ -158,12 +158,12 @@ __constant__ Light d_lights[NUM_LIGHTS];
 //
 __device__ bool intersect(const Vec3 &ro, const Vec3 &rd, const Sphere &s, float &t_hit)
 {
-    Vec3 oc = ro - s.center;
-    float b = oc.dot(rd); // half coefficient
-    float c = oc.dot(oc) - s.radius * s.radius;
+    Vec3 origin_to_center = ro - s.center;
+    float b = origin_to_center.dot(rd); // half coefficient
+    float c = origin_to_center.dot(origin_to_center) - s.radius * s.radius;
     float discriminant = b * b - c;
 
-    if (discriminant < 0.f)
+    if (discriminant < 0.F)
         return false;
 
     float sq = sqrtf(discriminant);
@@ -185,7 +185,7 @@ __device__ bool intersect(const Vec3 &ro, const Vec3 &rd, const Sphere &s, float
     {
         t_hit = t0;
     }
-    // t1 >= atol, so t0 < atol, so t0 is behind ray origin but t1 is in front.
+    // t1 >= atol,  t0 < atol, thus t0 is behind ray origin but t1 is in front.
     else
     {
         t_hit = t1;
@@ -193,14 +193,14 @@ __device__ bool intersect(const Vec3 &ro, const Vec3 &rd, const Sphere &s, float
     return true;
 }
 
-// Shadow ray (provided) -- iterates intersect() over all spheres.
+// Shadow ray - iterates intersect() over all spheres.
 // Returns true if anything blocks the path from 'origin' to distance max_t.
 __device__ bool shadowRay(const Vec3 &origin, const Vec3 &dir, float max_t)
 {
     for (int i = 0; i < NUM_SPHERES; ++i)
     {
         float t;
-        if (intersect(origin, dir, d_spheres[i], t) && t < max_t - 1e-3f)
+        if (intersect(origin, dir, d_spheres[i], t) && t < max_t - 1e-3F)
             return true;
     }
     return false;
@@ -223,7 +223,7 @@ __device__ bool shadowRay(const Vec3 &origin, const Vec3 &dir, float max_t)
 //   2. Compute the vector from hit_pt toward the light:
 //        to_light = d_lights[i].pos - hit_pt
 //        dist     = to_light.length()
-//        L        = to_light * (1.f / dist)   // normalise
+//        L        = to_light * (1.F / dist)   // normalise
 //
 //   3. Shadow test -- call shadowRay(hit_pt, L, dist).
 //      If the path is blocked, skip steps 4 and 5 for this light.
@@ -243,29 +243,31 @@ __device__ Vec3 shade(const Vec3 &hit_pt, const Vec3 &normal, const Vec3 &view_d
 {
     // ambient term
     // start with 12% of the sphere's base color.
-    Vec3 result = s.color * 0.12f;
+    Vec3 result = s.color * 0.12F;
 
     // for each light sources
-    for (int i = 0; i < NUM_LIGHTS; ++i)
+    for (int i = 0; i < NUM_LIGHTS; i++)
     {
         // Compute vector from hit point toward the light
         Vec3 to_light = d_lights[i].pos - hit_pt;
         float dist = to_light.length();
-        Vec3 L = to_light * (1.f / dist); // normalize
+        Vec3 L = to_light * (1.F / dist); // normalize
 
         // shadow test
         if (shadowRay(hit_pt, L, dist))
+        {
             continue; // light is blocked, skip this light
+        }
 
         // diffuse - Lambertian
         // 0 -> dark, 1 -> bright
-        float diff = fmaxf(0.f, normal.dot(L));
+        float diff = fmaxf(0.F, normal.dot(L));
         result += s.color * d_lights[i].color * diff;
 
         // specular - Blinn-Phong
         Vec3 H = (L + view_dir).normalize();
-        float spec = pow(fmaxf(0.f, normal.dot(H)), s.shininess);
-        result += d_lights[i].color * spec * 0.6f;
+        float spec = pow(fmaxf(0.F, normal.dot(H)), s.shininess);
+        result += d_lights[i].color * spec * 0.6F;
     }
 
     return result.clamp01();
@@ -277,23 +279,23 @@ __device__ Vec3 shade(const Vec3 &hit_pt, const Vec3 &normal, const Vec3 &view_d
 // If a primary ray misses all spheres, return a sky colour instead of black.
 // Map the ray's normalised y-component from [-1, +1] to [0, 1]:
 //
-//   t = 0.5f * (rd.normalize().y + 1.f)   // 0 at horizon, 1 at zenith
+//   t = 0.5f * (rd.normalize().y + 1.F)   // 0 at horizon, 1 at zenith
 //
 // Then linearly interpolate between a warm horizon colour and a cool zenith:
 //
 //   horizon = {0.95f, 0.80f, 0.55f}
 //   zenith  = {0.08f, 0.18f, 0.48f}
-//   return  horizon * (1.f - t) + zenith * t
+//   return  horizon * (1.F - t) + zenith * t
 //
 __device__ Vec3 skyColor(const Vec3 &rd)
 {
     // Map normalized ray y-component from [-1, 1] to [0, 1]
-    float t = 0.5f * (rd.normalize().y + 1.f); // 0 at horizon, 1 at zenith
+    float t = 0.5f * (rd.normalize().y + 1.F);
 
     // Interpolate between warm horizon and cool zenith
     Vec3 horizon = {0.95f, 0.80f, 0.55f};
     Vec3 zenith = {0.08f, 0.18f, 0.48f};
-    return horizon * (1.f - t) + zenith * t;
+    return horizon * (1.F - t) + zenith * t;
 }
 
 // ============================================================================
@@ -313,11 +315,11 @@ __device__ Vec3 skyColor(const Vec3 &rd)
 //
 // Compute NDC (Normalised Device Coordinates) for this pixel:
 //   aspect = (float)image_w / (float)image_h
-//   half_h = tanf(fov_deg * 0.5f * PI / 180.f)   // PI = 3.14159265358979f
+//   half_h = tanf(fov_deg * 0.5f * PI / 180.F)   // PI = 3.14159265358979f
 //   half_w = half_h * aspect
 //
-//   u =   ((img_x + 0.5f) / image_w) * 2.f - 1.f   // [-1, +1], left to right
-//   v = -(((img_y + 0.5f) / image_h) * 2.f - 1.f)  // [-1, +1], bottom to top
+//   u =   ((img_x + 0.5f) / image_w) * 2.F - 1.F   // [-1, +1], left to right
+//   v = -(((img_y + 0.5f) / image_h) * 2.F - 1.F)  // [-1, +1], bottom to top
 //                                                    // (flip y: row 0 is top)
 //
 // Primary ray direction:
@@ -336,9 +338,9 @@ __device__ Vec3 skyColor(const Vec3 &rd)
 //
 // Write RGBA to d_pixels (alpha = 255):
 //   int out_idx = (py * tile_w + px) * 4;
-//   d_pixels[out_idx + 0] = (uint8_t)(color.x * 255.f);
-//   d_pixels[out_idx + 1] = (uint8_t)(color.y * 255.f);
-//   d_pixels[out_idx + 2] = (uint8_t)(color.z * 255.f);
+//   d_pixels[out_idx + 0] = (uint8_t)(color.x * 255.F);
+//   d_pixels[out_idx + 1] = (uint8_t)(color.y * 255.F);
+//   d_pixels[out_idx + 2] = (uint8_t)(color.z * 255.F);
 //   d_pixels[out_idx + 3] = 255u;
 //
 __global__ void renderTile(uint8_t *d_pixels, // output: RGBA pixels, row-major within tile
@@ -356,42 +358,46 @@ __global__ void renderTile(uint8_t *d_pixels, // output: RGBA pixels, row-major 
 )
 {
     // Thread-to-pixel mapping
-    uint16_t px = threadIdx.x + blockIdx.x * blockDim.x;
-    uint16_t py = threadIdx.y + blockIdx.y * blockDim.y;
+    uint16_t pixel_x = threadIdx.x + blockIdx.x * blockDim.x;
+    uint16_t pixel_y = threadIdx.y + blockIdx.y * blockDim.y;
 
     // Guard: check bounds
-    if (px >= tile_w || py >= tile_h)
+    if (pixel_x >= tile_w || pixel_y >= tile_h)
     {
         return;
     }
 
     // Image pixel coordinates
-    uint16_t img_x = px + x_offset;
-    uint16_t img_y = py + y_offset;
+    uint16_t image_x = pixel_x + x_offset;
+    uint16_t image_y = pixel_y + y_offset;
 
-    // Compute camera basis factors
-    float aspect = (float)image_w / (float)image_h;
-    const float PI = 3.14159265358979f;
-    float half_h = tanf(fov_deg * 0.5f * PI / 180.f);
+    // Compute NDC (Normalised Device Coordinates) for this pixel:
+    float aspect = static_cast<float>(image_w) / static_cast<float>(image_h);
+    float half_h = tanf(fov_deg * 0.5F * PI / 180.F);
     float half_w = half_h * aspect;
 
     // Compute normalized device coordinates (NDC)
-    float u = ((img_x + 0.5f) / image_w) * 2.f - 1.f;    // [-1, +1]
-    float v = -(((img_y + 0.5f) / image_h) * 2.f - 1.f); // [-1, +1], flipped
+    float u = ((image_x + 0.5F) / image_w) * 2.F - 1.F;    // [-1, +1], left to right
+    float v = -(((image_y + 0.5F) / image_h) * 2.F - 1.F); // [-1, +1], bottom to top (flip y: row 0 is top)
 
-    // Compute primary ray direction
+    // Primary ray direction
     Vec3 rd = (cam_forward + cam_right * (u * half_w) + cam_up * (v * half_h)).normalize();
 
-    // Trace ray against all spheres, find closest hit
-    float t_min = 1e30f;
+    // Trace the ray
+    float t_min = EPSILON;
     int hit_idx = -1;
+
     for (int i = 0; i < NUM_SPHERES; ++i)
     {
         float t;
-        if (intersect(cam_origin, rd, d_spheres[i], t) && t < t_min)
+        if (intersect(cam_origin, rd, d_spheres[i], t))
         {
-            t_min = t;
-            hit_idx = i;
+            // If a sphere was hit, check if it's the closest hit so far
+            if (t < t_min)
+            {
+                t_min = t;
+                hit_idx = i;
+            }
         }
     }
 
@@ -407,15 +413,14 @@ __global__ void renderTile(uint8_t *d_pixels, // output: RGBA pixels, row-major 
     }
     else
     {
-        // No hit, use sky color
         color = skyColor(rd);
     }
 
-    // Write RGBA to output buffer
-    int out_idx = (py * tile_w + px) * 4;
-    d_pixels[out_idx + 0] = (uint8_t)(color.x * 255.f);
-    d_pixels[out_idx + 1] = (uint8_t)(color.y * 255.f);
-    d_pixels[out_idx + 2] = (uint8_t)(color.z * 255.f);
+    // Write RGBA to d_pixels (alpha = 255)
+    int out_idx = (pixel_y * tile_w + pixel_x) * 4;
+    d_pixels[out_idx + 0] = (uint8_t)(color.x * ALPHA);
+    d_pixels[out_idx + 1] = (uint8_t)(color.y * ALPHA);
+    d_pixels[out_idx + 2] = (uint8_t)(color.z * ALPHA);
     d_pixels[out_idx + 3] = 255u;
 }
 
@@ -494,13 +499,15 @@ int main(int argc, char *argv[])
     //       }
     //   }
     //
-    SceneDesc scene{};
     socket.setBlocking(true);
+    SceneDesc scene{};
     uint8_t buf[512];
     std::size_t received;
     sf::IpAddress sender;
     unsigned short sport;
-    for (;;)
+    bool continue_loop = true;
+
+    while (continue_loop)
     {
         if (socket.receive(buf, sizeof(buf), received, sender, sport) == sf::Socket::Done && buf[0] == PKT_REGISTER_ACK &&
             received >= sizeof(PktRegisterAck))
@@ -508,7 +515,7 @@ int main(int argc, char *argv[])
             PktRegisterAck ack;
             std::memcpy(&ack, buf, sizeof(ack));
             scene = ack.scene;
-            break;
+            continue_loop = false;
         }
     }
 
@@ -522,7 +529,7 @@ int main(int argc, char *argv[])
     // up      = normalise(right   x forward)   (re-orthogonalised)
     Vec3 cam_origin = {scene.cam_origin[0], scene.cam_origin[1], scene.cam_origin[2]};
     Vec3 cam_lookat = {scene.cam_lookat[0], scene.cam_lookat[1], scene.cam_lookat[2]};
-    Vec3 world_up = {0.f, 1.f, 0.f};
+    Vec3 world_up = {0.F, 1.F, 0.F};
     Vec3 cam_forward = (cam_lookat - cam_origin).normalize();
     Vec3 cam_right = cross(cam_forward, world_up).normalize();
     Vec3 cam_up_vec = cross(cam_right, cam_forward).normalize();
@@ -531,17 +538,17 @@ int main(int argc, char *argv[])
     // Modify the sphere/light data below to change the scene.
     Sphere h_spheres[NUM_SPHERES] = {
         //  center                  radius  color (RGB 0-1)       shine  refl
-        {{0.f, -100.5f, 0.f}, 100.f, {0.40f, 0.65f, 0.30f}, 8.f, 0.f},  // ground
-        {{0.f, 0.0f, 0.f}, 0.5f, {0.85f, 0.15f, 0.15f}, 64.f, 0.f},     // red (centre)
-        {{1.2f, 0.0f, -0.5f}, 0.5f, {0.15f, 0.40f, 0.90f}, 128.f, 0.f}, // blue (right)
-        {{-1.2f, 0.0f, -0.5f}, 0.5f, {0.90f, 0.75f, 0.10f}, 32.f, 0.f}, // gold (left)
-        {{0.f, 1.2f, -1.0f}, 0.5f, {0.60f, 0.10f, 0.85f}, 256.f, 0.f},  // purple (top)
-        {{0.6f, -0.2f, 1.0f}, 0.3f, {0.10f, 0.80f, 0.60f}, 64.f, 0.f},  // teal (front-right)
-        {{-0.6f, -0.2f, 1.0f}, 0.3f, {0.95f, 0.50f, 0.10f}, 64.f, 0.f}, // orange (front-left)
+        {{0.F, -100.5F, 0.F}, 100.F, {0.40F, 0.65F, 0.30F}, 8.F, 0.F},  // ground
+        {{0.F, 0.0F, 0.F}, 0.5F, {0.85F, 0.15F, 0.15F}, 64.F, 0.F},     // red (centre)
+        {{1.2F, 0.0F, -0.5F}, 0.5F, {0.15F, 0.40F, 0.90F}, 128.F, 0.F}, // blue (right)
+        {{-1.2F, 0.0F, -0.5F}, 0.5F, {0.90F, 0.75F, 0.10F}, 32.F, 0.F}, // gold (left)
+        {{0.F, 1.2F, -1.0F}, 0.5F, {0.60F, 0.10F, 0.85F}, 256.F, 0.F},  // purple (top)
+        {{0.6F, -0.2F, 1.0F}, 0.3F, {0.10F, 0.80F, 0.60F}, 64.F, 0.F},  // teal (front-right)
+        {{-0.6F, -0.2F, 1.0F}, 0.3F, {0.95F, 0.50F, 0.10F}, 64.F, 0.F}, // orange (front-left)
     };
     Light h_lights[NUM_LIGHTS] = {
-        {{5.f, 8.f, 5.f}, {1.00f, 0.95f, 0.90f}},  // warm key light
-        {{-3.f, 4.f, 2.f}, {0.40f, 0.50f, 0.80f}}, // cool fill light
+        {{5.F, 8.F, 5.F}, {1.00F, 0.95F, 0.90F}},  // warm key light
+        {{-3.F, 4.F, 2.F}, {0.40F, 0.50F, 0.80F}}, // cool fill light
     };
 
     CUDA_CHECK(cudaMemcpyToSymbol(d_spheres, h_spheres, sizeof(h_spheres)));
@@ -585,7 +592,9 @@ int main(int argc, char *argv[])
             break;
         }
         if (buf[0] != PKT_WORK_ORDER || received < sizeof(PktWorkOrder))
+        {
             continue;
+        }
         PktWorkOrder order{};
         std::memcpy(&order, buf, sizeof(order));
 
@@ -644,7 +653,9 @@ int main(int argc, char *argv[])
         //   CUDA_CHECK(cudaFree(d_pixels));
         //
         if (host_pixels.size() < pixel_bytes)
+        {
             host_pixels.resize(pixel_bytes);
+        }
         CUDA_CHECK(cudaMemcpy(host_pixels.data(), d_pixels, pixel_bytes, cudaMemcpyDeviceToHost));
         CUDA_CHECK(cudaFree(d_pixels));
 
