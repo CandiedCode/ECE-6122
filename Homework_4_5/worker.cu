@@ -78,7 +78,10 @@ struct Vec3
     }
     __host__ __device__ Vec3 &operator+=(const Vec3 &b)
     {
-        return {x + b.x, y + b.y, z + b.z};
+        x += b.x;
+        y += b.y;
+        z += b.z;
+        return *this;
     }
     __host__ __device__ float dot(const Vec3 &b) const
     {
@@ -384,7 +387,7 @@ __global__ void renderTile(uint8_t *d_pixels, // output: RGBA pixels, row-major 
     Vec3 rd = (cam_forward + cam_right * (u * half_w) + cam_up * (v * half_h)).normalize();
 
     // Trace the ray
-    float t_min = EPSILON;
+    float t_min = 1e30f;
     int hit_idx = -1;
 
     for (int i = 0; i < NUM_SPHERES; ++i)
