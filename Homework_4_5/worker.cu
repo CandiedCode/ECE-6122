@@ -28,7 +28,6 @@
 #include <vector>
 
 const float PI = 3.14159265358979f;
-const float EPSILON = 1e-4f;
 const float ALPHA = 255.F;
 
 // ── CUDA error-checking macro (provided) ─────────────────────────────────────
@@ -387,7 +386,7 @@ __global__ void renderTile(uint8_t *d_pixels, // output: RGBA pixels, row-major 
     Vec3 rd = (cam_forward + cam_right * (u * half_w) + cam_up * (v * half_h)).normalize();
 
     // Trace the ray
-    float t_min = 1e30f;
+    float t_min = INFINITY;
     int hit_idx = -1;
 
     for (int i = 0; i < NUM_SPHERES; ++i)
