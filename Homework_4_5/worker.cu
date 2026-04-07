@@ -386,7 +386,7 @@ __global__ void renderTile(uint8_t *d_pixels, // output: RGBA pixels, row-major 
     Vec3 rd = (cam_forward + cam_right * (u * half_w) + cam_up * (v * half_h)).normalize();
 
     // Trace the ray
-    float t_min = 1e30F; // large number to represent "infinity"
+    float t_min = INFINITY;
     int hit_idx = -1;
 
     for (int i = 0; i < NUM_SPHERES; ++i)
